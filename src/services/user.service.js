@@ -1,20 +1,20 @@
-import { pool } from "../index.js";
+import httpStatus from "http-status";
+import { User } from "../models/user.model.js";
+import { ApiError } from "../utils/apiError.js";
 
 const createUser = async (body) => {
   const { username, name, email, password } = body;
-  const result = await pool.query(
-    `insert into users (username, email, name, password, role, photo) values ('${username}', '${email}', '${name}', '${password}', 'maker', null);`
-  );
 
-  return result;
+  if (await User.isEmailTaken(email)) {
+    throw new ApiError(httpStatus.BAD_REQUEST, "Email already taken");
+  }
+  return User.create(body);
 };
 
-const getUser = async (id) => {
-  const result = await pool.query(`SELECT * FROM users WHERE id = ${id};`)
-  return result[0];
-}
+const getUser = async (id) => {};
 
-export {
-  createUser,
-  getUser
-}
+const getUserByEmail = async (email) => {
+  return User.findOne({ email });
+};
+
+export default { createUser, getUser, getUserByEmail };
