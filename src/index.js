@@ -1,24 +1,11 @@
-import { createPool } from "mysql2";
 import app from "./app.js";
 import config from "./config/config.js";
+import mongoose from "mongoose";
 
-const port = 3000;
-
-app.get("/", (req, res, next) => {
-  return res.json({
-    status: "success",
+let server;
+mongoose.connect(config.mongo.url, config.mongo.options).then(() => {
+  console.log("Connected to MongoDB");
+  server = app.listen(config.port, () => {
+    console.log(`Testify app listening on port ${config.port}`);
   });
-});
-
-export const pool = createPool({
-  host: config.db.host,
-  user:  config.db.user,
-  password:  config.db.password,
-  database:  config.db.database,
-}).promise();
-
-if (pool) console.log("DB connected successfully!");
-
-app.listen(port, () => {
-  console.log(`Testify app listening on port ${port}`);
 });

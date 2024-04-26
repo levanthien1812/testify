@@ -15,15 +15,19 @@ const envVarsSchema = Joi.object()
       .valid("production", "development", "test")
       .required(),
     PORT: Joi.number().default(3000),
-    DB_HOST: Joi.string().required().description("Database host"),
-    DB_USER: Joi.string().required().description("Database user"),
-    DB_PASSWORD: Joi.string().required().description("Database password"),
-    DB_PORT: Joi.number().default(3306),
-    DB_DATABASE: Joi.string().required().description("Database to use"),
+    MONGODB_URL: Joi.string()
+      .required()
+      .description("MongoDB connection string"),
     JWT_SECRET: Joi.string().required().description("JWT secret key"),
     JWT_ACCESS_EXPIRATION_MINUTES: Joi.number()
       .default(30)
       .description("minutes after which access token expire"),
+    JWT_REFRESH_EXPIRATION_DAYS: Joi.number()
+      .default(30)
+      .description("days after which refresh token expire"),
+    JWT_RESET_PASSWORD_EXPIRATION_MINUTES: Joi.number()
+      .default(10)
+      .description("minutes after which reset password token expire"),
     JWT_VERIFY_EMAIL_EXPIRATION_MINUTES: Joi.number()
       .default(10)
       .description("minutes after which verify email token expires"),
@@ -48,15 +52,15 @@ if (error) {
 export default {
   env: envVars.NODE_ENV,
   port: envVars.PORT,
-  db: {
-    host: envVars.DB_HOST,
-    port: envVars.DB_PORT,
-    user: envVars.DB_USER,
-    password: envVars.DB_PASSWORD,
-    database: envVars.DB_DATABASE,
+  mongo: {
+    url: envVars.MONGODB_URL,
+    options: {},
   },
   jwt: {
     secret: envVars.JWT_SECRET,
+    refreshExpirationDays: envVars.JWT_REFRESH_EXPIRATION_DAYS,
+    resetPasswordExpirationMinutes:
+      envVars.JWT_RESET_PASSWORD_EXPIRATION_MINUTES,
     accessExpirationMinutes: envVars.JWT_ACCESS_EXPIRATION_MINUTES,
     verifyEmailExpirationMinutes: envVars.JWT_VERIFY_EMAIL_EXPIRATION_MINUTES,
   },
