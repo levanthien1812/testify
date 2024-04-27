@@ -1,6 +1,6 @@
 const allRoles = {
   taker: [],
-  maker: [],
+  maker: ["getUsers"],
   admin: ["getUsers", "manageUsers"],
 };
 
