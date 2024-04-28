@@ -11,7 +11,9 @@ const createUser = async (body) => {
   return User.create(body);
 };
 
-const getUser = async (id) => {};
+const getUser = async (id) => {
+  return User.findById(id);
+};
 
 const getUserByEmail = async (email) => {
   return User.findOne({ email });

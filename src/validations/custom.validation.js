@@ -9,3 +9,11 @@ export const password = (value, helpers) => {
   }
   return value;
 };
+
+export const test_date = (value, helpers) => {
+  if (new Date(value) < new Date()) {
+    return helpers.message("Test date must be after now");
+  }
+
+  return value;
+};

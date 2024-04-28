@@ -1,7 +1,8 @@
 import passport from "passport";
 import { ApiError } from "../utils/apiError.js";
 import httpStatus from "http-status";
-import { roleRights } from "../config/roles";
+import { roleRights } from "../config/roles.js";
+import { logger } from "../config/logger.js";
 
 const verifyCallback =
   (req, resolve, reject, requiredRights) => async (err, user, info) => {

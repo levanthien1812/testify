@@ -1,3 +1,4 @@
+import authService from "../services/auth.service.js";
 import tokenService from "../services/token.service.js";
 import userService from "../services/user.service.js";
 import catchAsync from "../utils/catchAsync.js";
@@ -9,6 +10,13 @@ const register = catchAsync(async (req, res) => {
   return res.status(200).json({ user, tokens });
 });
 
+const login = catchAsync(async (req, res, next) => {
+  const user = await authService.login(req.body);
+  const tokens = await tokenService.generateAuthToken(user)
+
+  return res.status(200).json({ user, tokens });
+})
+
 export default {
-  register,
+  register, login
 };
