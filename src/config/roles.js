@@ -1,7 +1,7 @@
 const allRoles = {
-  taker: [],
-  maker: ["createTest"],
-  admin: ["getUsers", "manageUsers"],
+    taker: [],
+    maker: ["getTests", "getTest", "createTest", "addParts", "updateQuestion"],
+    admin: ["getUsers", "manageUsers"],
 };
 
 export const roles = Object.keys(allRoles);
