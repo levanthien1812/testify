@@ -3,7 +3,7 @@ import { Test } from "../models/test.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { Question } from "../models/question.model.js";
 import { questionTypes } from "../config/questionTypes.js";
-import { MultipleChoiceQuestion } from "../models/mulitpleChoicesQuestion.model.js";
+import { MultipleChoiceQuestion } from "../models/multipleChoicesQuestion.model.js";
 import { FillGapsQuestion } from "../models/fillGapsQuestion.model.js";
 import { logger } from "../config/logger.js";
 import { MatchingQuestion } from "../models/matchingQuestion.model.js";
@@ -78,8 +78,42 @@ const updateQuestion = async (questionId, questionBody) => {
     return { question: updatedQuestion, content: question };
 };
 
+const addAnswer = async (questionId, answerBody) => {
+    const question = await Question.findById(questionId);
+
+    if (!question) {
+        return new ApiError(httpStatus.NOT_FOUND, "Question not found!");
+    }
+
+    let updated;
+
+    switch (question.type) {
+        case questionTypes.MULITPLE_CHOICES:
+            updated = await MultipleChoiceQuestion.findOneAndUpdate(
+                { question_id: questionId },
+                { $set: answerBody }
+            );
+            break;
+        case questionTypes.FILL_GAPS:
+            updated = await FillGapsQuestion.findOneAndUpdate(
+                { question_id: questionId },
+                { $set: answerBody }
+            );
+            break;
+        case questionTypes.MATCHING:
+            updated = await MatchingQuestion.findOneAndUpdate(
+                { question_id: questionId },
+                { $set: answerBody }
+            );
+            break;
+    }
+
+    return updated;
+};
+
 export default {
     createInitQuestions,
     updateQuestion,
     updateQuestionPart,
+    addAnswer,
 };

@@ -4,9 +4,10 @@ import { ApiError } from "../utils/apiError.js";
 import questionService from "./question.service.js";
 import { Question } from "../models/question.model.js";
 import { questionTypes } from "../config/questionTypes.js";
-import { MultipleChoiceQuestion } from "../models/mulitpleChoicesQuestion.model.js";
+import { MultipleChoiceQuestion } from "../models/multipleChoicesQuestion.model.js";
 import { FillGapsQuestion } from "../models/fillGapsQuestion.model.js";
 import { MatchingQuestion } from "../models/matchingQuestion.model.js";
+import { User } from "../models/user.model.js";
 
 const createTest = async (testBody) => {
     const newTest = await Test.create(testBody);
@@ -100,4 +101,40 @@ const getTest = async (testId) => {
     return { ...test.toObject(), questions: questionsWithContent };
 };
 
-export default { createTest, addParts, getTests, getTest };
+const assignTakers = async (testId, takerIds) => {
+    const test = await Test.findById(testId);
+    if (!test) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Test not found");
+    }
+
+    let notFoundTakerIds = [];
+    takerIds.forEach(async (takerId) => {
+        if (!(await User.find({ _id: takerId, role: "taker" }))) {
+            notFoundTakerIds.push(takerId);
+        }
+    });
+
+    takerIds = takerIds.filter((takerId) => {
+        return !test.taker_ids.includes(takerId);
+    });
+
+    if (notFoundTakerIds.length > 0)
+        return new ApiError(
+            httpStatus.NOT_FOUND,
+            `Takers with id ${notFoundTakerIds.join(", ")} not found`
+        );
+
+    if (takerIds.length === 0) return test;
+
+    const updateTest = await Test.findByIdAndUpdate(
+        testId,
+        {
+            $set: { taker_ids: takerIds },
+        },
+        { new: true }
+    );
+
+    return updateTest;
+};
+
+export default { createTest, addParts, getTests, getTest, assignTakers };

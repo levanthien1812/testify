@@ -2,9 +2,6 @@ import httpStatus from "http-status";
 import testService from "../services/test.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import questionService from "../services/question.service.js";
-import { logger } from "../config/logger.js";
-import { Question } from "../models/question.model.js";
-import mongoose from "mongoose";
 
 const createTest = catchAsync(async (req, res, next) => {
     const body = { ...req.body, maker_id: req.user.id };
@@ -77,9 +74,19 @@ const getTest = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.ACCEPTED).send({ test });
 });
 
+const assignTakers = catchAsync(async (req, res, next) => {
+    const updatedTest = await testService.assignTakers(
+        req.params.testId,
+        req.body.taker_ids
+    );
+
+    return res.status(httpStatus.ACCEPTED).send({ updatedTest });
+});
+
 export default {
     createTest,
     addParts,
     getTests,
     getTest,
+    assignTakers,
 };

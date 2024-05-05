@@ -1,6 +1,15 @@
 const allRoles = {
-    taker: [],
-    maker: ["getTests", "getTest", "createTest", "addParts", "updateQuestion"],
+    taker: ["saveAnswer", "getTest"],
+    maker: [
+        "getTests",
+        "getTest",
+        "createTest",
+        "addParts",
+        "updateQuestion",
+        "addAnswer",
+        "createTaker",
+        "assignTakers",
+    ],
     admin: ["getUsers", "manageUsers"],
 };
 

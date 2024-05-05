@@ -34,7 +34,11 @@ const matchingQuestionSchema = mongoose.Schema({
                 right: mongoose.SchemaTypes.ObjectId,
             },
         ],
+        _id: false,
         select: false,
+    },
+    explaination: {
+        type: String,
     },
     __v: { type: Number, select: false },
 });
