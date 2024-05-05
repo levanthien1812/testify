@@ -69,7 +69,7 @@ const getTests = catchAsync(async (req, res, next) => {
 });
 
 const getTest = catchAsync(async (req, res, next) => {
-    const test = await testService.getTest(req.params.testId);
+    const test = await testService.getTest(req.params.testId, req.user);
 
     return res.status(httpStatus.ACCEPTED).send({ test });
 });
