@@ -71,6 +71,40 @@ const saveAnswer = async (userId, questionId, answerBody) => {
     return newAnswer;
 };
 
+const findByQuestionId = async (questionId) => {
+    const answer = await Answer.findOne({ question_id: questionId });
+
+    return answer;
+};
+
+const getMultipleChoicesAnswerByAnswerId = async (answerId) => {
+    const mcqAnswer = await MultipleChoicesAnswer.findOne({
+        answer_id: answerId,
+    });
+
+    return mcqAnswer;
+};
+
+const getFillGapsAnswerByAnswerId = async (answerId) => {
+    const mcqAnswer = await FillGapsAnswer.findOne({
+        answer_id: answerId,
+    });
+
+    return mcqAnswer;
+};
+
+const getMatchingAnswerByAnswerId = async (answerId) => {
+    const mcqAnswer = await MatchingAnswer.findOne({
+        answer_id: answerId,
+    });
+
+    return mcqAnswer;
+};
+
 export default {
     saveAnswer,
+    findByQuestionId,
+    getMultipleChoicesAnswerByAnswerId,
+    getFillGapsAnswerByAnswerId,
+    getMatchingAnswerByAnswerId,
 };

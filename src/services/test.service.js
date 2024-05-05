@@ -8,6 +8,7 @@ import { MultipleChoiceQuestion } from "../models/multipleChoicesQuestion.model.
 import { FillGapsQuestion } from "../models/fillGapsQuestion.model.js";
 import { MatchingQuestion } from "../models/matchingQuestion.model.js";
 import { User } from "../models/user.model.js";
+import answerService from "./answer.service.js";
 
 const createTest = async (testBody) => {
     const newTest = await Test.create(testBody);
@@ -63,10 +64,26 @@ const getTests = async (filter, query) => {
     return testsWithQuestions;
 };
 
-const getTest = async (testId) => {
+const getTest = async (testId, user) => {
     const test = await Test.findById(testId);
     if (!test) {
         throw new ApiError(httpStatus.NOT_FOUND, "No test found with this ID");
+    }
+
+    if (user.role === "taker") {
+        if (!test.taker_ids.includes(user.id)) {
+            throw new ApiError(
+                httpStatus.FORBIDDEN,
+                "You dont have access to this test!"
+            );
+        } else {
+            if (new Date(test.test_date) > new Date()) {
+                throw new ApiError(
+                    httpStatus.FORBIDDEN,
+                    "This test is not opened yet!"
+                );
+            }
+        }
     }
 
     const questions = await Question.find({ test_id: test.id });
@@ -78,17 +95,17 @@ const getTest = async (testId) => {
                 case questionTypes.MULITPLE_CHOICES:
                     content = await MultipleChoiceQuestion.findOne({
                         question_id: question.id,
-                    });
+                    }).select(user.role === "maker" && "+answer");
                     break;
                 case questionTypes.FILL_GAPS:
                     content = await FillGapsQuestion.findOne({
                         question_id: question.id,
-                    });
+                    }).select(user.role === "maker" && "+answer");
                     break;
                 case questionTypes.MATCHING:
                     content = await MatchingQuestion.findOne({
                         question_id: question.id,
-                    });
+                    }).select(user.role === "maker" && "+answer");
                     break;
                 default:
                     break;
