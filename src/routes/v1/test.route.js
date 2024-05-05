@@ -4,6 +4,7 @@ import testValidation from "../../validations/test.validation.js";
 import testController from "../../controllers/test.controller.js";
 import { auth } from "../../middlewares/auth.js";
 import questionController from "../../controllers/question.controller.js";
+import answerController from "../../controllers/answer.controller.js";
 
 const router = express.Router();
 
@@ -32,5 +33,14 @@ router.route("/:testId").get(auth("getTest"), testController.getTest);
 router
     .route("/:testId/questions/:questionId")
     .patch(auth("updateQuestion"), questionController.updateQuestion);
+
+router
+    .route("/:testId/questions/:questionId/answer")
+    .patch(auth("addAnswer"), questionController.addAnswer)
+    .post(auth("saveAnswer"), answerController.saveAnswer);
+
+router
+    .route("/:testId/takers")
+    .patch(auth("assignTakers"), testController.assignTakers);
 
 export default router;

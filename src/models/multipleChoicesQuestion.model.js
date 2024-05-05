@@ -24,10 +24,14 @@ const multipleChoiceQuestionSchema = mongoose.Schema({
             required: true,
         },
     ],
-    anwser: {
+    answer: {
         type: [mongoose.SchemaTypes.ObjectId],
         required: true,
         select: false,
+        _id: false,
+    },
+    explaination: {
+        type: String,
     },
     __v: { type: Number, select: false },
 });

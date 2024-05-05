@@ -73,6 +73,9 @@ const testSchema = mongoose.Schema({
         type: Boolean,
         default: false,
     },
+    taker_ids: {
+        type: [mongoose.SchemaTypes.ObjectId],
+    },
     __v: { type: Number, select: false },
 });
 

@@ -3,20 +3,25 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 
 const createUser = async (body) => {
-  const { username, name, email, password } = body;
+    if (await User.isEmailTaken(body.email)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Email already taken");
+    }
 
-  if (await User.isEmailTaken(email)) {
-    throw new ApiError(httpStatus.BAD_REQUEST, "Email already taken");
-  }
-  return User.create(body);
+    return User.create(body);
+};
+
+const getTakersByMaker = async (makerId) => {
+    const takers = await User.find({ maker_id: makerId });
+
+    return takers;
 };
 
 const getUser = async (id) => {
-  return User.findById(id);
+    return User.findById(id);
 };
 
 const getUserByEmail = async (email) => {
-  return User.findOne({ email });
+    return User.findOne({ email });
 };
 
-export default { createUser, getUser, getUserByEmail };
+export default { createUser, getUser, getUserByEmail, getTakersByMaker };
