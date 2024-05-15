@@ -4,6 +4,11 @@ import { paginate } from "./plugins/paginate.js";
 import { toJSON } from "./plugins/toJSON.js";
 
 const PartType = {
+    order: {
+        type: Number,
+        min: 1,
+        required: true,
+    },
     name: {
         type: String,
         required: true,
@@ -25,7 +30,7 @@ const testSchema = mongoose.Schema({
         type: String,
         required: true,
     },
-    test_date: {
+    datetime: {
         type: Date,
         required: true,
         validate(value) {
