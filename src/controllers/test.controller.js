@@ -6,9 +6,14 @@ import questionService from "../services/question.service.js";
 const createTest = catchAsync(async (req, res, next) => {
     const body = { ...req.body, maker_id: req.user.id };
     const test = await testService.createTest(body);
-    await questionService.createInitQuestions(test.id, body.num_questions);
+    const questions = await questionService.createInitQuestions(
+        test.id,
+        body.num_questions
+    );
 
-    return res.status(httpStatus.CREATED).send({ test });
+    return res
+        .status(httpStatus.CREATED)
+        .send({ test: { ...test.toObject(), questions: questions } });
 });
 
 function generateArrayFromQuantity(arr) {
@@ -26,19 +31,25 @@ const addParts = catchAsync(async (req, res, next) => {
 
     const questionParts = generateArrayFromQuantity(updatedTest.parts);
 
-    await Promise.all(
+    const updatedQuestions = await Promise.all(
         questionParts.map(async (partNumber, index) => {
-            const result = await questionService.updateQuestionPart(
+            const updatedQuestion = await questionService.updateQuestionPart(
                 req.params.testId,
                 index + 1,
                 partNumber
             );
 
-            return result;
+            const content = await questionService.getQuestionContent(
+                updatedQuestion.id
+            );
+
+            return { ...updatedQuestion.toObject(), content: content };
         })
     );
 
-    return res.status(httpStatus.ACCEPTED).send({ test: updatedTest });
+    return res.status(httpStatus.ACCEPTED).send({
+        test: { ...updatedTest.toObject(), questions: updatedQuestions },
+    });
 });
 
 const getTests = catchAsync(async (req, res, next) => {
@@ -48,12 +59,12 @@ const getTests = catchAsync(async (req, res, next) => {
     req.query.finish &&
         (filter.is_finished = req.query.finish === "true" ? true : false);
     req.query.date_from &&
-        (filter.test_date = {
+        (filter.datetime = {
             $gte: new Date(req.query.date_from).toISOString(),
         });
     req.query.date_to &&
-        (filter.test_date = {
-            ...filter.test_date,
+        (filter.datetime = {
+            ...filter.datetime,
             $lte: new Date(req.query.date_to).toISOString(),
         });
     req.query.search &&

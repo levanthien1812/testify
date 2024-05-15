@@ -19,7 +19,7 @@ app.use(express.json());
 
 app.use(express.urlencoded({ extended: true }));
 
-app.use(cors());
+app.use(cors({ credentials: true, origin: "http://localhost:3001" }));
 app.options("*", cors());
 
 app.use(passport.initialize());
@@ -28,7 +28,7 @@ passport.use("jwt", jwtStrategy);
 app.use("/v1", routes);
 
 app.use((req, res, next) => {
-  next(new ApiError(httpStatus.NOT_FOUND, "Not found"));
+    next(new ApiError(httpStatus.NOT_FOUND, "Not found"));
 });
 
 app.use(errorConverter);

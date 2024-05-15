@@ -32,10 +32,13 @@ const createInitQuestions = async (testId, numQuestions) => {
 };
 
 const updateQuestionPart = async (testId, order, partNumber) => {
-    await Question.findOneAndUpdate(
+    const updatedQuestion = await Question.findOneAndUpdate(
         { test_id: testId, order: order },
-        { $set: { part_number: partNumber } }
+        { $set: { part_number: partNumber } },
+        { new: true }
     );
+
+    return updatedQuestion;
 };
 
 const updateQuestion = async (questionId, questionBody) => {
@@ -111,9 +114,47 @@ const addAnswer = async (questionId, answerBody) => {
     return updated;
 };
 
+const getQuestionByTestId = async (testId) => {
+    const questions = await Question.find({ test_id: testId });
+
+    return questions;
+};
+
+const getQuestionContent = async (questionId) => {
+    const question = await Question.findById(questionId);
+
+    if (!question) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Question not found!");
+    }
+
+    let content;
+
+    switch (question.type) {
+        case questionTypes.MULITPLE_CHOICES:
+            content = await MultipleChoiceQuestion.findOne({
+                question_id: questionId,
+            });
+            break;
+        case questionTypes.FILL_GAPS:
+            content = await FillGapsQuestion.findOne({
+                question_id: questionId,
+            });
+            break;
+        case questionTypes.MATCHING:
+            content = await MatchingQuestion.findOne({
+                question_id: questionId,
+            });
+            break;
+    }
+
+    return content;
+};
+
 export default {
     createInitQuestions,
     updateQuestion,
     updateQuestionPart,
     addAnswer,
+    getQuestionByTestId,
+    getQuestionContent
 };

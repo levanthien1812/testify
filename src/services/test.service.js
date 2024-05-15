@@ -77,7 +77,7 @@ const getTest = async (testId, user) => {
                 "You dont have access to this test!"
             );
         } else {
-            if (new Date(test.test_date) > new Date()) {
+            if (new Date(test.datetime) > new Date()) {
                 throw new ApiError(
                     httpStatus.FORBIDDEN,
                     "This test is not opened yet!"
@@ -90,26 +90,7 @@ const getTest = async (testId, user) => {
 
     const questionsWithContent = await Promise.all(
         questions.map(async (question) => {
-            let content;
-            switch (question.type) {
-                case questionTypes.MULITPLE_CHOICES:
-                    content = await MultipleChoiceQuestion.findOne({
-                        question_id: question.id,
-                    }).select(user.role === "maker" && "+answer");
-                    break;
-                case questionTypes.FILL_GAPS:
-                    content = await FillGapsQuestion.findOne({
-                        question_id: question.id,
-                    }).select(user.role === "maker" && "+answer");
-                    break;
-                case questionTypes.MATCHING:
-                    content = await MatchingQuestion.findOne({
-                        question_id: question.id,
-                    }).select(user.role === "maker" && "+answer");
-                    break;
-                default:
-                    break;
-            }
+            const content = await questionService.getQuestionContent(question.id);
 
             return { ...question.toObject(), content };
         })
