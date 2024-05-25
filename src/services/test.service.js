@@ -3,51 +3,12 @@ import { Test } from "../models/test.model.js";
 import { ApiError } from "../utils/apiError.js";
 import questionService from "./question.service.js";
 import { Question } from "../models/question.model.js";
-import { questionTypes } from "../config/questionTypes.js";
-import { MultipleChoiceQuestion } from "../models/multipleChoicesQuestion.model.js";
-import { FillGapsQuestion } from "../models/fillGapsQuestion.model.js";
-import { MatchingQuestion } from "../models/matchingQuestion.model.js";
 import { User } from "../models/user.model.js";
-import answerService from "./answer.service.js";
+import { Part } from "../models/part.model.js";
 
 const createTest = async (testBody) => {
     const newTest = await Test.create(testBody);
     return newTest;
-};
-
-const addParts = async (testId, partsBody) => {
-    const test = await Test.findById(testId);
-    if (!test) {
-        throw new ApiError(httpStatus.NOT_FOUND, "Test not found");
-    }
-
-    if (partsBody.parts.length > 0) {
-        const totalPartsScore = partsBody.parts.reduce((prev, curr) => {
-            return prev + curr.score;
-        }, 0);
-
-        const totalNumQuestions = partsBody.parts.reduce((prev, curr) => {
-            return prev + curr.num_questions;
-        }, 0);
-
-        if (totalPartsScore !== test.max_score) {
-            throw new ApiError(
-                httpStatus.BAD_REQUEST,
-                "Total score of parts must be equal to test score"
-            );
-        }
-
-        if (totalNumQuestions !== test.num_questions) {
-            throw new ApiError(
-                httpStatus.BAD_REQUEST,
-                "Total number of questions of parts must be equal to test's number of questions"
-            );
-        }
-    }
-
-    test.parts = partsBody.parts;
-    await test.save();
-    return test;
 };
 
 const getTests = async (filter, query) => {
@@ -86,17 +47,37 @@ const getTest = async (testId, user) => {
         }
     }
 
-    const questions = await Question.find({ test_id: test.id });
+    let parts = await Part.find({ test_id: test.id });
+    let questions;
 
-    const questionsWithContent = await Promise.all(
-        questions.map(async (question) => {
-            const content = await questionService.getQuestionContent(question.id);
+    if (parts.length > 0) {
+        parts = await Promise.all(
+            parts.map(async (part) => {
+                let questionsByPart = await questionService.getQuestionsByPart(
+                    part.id
+                );
+                questionsByPart = await questionService.getQuestionsContent(
+                    questionsByPart
+                );
 
-            return { ...question.toObject(), content };
-        })
-    );
+                return { ...part.toObject(), questions: questionsByPart };
+            })
+        );
 
-    return { ...test.toObject(), questions: questionsWithContent };
+        return {
+            ...test.toObject(),
+            parts: parts,
+        };
+    } else {
+        questions = await questionService.getQuestionsByTestId(testId);
+        questions = await questionService.getQuestionsContent(questions);
+
+        return {
+            ...test.toObject(),
+            parts: [],
+            questions: questions,
+        };
+    }
 };
 
 const assignTakers = async (testId, takerIds) => {
@@ -135,4 +116,30 @@ const assignTakers = async (testId, takerIds) => {
     return updateTest;
 };
 
-export default { createTest, addParts, getTests, getTest, assignTakers };
+const updateTest = async (testId, testBody) => {
+    const test = await Test.findById(testId);
+
+    if (!test) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Test not found");
+    }
+
+    const updatedTest = await Test.findByIdAndUpdate(testId, testBody, {
+        new: true,
+    });
+
+    return updatedTest;
+};
+
+const findById = async (testId) => {
+    const test = await Test.findById(testId);
+    return test;
+};
+
+export default {
+    createTest,
+    getTests,
+    getTest,
+    assignTakers,
+    updateTest,
+    findById,
+};

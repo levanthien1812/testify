@@ -8,15 +8,25 @@ import { FillGapsQuestion } from "../models/fillGapsQuestion.model.js";
 import { logger } from "../config/logger.js";
 import { MatchingQuestion } from "../models/matchingQuestion.model.js";
 
-const createInitQuestions = async (testId, numQuestions) => {
+const createInitQuestions = async (testId) => {
     const test = Test.findById(testId);
     if (!test) {
         return new ApiError(httpStatus.NOT_FOUND, "Test not found");
     }
 
     let index = 0;
+    Question.findOne({ test_id: testId })
+        .sort({ order: -1 })
+        .exec((err, doc) => {
+            if (err) {
+                throw err;
+            } else {
+                index = doc.order;
+            }
+        });
+
     let questions = [];
-    while (index < numQuestions) {
+    while (index < test.num_questions) {
         let newQuestion = await Question.create({
             order: index + 1,
             test_id: testId,
@@ -114,13 +124,13 @@ const addAnswer = async (questionId, answerBody) => {
     return updated;
 };
 
-const getQuestionByTestId = async (testId) => {
+const getQuestionsByTestId = async (testId) => {
     const questions = await Question.find({ test_id: testId });
 
     return questions;
 };
 
-const getQuestionContent = async (questionId) => {
+const getQuestionContent = async (questionId, userRole) => {
     const question = await Question.findById(questionId);
 
     if (!question) {
@@ -133,21 +143,37 @@ const getQuestionContent = async (questionId) => {
         case questionTypes.MULITPLE_CHOICES:
             content = await MultipleChoiceQuestion.findOne({
                 question_id: questionId,
-            });
+            }).select(userRole === "maker" && "+answer");
             break;
         case questionTypes.FILL_GAPS:
             content = await FillGapsQuestion.findOne({
                 question_id: questionId,
-            });
+            }).select(userRole === "maker" && "+answer");
             break;
         case questionTypes.MATCHING:
             content = await MatchingQuestion.findOne({
                 question_id: questionId,
-            });
+            }).select(userRole === "maker" && "+answer");
             break;
     }
 
     return content;
+};
+
+const getQuestionsContent = async (questions, userRole) => {
+    const questionsWithContent = await Promise.all(
+        questions.map(async (question) => {
+            const content = getQuestionContent(question.id, userRole);
+
+            return { ...question.toObject(), content };
+        })
+    );
+
+    return questionsWithContent;
+};
+
+const getQuestionsByPart = async (partId) => {
+    return await Question.find({ part_id: partId });
 };
 
 export default {
@@ -155,6 +181,8 @@ export default {
     updateQuestion,
     updateQuestionPart,
     addAnswer,
-    getQuestionByTestId,
-    getQuestionContent
+    getQuestionsByTestId,
+    getQuestionContent,
+    getQuestionsContent,
+    getQuestionsByPart,
 };

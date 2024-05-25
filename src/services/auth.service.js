@@ -32,15 +32,15 @@ const refreshAuth = async (refreshToken) => {
             throw new ApiError(httpStatus.NOT_FOUND, "User not found");
         }
 
-        await refreshTokenDoc.remove();
+        await tokenService.deleteById(refreshTokenDoc._id);
         const tokens = await tokenService.generateAuthToken(user);
         return tokens;
     } catch (error) {
-        throw new ApiError(httpStatus.UNAUTHORIZED, "Please authenticate");
+        throw error;
     }
 };
 
 export default {
     login,
-    refreshAuth
+    refreshAuth,
 };

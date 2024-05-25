@@ -16,6 +16,11 @@ const fillGapsQuestionSchema = mongoose.Schema({
         select: false,
     },
     image: String,
+    num_gaps: {
+        type: Number,
+        min: 1,
+        required: true,
+    },
     answer: {
         type: [String],
         required: true,
