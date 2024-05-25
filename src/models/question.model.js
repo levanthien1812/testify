@@ -23,7 +23,7 @@ const questionSchema = mongoose.Schema({
         required: true,
         min: 0,
     },
-    part: {
+    part_id: {
         type: mongoose.SchemaTypes.ObjectId,
         ref: "Part",
         required: false,

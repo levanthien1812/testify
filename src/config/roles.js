@@ -6,7 +6,7 @@ const allRoles = {
         "createTest",
         "addPart",
         "validateParts",
-        "updateQuestion",
+        "createQuestion",
         "addAnswer",
         "createTaker",
         "assignTakers",
