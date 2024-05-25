@@ -9,7 +9,7 @@ const answerSchema = mongoose.Schema({
     question_id: {
         type: mongoose.SchemaTypes.ObjectId,
         required: true,
-        ref: "MultipleChoiceQuestion",
+        ref: "Question",
     },
     date: {
         type: Date,

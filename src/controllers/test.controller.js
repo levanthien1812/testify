@@ -6,51 +6,17 @@ import questionService from "../services/question.service.js";
 const createTest = catchAsync(async (req, res, next) => {
     const body = { ...req.body, maker_id: req.user.id };
     const test = await testService.createTest(body);
-    const questions = await questionService.createInitQuestions(
-        test.id,
-        body.num_questions
-    );
 
     return res
         .status(httpStatus.CREATED)
-        .send({ test: { ...test.toObject(), questions: questions } });
+        .send({ test: { ...test.toObject() } });
 });
 
-function generateArrayFromQuantity(arr) {
-    let result = [];
-    arr.forEach((item, index) => {
-        for (let i = 0; i < item.num_questions; i++) {
-            result.push(index + 1);
-        }
-    });
-    return result;
-}
+const updateTest = async (req, res, next) => {
+    const updatedTest = await testService.updateTest(req.body);
 
-const addParts = catchAsync(async (req, res, next) => {
-    const updatedTest = await testService.addParts(req.params.testId, req.body);
-
-    const questionParts = generateArrayFromQuantity(updatedTest.parts);
-
-    const updatedQuestions = await Promise.all(
-        questionParts.map(async (partNumber, index) => {
-            const updatedQuestion = await questionService.updateQuestionPart(
-                req.params.testId,
-                index + 1,
-                partNumber
-            );
-
-            const content = await questionService.getQuestionContent(
-                updatedQuestion.id
-            );
-
-            return { ...updatedQuestion.toObject(), content: content };
-        })
-    );
-
-    return res.status(httpStatus.ACCEPTED).send({
-        test: { ...updatedTest.toObject(), questions: updatedQuestions },
-    });
-});
+    return res.status(httpStatus.OK).send({ test: updatedTest });
+};
 
 const getTests = catchAsync(async (req, res, next) => {
     const filter = { maker_id: req.user.id };
@@ -96,8 +62,8 @@ const assignTakers = catchAsync(async (req, res, next) => {
 
 export default {
     createTest,
-    addParts,
     getTests,
     getTest,
     assignTakers,
+    updateTest,
 };

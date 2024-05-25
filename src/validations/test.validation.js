@@ -13,20 +13,7 @@ const createTest = {
         parts: Joi.array().length(0),
         code: Joi.string().allow(""),
         num_questions: Joi.number().min(1).required(),
-    }),
-};
-
-const addParts = {
-    body: Joi.object().keys({
-        parts: Joi.array().items(
-            Joi.object().keys({
-                order: Joi.number().required().min(1),
-                name: Joi.string().required(),
-                score: Joi.number().required(),
-                description: Joi.string().allow(null).allow(""),
-                num_questions: Joi.number().required().min(0),
-            })
-        ),
+        num_parts: Joi.number().min(1).default(1),
     }),
 };
 
@@ -44,6 +31,5 @@ const getTests = {
 
 export default {
     createTest,
-    addParts,
     getTests,
 };

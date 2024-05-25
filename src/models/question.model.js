@@ -23,8 +23,10 @@ const questionSchema = mongoose.Schema({
         required: true,
         min: 0,
     },
-    part_number: {
-        type: Number,
+    part: {
+        type: mongoose.SchemaTypes.ObjectId,
+        ref: "Part",
+        required: false,
     },
     type: {
         type: String,
@@ -33,6 +35,6 @@ const questionSchema = mongoose.Schema({
     __v: { type: Number, select: false },
 });
 
-questionSchema.plugin(toJSON)
+questionSchema.plugin(toJSON);
 
 export const Question = mongoose.model("Question", questionSchema);

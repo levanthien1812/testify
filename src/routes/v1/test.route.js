@@ -5,6 +5,8 @@ import testController from "../../controllers/test.controller.js";
 import { auth } from "../../middlewares/auth.js";
 import questionController from "../../controllers/question.controller.js";
 import answerController from "../../controllers/answer.controller.js";
+import partValidation from "../../validations/part.validation.js";
+import partController from "../../controllers/part.controller.js";
 
 const router = express.Router();
 
@@ -23,9 +25,16 @@ router
 router
     .route("/:testId/parts")
     .post(
-        auth("addParts"),
-        validate(testValidation.addParts),
-        testController.addParts
+        auth("addPart"),
+        validate(partValidation.addPart),
+        partController.addPart
+    );
+
+router
+    .route("/:testId/parts/validate")
+    .get(
+        auth("validateParts"),
+        partController.validateParts
     );
 
 router.route("/:testId").get(auth("getTest"), testController.getTest);

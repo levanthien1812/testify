@@ -3,28 +3,6 @@ import { testLevels } from "../config/levels.js";
 import { paginate } from "./plugins/paginate.js";
 import { toJSON } from "./plugins/toJSON.js";
 
-const PartType = {
-    order: {
-        type: Number,
-        min: 1,
-        required: true,
-    },
-    name: {
-        type: String,
-        required: true,
-    },
-    score: {
-        type: Number,
-        min: 0,
-    },
-    description: String,
-    num_questions: {
-        type: Number,
-        min: 0,
-        required: true,
-    },
-};
-
 const testSchema = mongoose.Schema({
     title: {
         type: String,
@@ -63,8 +41,10 @@ const testSchema = mongoose.Schema({
         type: String,
         enum: Object.values(testLevels),
     },
-    parts: {
-        type: [PartType],
+    num_parts: {
+        type: Number,
+        min: 1,
+        default: 1,
     },
     num_questions: {
         type: Number,
