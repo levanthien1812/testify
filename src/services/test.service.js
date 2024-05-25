@@ -57,7 +57,8 @@ const getTest = async (testId, user) => {
                     part.id
                 );
                 questionsByPart = await questionService.getQuestionsContent(
-                    questionsByPart
+                    questionsByPart,
+                    user.role
                 );
 
                 return { ...part.toObject(), questions: questionsByPart };
@@ -70,7 +71,10 @@ const getTest = async (testId, user) => {
         };
     } else {
         questions = await questionService.getQuestionsByTestId(testId);
-        questions = await questionService.getQuestionsContent(questions);
+        questions = await questionService.getQuestionsContent(
+            questions,
+            user.role
+        );
 
         return {
             ...test.toObject(),

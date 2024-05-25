@@ -32,16 +32,13 @@ router
 
 router
     .route("/:testId/parts/validate")
-    .get(
-        auth("validateParts"),
-        partController.validateParts
-    );
+    .get(auth("validateParts"), partController.validateParts);
 
 router.route("/:testId").get(auth("getTest"), testController.getTest);
 
 router
-    .route("/:testId/questions/:questionId")
-    .patch(auth("updateQuestion"), questionController.updateQuestion);
+    .route("/:testId/questions")
+    .post(auth("createQuestion"), questionController.createQuestion);
 
 router
     .route("/:testId/questions/:questionId/answer")

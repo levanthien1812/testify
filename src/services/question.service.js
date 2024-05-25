@@ -8,70 +8,66 @@ import { FillGapsQuestion } from "../models/fillGapsQuestion.model.js";
 import { logger } from "../config/logger.js";
 import { MatchingQuestion } from "../models/matchingQuestion.model.js";
 
-const createInitQuestions = async (testId) => {
-    const test = Test.findById(testId);
-    if (!test) {
-        return new ApiError(httpStatus.NOT_FOUND, "Test not found");
-    }
+// const createInitQuestions = async (testId) => {
+//     const test = Test.findById(testId);
+//     if (!test) {
+//         return new ApiError(httpStatus.NOT_FOUND, "Test not found");
+//     }
 
-    let index = 0;
-    Question.findOne({ test_id: testId })
-        .sort({ order: -1 })
-        .exec((err, doc) => {
-            if (err) {
-                throw err;
-            } else {
-                index = doc.order;
-            }
-        });
+//     let index = 0;
+//     Question.findOne({ test_id: testId })
+//         .sort({ order: -1 })
+//         .exec((err, doc) => {
+//             if (err) {
+//                 throw err;
+//             } else {
+//                 index = doc.order;
+//             }
+//         });
 
-    let questions = [];
-    while (index < test.num_questions) {
-        let newQuestion = await Question.create({
-            order: index + 1,
-            test_id: testId,
-            score: 0,
-        });
+//     let questions = [];
+//     while (index < test.num_questions) {
+//         let newQuestion = await Question.create({
+//             order: index + 1,
+//             test_id: testId,
+//             score: 0,
+//         });
 
-        if (newQuestion) questions.push(newQuestion);
+//         if (newQuestion) questions.push(newQuestion);
 
-        index++;
-    }
+//         index++;
+//     }
 
-    return questions;
-};
+//     return questions;
+// };
 
-const updateQuestionPart = async (testId, order, partNumber) => {
-    const updatedQuestion = await Question.findOneAndUpdate(
-        { test_id: testId, order: order },
-        { $set: { part_number: partNumber } },
-        { new: true }
-    );
+// const updateQuestionPart = async (testId, order, partNumber) => {
+//     const updatedQuestion = await Question.findOneAndUpdate(
+//         { test_id: testId, order: order },
+//         { $set: { part_number: partNumber } },
+//         { new: true }
+//     );
 
-    return updatedQuestion;
-};
+//     return updatedQuestion;
+// };
 
-const updateQuestion = async (questionId, questionBody) => {
-    const updatedQuestion = await Question.findOneAndUpdate(
-        { _id: questionId },
-        { $set: questionBody },
-        { new: true }
-    );
-
-    if (!questionBody.content) return updatedQuestion;
+const createQuestion = async (questionBody) => {
+    const newQuestion = await Question.create(questionBody);
 
     const questionContent = {
         ...questionBody.content,
-        question_id: questionId,
+        question_id: newQuestion._id,
     };
 
-    let question;
+    let questionContentDoc;
     switch (questionBody.type) {
         case questionTypes.MULITPLE_CHOICES:
-            question = await MultipleChoiceQuestion.create(questionContent);
+            questionContentDoc = await MultipleChoiceQuestion.create(
+                questionContent
+            );
             break;
         case questionTypes.FILL_GAPS:
-            question = await FillGapsQuestion.create(questionContent);
+            questionContentDoc = await FillGapsQuestion.create(questionContent);
             break;
         case questionTypes.MATCHING:
             const { left_items: leftItems, right_items: rightItems } =
@@ -82,13 +78,13 @@ const updateQuestion = async (questionId, questionBody) => {
                     "Number of left items and right items must be the same "
                 );
             }
-            question = await MatchingQuestion.create(questionContent);
+            questionContentDoc = await MatchingQuestion.create(questionContent);
             break;
         default:
             throw new ApiError(httpStatus.BAD_REQUEST, "Invalid question type");
     }
 
-    return { question: updatedQuestion, content: question };
+    return { question: newQuestion, content: questionContentDoc };
 };
 
 const addAnswer = async (questionId, answerBody) => {
@@ -163,7 +159,7 @@ const getQuestionContent = async (questionId, userRole) => {
 const getQuestionsContent = async (questions, userRole) => {
     const questionsWithContent = await Promise.all(
         questions.map(async (question) => {
-            const content = getQuestionContent(question.id, userRole);
+            const content = await getQuestionContent(question.id, userRole);
 
             return { ...question.toObject(), content };
         })
@@ -177,9 +173,7 @@ const getQuestionsByPart = async (partId) => {
 };
 
 export default {
-    createInitQuestions,
-    updateQuestion,
-    updateQuestionPart,
+    createQuestion,
     addAnswer,
     getQuestionsByTestId,
     getQuestionContent,
