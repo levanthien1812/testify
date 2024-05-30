@@ -35,8 +35,6 @@ const validateParts = async (testId) => {
         },
     ]);
 
-    console.log(calculateTotalPartsScores)
-
     const totalScores =
         calculateTotalPartsScores.length > 0
             ? calculateTotalPartsScores[0].score

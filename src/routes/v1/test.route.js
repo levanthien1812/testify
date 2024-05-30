@@ -47,6 +47,11 @@ router
 
 router
     .route("/:testId/takers")
-    .patch(auth("assignTakers"), testController.assignTakers);
+    .patch(auth("assignTakers"), testController.assignTakers)
+    .post(auth("createTakersForTest"), testController.createTakers);
+
+router
+    .route("/:testId/takers/available")
+    .get(auth("getAvailableTakers"), testController.getAvailableTakers);
 
 export default router;

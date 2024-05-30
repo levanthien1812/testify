@@ -58,9 +58,7 @@ const testSchema = mongoose.Schema({
         type: Boolean,
         default: false,
     },
-    taker_ids: {
-        type: [mongoose.SchemaTypes.ObjectId],
-    },
+    taker_ids: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
     __v: { type: Number, select: false },
 });
 

@@ -8,7 +8,7 @@ const userSchema = mongoose.Schema(
     {
         username: {
             type: String,
-            required: true,
+            required: false,
             trim: true,
         },
         name: {
@@ -30,7 +30,7 @@ const userSchema = mongoose.Schema(
         },
         password: {
             type: String,
-            required: true,
+            required: false,
             trim: true,
             minLength: 8,
             validate(value) {

@@ -7,7 +7,8 @@ const createUser = async (body) => {
         throw new ApiError(httpStatus.BAD_REQUEST, "Email already taken");
     }
 
-    return User.create(body);
+    const newUser = await User.create(body);
+    return newUser;
 };
 
 const getTakersByMaker = async (makerId) => {

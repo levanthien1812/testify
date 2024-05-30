@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import testService from "../services/test.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import questionService from "../services/question.service.js";
+import userService from "../services/user.service.js";
 
 const createTest = catchAsync(async (req, res, next) => {
     const body = { ...req.body, maker_id: req.user.id };
@@ -60,10 +61,46 @@ const assignTakers = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.ACCEPTED).send({ updatedTest });
 });
 
+const createTakers = catchAsync(async (req, res, next) => {
+    const { testId } = req.params;
+    const user = req.user;
+    const takersBody = req.body.takersBody.takers;
+
+    const newTakers = await Promise.all(
+        takersBody.map(async (takerBody) => {
+            const newTaker = await userService.createUser({
+                ...takerBody,
+                maker_id: user._id,
+                role: "taker",
+            });
+
+            return newTaker;
+        })
+    );
+
+    const updatedTest = await testService.assignTakers(
+        testId,
+        newTakers.map((taker) => taker._id)
+    );
+
+    return res.status(httpStatus.ACCEPTED).send({ test: updatedTest });
+});
+
+const getAvailableTakers = catchAsync(async (req, res, next) => {
+    const takers = await testService.getAvailableTakers(
+        req.params.testId,
+        req.user._id
+    );
+
+    return res.status(httpStatus.OK).send({ takers: takers });
+});
+
 export default {
     createTest,
     getTests,
     getTest,
     assignTakers,
     updateTest,
+    createTakers,
+    getAvailableTakers,
 };
