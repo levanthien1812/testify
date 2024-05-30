@@ -26,7 +26,8 @@ const getTests = async (filter, query) => {
 };
 
 const getTest = async (testId, user) => {
-    const test = await Test.findById(testId);
+    const test = await Test.findById(testId).populate("taker_ids");
+
     if (!test) {
         throw new ApiError(httpStatus.NOT_FOUND, "No test found with this ID");
     }
@@ -112,12 +113,26 @@ const assignTakers = async (testId, takerIds) => {
     const updateTest = await Test.findByIdAndUpdate(
         testId,
         {
-            $set: { taker_ids: takerIds },
+            $set: {
+                taker_ids: [...test.taker_ids, ...takerIds],
+            },
         },
         { new: true }
     );
 
     return updateTest;
+};
+
+const getAvailableTakers = async (testId, userId) => {
+    const test = await Test.findById(testId);
+    const addedTakerIds = test.taker_ids;
+    const takers = await User.find({
+        maker_id: userId,
+        role: "taker",
+        _id: { $nin: addedTakerIds },
+    });
+
+    return takers;
 };
 
 const updateTest = async (testId, testBody) => {
@@ -146,4 +161,5 @@ export default {
     assignTakers,
     updateTest,
     findById,
+    getAvailableTakers,
 };

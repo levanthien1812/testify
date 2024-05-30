@@ -7,15 +7,22 @@ const getUsers = async (req, res, next) => {
     return res.status(httpStatus.ACCEPTED).send({ users });
 };
 
-const createTaker = async (req, res, next) => {
-    const takerBody = {
-        ...req.body,
-        maker_id: req.user.id,
-        role: "taker",
-    };
+const createTakers = async (req, res, next) => {
+    const takersBody = req.body.takers.map((taker) => {
+        return {
+            ...taker,
+            maker_id: req.user.id,
+            role: "taker",
+        };
+    });
 
-    const newTaker = await userService.createUser(takerBody);
-    return res.status(httpStatus.CREATED).send({ taker: newTaker });
+    const newTakers = await Promise.all(
+        takersBody.map(async (takerBody) => {
+            return await userService.createUser(takerBody);
+        })
+    );
+    
+    return res.status(httpStatus.CREATED).send({ takers: newTakers });
 };
 
 const getTakersByMaker = async (req, res, next) => {
@@ -24,4 +31,4 @@ const getTakersByMaker = async (req, res, next) => {
     return res.status(httpStatus.ACCEPTED).send({ takers });
 };
 
-export default { getUsers, createTaker, getTakersByMaker };
+export default { getUsers, createTakers, getTakersByMaker };
