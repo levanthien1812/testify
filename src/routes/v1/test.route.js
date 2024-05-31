@@ -41,6 +41,10 @@ router
     .post(auth("createQuestion"), questionController.createQuestion);
 
 router
+    .route("/:testId/questions/validate")
+    .get(auth("validateQuestions"), questionController.validateQuestions);
+
+router
     .route("/:testId/questions/:questionId/answer")
     .patch(auth("addAnswer"), questionController.addAnswer)
     .post(auth("saveAnswer"), answerController.saveAnswer);
