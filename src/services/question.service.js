@@ -7,49 +7,7 @@ import { MultipleChoiceQuestion } from "../models/multipleChoicesQuestion.model.
 import { FillGapsQuestion } from "../models/fillGapsQuestion.model.js";
 import { logger } from "../config/logger.js";
 import { MatchingQuestion } from "../models/matchingQuestion.model.js";
-
-// const createInitQuestions = async (testId) => {
-//     const test = Test.findById(testId);
-//     if (!test) {
-//         return new ApiError(httpStatus.NOT_FOUND, "Test not found");
-//     }
-
-//     let index = 0;
-//     Question.findOne({ test_id: testId })
-//         .sort({ order: -1 })
-//         .exec((err, doc) => {
-//             if (err) {
-//                 throw err;
-//             } else {
-//                 index = doc.order;
-//             }
-//         });
-
-//     let questions = [];
-//     while (index < test.num_questions) {
-//         let newQuestion = await Question.create({
-//             order: index + 1,
-//             test_id: testId,
-//             score: 0,
-//         });
-
-//         if (newQuestion) questions.push(newQuestion);
-
-//         index++;
-//     }
-
-//     return questions;
-// };
-
-// const updateQuestionPart = async (testId, order, partNumber) => {
-//     const updatedQuestion = await Question.findOneAndUpdate(
-//         { test_id: testId, order: order },
-//         { $set: { part_number: partNumber } },
-//         { new: true }
-//     );
-
-//     return updatedQuestion;
-// };
+import partService from "./part.service.js";
 
 const createQuestion = async (questionBody) => {
     const newQuestion = await Question.create(questionBody);
@@ -168,6 +126,51 @@ const getQuestionsContent = async (questions, userRole) => {
     return questionsWithContent;
 };
 
+const validateQuestions = async (testId) => {
+    const test = await Test.findById(testId);
+    let validated;
+
+    if (test.num_parts === 1) {
+        const questions = await Question.find({ test_id: testId });
+
+        const totalQuestionsScores = questions.reduce(
+            (acc, question) => acc + question.score,
+            0
+        );
+
+        if (totalQuestionsScores !== test.max_score) {
+            throw new ApiError(
+                httpStatus.BAD_REQUEST,
+                "Total questions score must be equal to test score"
+            );
+        } else {
+            validated = true;
+        }
+    } else {
+        const parts = await partService.getPartsByTestId(testId);
+
+        validated = parts.reduce(async (acc, part) => {
+            const questions = await Question.find({ part_id: part.id });
+
+            const totalQuestionsScores = questions.reduce(
+                (acc, question) => acc + question.score,
+                0
+            );
+
+            if (totalQuestionsScores !== part.score) {
+                throw new ApiError(
+                    httpStatus.BAD_REQUEST,
+                    `Total questions score of part ${part.name} is not equal to part score`
+                );
+            }
+
+            return acc && true;
+        }, true);
+    }
+
+    return validated;
+};
+
 const getQuestionsByPart = async (partId) => {
     return await Question.find({ part_id: partId });
 };
@@ -179,4 +182,5 @@ export default {
     getQuestionContent,
     getQuestionsContent,
     getQuestionsByPart,
+    validateQuestions,
 };

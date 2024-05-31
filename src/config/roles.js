@@ -12,6 +12,7 @@ const allRoles = {
         "assignTakers",
         "createTakersForTest",
         "getAvailableTakers",
+        "validateQuestions",
     ],
     admin: ["getUsers", "manageUsers"],
 };

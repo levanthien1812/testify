@@ -50,4 +50,9 @@ const validateParts = async (testId) => {
     return true;
 };
 
-export default { addPart, validateParts };
+const getPartsByTestId = async (testId) => {
+    const parts = await Part.find({ test_id: testId });
+    return parts;
+};
+
+export default { addPart, validateParts, getPartsByTestId };

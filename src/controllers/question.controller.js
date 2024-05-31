@@ -25,7 +25,13 @@ const addAnswer = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.ACCEPTED).send({ updated });
 });
 
+const validateQuestions = catchAsync(async (req, res, next) => {
+    const validated = await questionService.validateQuestions(req.params.testId);
+    return res.status(httpStatus.ACCEPTED).send({ validated });
+});
+
 export default {
     createQuestion,
     addAnswer,
+    validateQuestions,
 };
