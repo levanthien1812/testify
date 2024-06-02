@@ -16,6 +16,15 @@ const createQuestion = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.ACCEPTED).send({ question, content });
 });
 
+const updateQuestion = catchAsync(async (req, res, next) => {
+    const { question, content } = await questionService.updateQuestion(
+        req.params.questionId,
+        req.body
+    );
+
+    return res.status(httpStatus.ACCEPTED).send({ question, content });
+});
+
 const addAnswer = catchAsync(async (req, res, next) => {
     const updated = await questionService.addAnswer(
         req.params.questionId,
@@ -26,7 +35,9 @@ const addAnswer = catchAsync(async (req, res, next) => {
 });
 
 const validateQuestions = catchAsync(async (req, res, next) => {
-    const validated = await questionService.validateQuestions(req.params.testId);
+    const validated = await questionService.validateQuestions(
+        req.params.testId
+    );
     return res.status(httpStatus.ACCEPTED).send({ validated });
 });
 
@@ -34,4 +45,5 @@ export default {
     createQuestion,
     addAnswer,
     validateQuestions,
+    updateQuestion,
 };

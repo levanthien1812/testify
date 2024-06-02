@@ -14,9 +14,13 @@ const createTest = catchAsync(async (req, res, next) => {
 });
 
 const updateTest = async (req, res, next) => {
-    const updatedTest = await testService.updateTest(req.body);
+    const updatedTest = await testService.updateTest(
+        req.params.testId,
+        req.body,
+        { new: true }
+    );
 
-    return res.status(httpStatus.OK).send({ test: updatedTest });
+    return res.status(httpStatus.ACCEPTED).send({ test: updatedTest });
 };
 
 const getTests = catchAsync(async (req, res, next) => {

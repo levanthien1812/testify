@@ -17,10 +17,16 @@ const addPart = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ part: newPart });
 });
 
+const updatePart = catchAsync(async (req, res, next) => {
+    const updatedPart = await partService.updatePart(req.params.partId, req.body);
+
+    return res.status(httpStatus.OK).send({ part: updatedPart });
+});
+
 const validateParts = catchAsync(async (req, res, next) => {
     const validated = await partService.validateParts(req.params.testId);
 
     return res.status(httpStatus.ACCEPTED).send({ validated });
 });
 
-export default { addPart, validateParts };
+export default { addPart, validateParts, updatePart };

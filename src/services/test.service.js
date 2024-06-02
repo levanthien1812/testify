@@ -142,9 +142,13 @@ const updateTest = async (testId, testBody) => {
         throw new ApiError(httpStatus.NOT_FOUND, "Test not found");
     }
 
-    const updatedTest = await Test.findByIdAndUpdate(testId, testBody, {
-        new: true,
-    });
+    const updatedTest = await Test.findByIdAndUpdate(
+        testId,
+        { $set: testBody },
+        {
+            new: true,
+        }
+    );
 
     return updatedTest;
 };
