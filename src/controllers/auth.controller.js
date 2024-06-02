@@ -18,6 +18,13 @@ const login = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).json({ user, tokens });
 });
 
+const loginGoogle = catchAsync(async (req, res, next) => {
+    const user = await authService.loginGoogle(req.body);
+    const tokens = await tokenService.generateAuthToken(user);
+
+    return res.status(httpStatus.OK).json({ user, tokens });
+});
+
 const refresh = catchAsync(async (req, res, next) => {
     const tokens = await authService.refreshAuth(req.body.token);
 
@@ -25,6 +32,7 @@ const refresh = catchAsync(async (req, res, next) => {
 });
 
 export default {
+    loginGoogle,
     register,
     login,
     refresh,

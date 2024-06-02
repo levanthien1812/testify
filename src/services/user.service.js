@@ -22,7 +22,7 @@ const getUser = async (id) => {
 };
 
 const getUserByEmail = async (email) => {
-    return User.findOne({ email });
+    return await User.findOne({ email });
 };
 
 export default { createUser, getUser, getUserByEmail, getTakersByMaker };
