@@ -55,4 +55,18 @@ const getPartsByTestId = async (testId) => {
     return parts;
 };
 
-export default { addPart, validateParts, getPartsByTestId };
+const updatePart = async (partId, partBody) => {
+    const part = await Part.findById(partId);
+
+    if (!part) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Part not found");
+    }
+
+    const updatedPart = await Part.findByIdAndUpdate(partId, partBody, {
+        new: true,
+    });
+
+    return updatedPart;
+}
+
+export default { addPart, validateParts, getPartsByTestId, updatePart };

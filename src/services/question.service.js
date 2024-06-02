@@ -9,16 +9,9 @@ import { logger } from "../config/logger.js";
 import { MatchingQuestion } from "../models/matchingQuestion.model.js";
 import partService from "./part.service.js";
 
-const createQuestion = async (questionBody) => {
-    const newQuestion = await Question.create(questionBody);
-
-    const questionContent = {
-        ...questionBody.content,
-        question_id: newQuestion._id,
-    };
-
+const createQuestionContent = async (questionType, questionContent) => {
     let questionContentDoc;
-    switch (questionBody.type) {
+    switch (questionType) {
         case questionTypes.MULITPLE_CHOICES:
             questionContentDoc = await MultipleChoiceQuestion.create(
                 questionContent
@@ -42,7 +35,129 @@ const createQuestion = async (questionBody) => {
             throw new ApiError(httpStatus.BAD_REQUEST, "Invalid question type");
     }
 
+    return questionContentDoc;
+};
+
+const updateQuestionContent = async (
+    questionId,
+    questionType,
+    questionContent
+) => {
+    let updatedQuestionContentDoc;
+    switch (questionType) {
+        case questionTypes.MULITPLE_CHOICES:
+            updatedQuestionContentDoc =
+                await MultipleChoiceQuestion.findOneAndUpdate(
+                    { question_id: questionId },
+                    questionContent,
+                    { new: true }
+                );
+            break;
+        case questionTypes.FILL_GAPS:
+            updatedQuestionContentDoc = await FillGapsQuestion.findOneAndUpdate(
+                { question_id: questionId },
+                questionContent,
+                { new: true }
+            );
+            break
+        case questionTypes.MATCHING:
+            const { left_items: leftItems, right_items: rightItems } =
+                questionContent;
+            if (leftItems.length !== rightItems.length) {
+                throw new ApiError(
+                    httpStatus.BAD_REQUEST,
+                    "Number of left items and right items must be the same "
+                );
+            }
+            updatedQuestionContentDoc = await MatchingQuestion.findOneAndUpdate(
+                { question_id: questionId },
+                questionContent,
+                { new: true }
+            );
+            break;
+    }
+
+    return updatedQuestionContentDoc;
+};
+
+const deleteQuestionContent = async (questionId, questionType) => {
+    switch (questionType) {
+        case questionTypes.MULITPLE_CHOICES:
+            await MultipleChoiceQuestion.findOneAndDelete({
+                question_id: questionId,
+            });
+
+            break;
+        case questionTypes.FILL_GAPS:
+            await FillGapsQuestion.findOneAndDelete({
+                question_id: questionId,
+            });
+            break;
+        case questionTypes.MATCHING:
+            await MatchingQuestion.findOneAndDelete({
+                question_id: questionId,
+            });
+            break;
+    }
+};
+
+const createQuestion = async (questionBody) => {
+    const newQuestion = await Question.create(questionBody);
+
+    const questionContent = {
+        ...questionBody.content,
+        question_id: newQuestion._id,
+    };
+
+    const questionContentDoc = await createQuestionContent(
+        questionBody.type,
+        questionContent
+    );
+
     return { question: newQuestion, content: questionContentDoc };
+};
+
+const updateQuestion = async (questionId, questionBody) => {
+    const question = await Question.findById(questionId);
+
+    if (!question) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Question not found!");
+    }
+
+    const updatedQuestion = await Question.findByIdAndUpdate(
+        questionId,
+        questionBody,
+        { new: true }
+    );
+
+    if (question.type !== questionBody.type) {
+        // Delete previous question content doc
+        await deleteQuestionContent(questionId, question.type);
+
+        // Create new question content doc
+        const questionContent = {
+            ...questionBody.content,
+            question_id: question._id,
+        };
+
+        const questionContentDoc = await createQuestionContent(
+            questionBody.type,
+            questionContent
+        );
+
+        return { question: updatedQuestion, content: questionContentDoc };
+    } else {
+        const updatedQuestionContentDoc = await updateQuestionContent(
+            questionId,
+            question.type,
+            questionBody.content
+        );
+
+        return {
+            question: updatedQuestion,
+            content: updatedQuestionContentDoc,
+        };
+    }
 };
 
 const addAnswer = async (questionId, answerBody) => {
@@ -177,6 +292,7 @@ const getQuestionsByPart = async (partId) => {
 
 export default {
     createQuestion,
+    updateQuestion,
     addAnswer,
     getQuestionsByTestId,
     getQuestionContent,

@@ -22,6 +22,12 @@ router
         validate(testValidation.getTests),
         testController.getTests
     );
+
+router
+    .route("/:testId")
+    .get(auth("getTest"), testController.getTest)
+    .patch(auth("updateTest"), testController.updateTest);
+
 router
     .route("/:testId/parts")
     .post(
@@ -31,14 +37,24 @@ router
     );
 
 router
+    .route("/:testId/parts/:partId")
+    .patch(
+        auth("updatePart"),
+        validate(partValidation.addPart),
+        partController.updatePart
+    );
+
+router
     .route("/:testId/parts/validate")
     .get(auth("validateParts"), partController.validateParts);
-
-router.route("/:testId").get(auth("getTest"), testController.getTest);
 
 router
     .route("/:testId/questions")
     .post(auth("createQuestion"), questionController.createQuestion);
+
+router
+    .route("/:testId/questions/:questionId")
+    .patch(auth("updateQuestion"), questionController.updateQuestion);
 
 router
     .route("/:testId/questions/validate")
