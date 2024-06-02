@@ -25,6 +25,7 @@
     "mysql2": "^3.9.7",
     "nodemon": "^3.1.0",
     "passport": "^0.7.0",
+    "passport-google-oidc": "^0.1.0",
     "passport-jwt": "^4.0.1",
     "path": "^0.12.7",
     "url": "^0.11.3",

@@ -40,7 +40,18 @@ const refreshAuth = async (refreshToken) => {
     }
 };
 
+const loginGoogle = async (loginGoogleBody) => {
+    const { name, email } = loginGoogleBody;
+    const user = await userService.getUserByEmail(email);
+    if (user) {
+        return user;
+    } else {
+        throw new ApiError(httpStatus.NOT_FOUND, "Taker not found");
+    }
+};
+
 export default {
     login,
     refreshAuth,
+    loginGoogle,
 };

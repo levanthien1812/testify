@@ -13,6 +13,7 @@ router.post(
 );
 
 router.post("/login", validate(authValidation.login), authController.login);
+router.post("/loginGoogle", validate(authValidation.loginGoogle), authController.loginGoogle);
 router.post("/refresh", authController.refresh);
 
 export default router;
