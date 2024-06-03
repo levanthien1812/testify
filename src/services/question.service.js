@@ -59,7 +59,7 @@ const updateQuestionContent = async (
                 questionContent,
                 { new: true }
             );
-            break
+            break;
         case questionTypes.MATCHING:
             const { left_items: leftItems, right_items: rightItems } =
                 questionContent;
@@ -264,23 +264,23 @@ const validateQuestions = async (testId) => {
     } else {
         const parts = await partService.getPartsByTestId(testId);
 
-        validated = parts.reduce(async (acc, part) => {
-            const questions = await Question.find({ part_id: part.id });
+        for (let i = 0; i < parts.length; i++) {
+            const questions = await Question.find({ part_id: parts[i].id });
 
             const totalQuestionsScores = questions.reduce(
-                (acc, question) => acc + question.score,
+                (scores, question) => scores + question.score,
                 0
             );
 
-            if (totalQuestionsScores !== part.score) {
+            if (totalQuestionsScores !== parts[i].score) {
                 throw new ApiError(
                     httpStatus.BAD_REQUEST,
-                    `Total questions score of part ${part.name} is not equal to part score`
+                    `Total questions score of part ${parts[i].name} is not equal to part score`
                 );
             }
+        }
 
-            return acc && true;
-        }, true);
+        validated = true;
     }
 
     return validated;
