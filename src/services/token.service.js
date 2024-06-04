@@ -141,6 +141,6 @@ export default {
     saveToken,
     generateAuthToken,
     generateResetPasswordToken,
-  generateVerifyEmailToken,
-    deleteById
+    generateVerifyEmailToken,
+    deleteById,
 };
