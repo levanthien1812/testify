@@ -4,6 +4,7 @@ import { ApiError } from "../utils/apiError.js";
 import userService from "./user.service.js";
 import tokenService from "./token.service.js";
 import tokenTypes from "../config/tokens.js";
+import { OAuth2Client } from "google-auth-library";
 
 const login = async (body) => {
     const user = await userService.getUserByEmail(body.email);
@@ -40,8 +41,20 @@ const refreshAuth = async (refreshToken) => {
     }
 };
 
-const loginGoogle = async (loginGoogleBody) => {
-    const { name, email } = loginGoogleBody;
+const loginGoogle = async (token) => {
+    const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+    const ticket = await client.verifyIdToken({
+        idToken: token,
+        audience: process.env.GOOGLE_CLIENT_ID,
+    });
+
+    const payload = ticket.getPayload();
+    if (!payload) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid token");
+    }
+
+    const { email } = payload;
     const user = await userService.getUserByEmail(email);
     if (user) {
         return user;

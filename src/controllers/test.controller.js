@@ -24,7 +24,10 @@ const updateTest = async (req, res, next) => {
 };
 
 const getTests = catchAsync(async (req, res, next) => {
-    const filter = { maker_id: req.user.id };
+    const filter =
+        req.user.role === "maker"
+            ? { maker_id: req.user.id }
+            : { taker_ids: req.user.id };
     const query = {};
 
     req.query.finish &&
