@@ -3,6 +3,7 @@ import authService from "../services/auth.service.js";
 import tokenService from "../services/token.service.js";
 import userService from "../services/user.service.js";
 import catchAsync from "../utils/catchAsync.js";
+import { auth } from "google-auth-library";
 
 const register = catchAsync(async (req, res) => {
     const user = await userService.createUser(req.body);
@@ -31,9 +32,16 @@ const refresh = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ tokens });
 });
 
+const logout = catchAsync(async (req, res, next) => {
+    await authService.logout(req.body.refreshToken);
+
+    return res.status(httpStatus.OK).send();
+});
+
 export default {
     loginGoogle,
     register,
     login,
     refresh,
+    logout,
 };

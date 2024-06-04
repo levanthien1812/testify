@@ -5,6 +5,7 @@ import userService from "./user.service.js";
 import tokenService from "./token.service.js";
 import tokenTypes from "../config/tokens.js";
 import { OAuth2Client } from "google-auth-library";
+import { Token } from "../models/token.model.js";
 
 const login = async (body) => {
     const user = await userService.getUserByEmail(body.email);
@@ -63,8 +64,22 @@ const loginGoogle = async (token) => {
     }
 };
 
+const logout = async (refreshToken) => {
+    const refreshTokenDoc = await Token.findOne({
+        token: refreshToken,
+        type: tokenTypes.REFRESH,
+    });
+    if (!refreshTokenDoc) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Refresh token not found");
+    }
+
+    await Token.findByIdAndDelete(refreshTokenDoc._id);
+    return;
+};
+
 export default {
     login,
     refreshAuth,
     loginGoogle,
+    logout,
 };

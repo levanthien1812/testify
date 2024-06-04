@@ -15,5 +15,6 @@ router.post(
 router.post("/login", validate(authValidation.login), authController.login);
 router.post("/loginGoogle", validate(authValidation.loginGoogle), authController.loginGoogle);
 router.post("/refresh", authController.refresh);
+router.post("/logout", auth(), authController.logout);
 
 export default router;
