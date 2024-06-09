@@ -1,5 +1,5 @@
 const allRoles = {
-    taker: ["saveAnswer", "getTest", "getTests"],
+    taker: ["createAnswers", "getTest", "getTests"],
     maker: [
         "getTests",
         "getTest",

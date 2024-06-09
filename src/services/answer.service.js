@@ -11,15 +11,29 @@ import { MatchingQuestion } from "../models/matchingQuestion.model.js";
 import { sameItems } from "../utils/compareArray.js";
 import { MatchingAnswer } from "../models/matchingAnswer.model.js";
 
-const saveAnswer = async (userId, questionId, answerBody) => {
-    const question = await Question.findById(questionId);
+const createAnswers = async (userId, answersBody) => {
+    const answers = [];
+
+    for (const answerBody of answersBody) {
+        const newAnswer = await createAnswer(
+            userId,
+            answerBody
+        );
+        answers.push(newAnswer);
+    }
+
+    return answers;
+};
+
+const createAnswer = async (userId, answerBody) => {
+    const question = await Question.findById(answerBody.question_id);
 
     if (!question) {
         throw new ApiError(httpStatus.NOT_FOUND, "Question not found!");
     }
 
     const newAnswer = await Answer.create({
-        question_id: questionId,
+        question_id: answerBody.question_id,
         user_id: userId,
         date: new Date(),
     });
@@ -34,23 +48,21 @@ const saveAnswer = async (userId, questionId, answerBody) => {
                 answerContent
             );
             questionContentQuery = MultipleChoiceQuestion.findOne({
-                question_id: questionId,
+                question_id: answerBody.question_id,
             });
             break;
         case questionTypes.FILL_GAPS:
             answerContentDoc = await FillGapsAnswer.create(answerContent);
             questionContentQuery = FillGapsQuestion.findOne({
-                question_id: questionId,
+                question_id: answerBody.question_id,
             });
             break;
         case questionTypes.MATCHING:
             answerContentDoc = await MatchingAnswer.create(answerContent);
             questionContentQuery = MatchingQuestion.findOne({
-                question_id: questionId,
+                question_id: answerBody.question_id,
             });
             break;
-        default:
-            throw new ApiError(httpStatus.BAD_REQUEST, "Invalid question type");
     }
 
     const questionContentDoc = await questionContentQuery.select("answer");
@@ -102,7 +114,7 @@ const getMatchingAnswerByAnswerId = async (answerId) => {
 };
 
 export default {
-    saveAnswer,
+    createAnswers,
     findByQuestionId,
     getMultipleChoicesAnswerByAnswerId,
     getFillGapsAnswerByAnswerId,
