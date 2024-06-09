@@ -63,7 +63,10 @@ router
 router
     .route("/:testId/questions/:questionId/answer")
     .patch(auth("addAnswer"), questionController.addAnswer)
-    .post(auth("saveAnswer"), answerController.saveAnswer);
+
+router
+    .route("/:testId/answers")
+    .post(auth("createAnswers"), answerController.createAnswers);
 
 router
     .route("/:testId/takers")

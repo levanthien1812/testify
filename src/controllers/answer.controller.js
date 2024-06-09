@@ -2,13 +2,12 @@ import httpStatus from "http-status";
 import answerService from "../services/answer.service.js";
 import catchAsync from "../utils/catchAsync.js";
 
-const saveAnswer = catchAsync(async (req, res, next) => {
-    const newAnswer = await answerService.saveAnswer(
+const createAnswers = catchAsync(async (req, res, next) => {
+    const newAnswers = await answerService.createAnswers(
         req.user.id,
-        req.params.questionId,
-        req.body
+        req.body.answers
     );
-    return res.status(httpStatus.CREATED).send({ answer: newAnswer });
+    return res.status(httpStatus.CREATED).send({ answers: newAnswers });
 });
 
-export default { saveAnswer };
+export default { createAnswers };

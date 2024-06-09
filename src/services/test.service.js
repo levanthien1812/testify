@@ -33,17 +33,18 @@ const getTest = async (testId, user) => {
     }
 
     if (user.role === "taker") {
-        if (!test.taker_ids.includes(user.id)) {
+        if (!test.taker_ids.map((taker) => taker.id).includes(user.id)) {
             throw new ApiError(
                 httpStatus.FORBIDDEN,
                 "You dont have access to this test!"
             );
         } else {
-            if (new Date(test.datetime) > new Date()) {
-                throw new ApiError(
-                    httpStatus.FORBIDDEN,
-                    "This test is not opened yet!"
-                );
+            if (new Date(test.datetime).getTime() - new Date().getTime() > 0) {
+                return {
+                    ...test.toObject(),
+                    parts: [],
+                    questions: [],
+                };
             }
         }
     }
