@@ -14,6 +14,7 @@ const createTest = {
         code: Joi.string().allow(""),
         num_questions: Joi.number().min(1).required(),
         num_parts: Joi.number().min(1).default(1),
+        close_time: Joi.date().optional(), 
     }),
 };
 

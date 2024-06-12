@@ -15,10 +15,7 @@ const createAnswers = async (userId, answersBody) => {
     const answers = [];
 
     for (const answerBody of answersBody) {
-        const newAnswer = await createAnswer(
-            userId,
-            answerBody
-        );
+        const newAnswer = await createAnswer(userId, answerBody);
         answers.push(newAnswer);
     }
 
@@ -40,32 +37,30 @@ const createAnswer = async (userId, answerBody) => {
 
     const answerContent = { answer_id: newAnswer.id, ...answerBody };
     let answerContentDoc;
-    let questionContentQuery;
+    let questionContentDoc;
 
     switch (question.type) {
         case questionTypes.MULITPLE_CHOICES:
             answerContentDoc = await MultipleChoicesAnswer.create(
                 answerContent
             );
-            questionContentQuery = MultipleChoiceQuestion.findOne({
+            questionContentDoc = await MultipleChoiceQuestion.findOne({
                 question_id: answerBody.question_id,
-            });
+            }).select("answer");
             break;
         case questionTypes.FILL_GAPS:
             answerContentDoc = await FillGapsAnswer.create(answerContent);
-            questionContentQuery = FillGapsQuestion.findOne({
+            questionContentDoc = await FillGapsQuestion.findOne({
                 question_id: answerBody.question_id,
-            });
+            }).select("answer");
             break;
         case questionTypes.MATCHING:
             answerContentDoc = await MatchingAnswer.create(answerContent);
-            questionContentQuery = MatchingQuestion.findOne({
+            questionContentDoc = await MatchingQuestion.findOne({
                 question_id: answerBody.question_id,
-            });
+            }).select("answer");
             break;
     }
-
-    const questionContentDoc = await questionContentQuery.select("answer");
 
     if (
         sameItems(
@@ -75,16 +70,21 @@ const createAnswer = async (userId, answerBody) => {
         )
     ) {
         newAnswer.is_correct = true;
+        newAnswer.score = question.score;
     } else {
         newAnswer.is_correct = false;
+        newAnswer.score = 0;
     }
     await newAnswer.save();
 
     return newAnswer;
 };
 
-const findByQuestionId = async (questionId) => {
-    const answer = await Answer.findOne({ question_id: questionId });
+const findByQuestionIdAndUserId = async (questionId, userId) => {
+    const answer = await Answer.findOne({
+        question_id: questionId,
+        user_id: userId,
+    }).select("-__v -user_id -question_id");
 
     return answer;
 };
@@ -115,7 +115,7 @@ const getMatchingAnswerByAnswerId = async (answerId) => {
 
 export default {
     createAnswers,
-    findByQuestionId,
+    findByQuestionIdAndUserId,
     getMultipleChoicesAnswerByAnswerId,
     getFillGapsAnswerByAnswerId,
     getMatchingAnswerByAnswerId,

@@ -2,6 +2,8 @@ import mongoose from "mongoose";
 import { testLevels } from "../config/levels.js";
 import { paginate } from "./plugins/paginate.js";
 import { toJSON } from "./plugins/toJSON.js";
+import { testStatus } from "../config/testStatus.js";
+import { shareOptions } from "../config/shareOptions.js";
 
 const testSchema = mongoose.Schema({
     title: {
@@ -57,6 +59,18 @@ const testSchema = mongoose.Schema({
     is_finished: {
         type: Boolean,
         default: false,
+    },
+    status: {
+        type: String,
+        required: true,
+        enum: Object.values(testStatus),
+    },
+    close_time: {
+        type: Date,
+    },
+    shareOption: {
+        type: String,
+        enum: Object.values(shareOptions),
     },
     taker_ids: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
     __v: { type: Number, select: false },

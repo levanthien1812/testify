@@ -18,6 +18,11 @@ const answerSchema = mongoose.Schema({
     is_correct: {
         type: Boolean,
     },
+    score: {
+        type: Number,
+        required: true,
+        default: 0,
+    },
 });
 
 export const Answer = mongoose.model("Answer", answerSchema);
