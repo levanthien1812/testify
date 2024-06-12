@@ -8,6 +8,7 @@ import { FillGapsQuestion } from "../models/fillGapsQuestion.model.js";
 import { logger } from "../config/logger.js";
 import { MatchingQuestion } from "../models/matchingQuestion.model.js";
 import partService from "./part.service.js";
+import answerService from "./answer.service.js";
 
 const createQuestionContent = async (questionType, questionContent) => {
     let questionContentDoc;
@@ -199,7 +200,7 @@ const getQuestionsByTestId = async (testId) => {
     return questions;
 };
 
-const getQuestionContent = async (questionId, userRole) => {
+const getQuestionContent = async (questionId, user) => {
     const question = await Question.findById(questionId);
 
     if (!question) {
@@ -212,27 +213,36 @@ const getQuestionContent = async (questionId, userRole) => {
         case questionTypes.MULITPLE_CHOICES:
             content = await MultipleChoiceQuestion.findOne({
                 question_id: questionId,
-            }).select(userRole === "maker" && "+answer");
+            }).select(user.role === "maker" && "+answer");
             break;
         case questionTypes.FILL_GAPS:
             content = await FillGapsQuestion.findOne({
                 question_id: questionId,
-            }).select(userRole === "maker" && "+answer");
+            }).select(user.role === "maker" && "+answer");
             break;
         case questionTypes.MATCHING:
             content = await MatchingQuestion.findOne({
                 question_id: questionId,
-            }).select(userRole === "maker" && "+answer");
+            }).select(user.role === "maker" && "+answer");
             break;
     }
 
     return content;
 };
 
-const getQuestionsContent = async (questions, userRole) => {
+const getQuestionsContent = async (questions, user) => {
     const questionsWithContent = await Promise.all(
         questions.map(async (question) => {
-            const content = await getQuestionContent(question.id, userRole);
+            const content = await getQuestionContent(question.id, user);
+
+            let answer = null;
+            if (user.role === "taker") {
+                answer = await answerService.findByQuestionIdAndUserId(
+                    question.id,
+                    user.id
+                );
+                return { ...question.toObject(), content, answer };
+            }
 
             return { ...question.toObject(), content };
         })

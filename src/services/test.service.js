@@ -5,8 +5,19 @@ import questionService from "./question.service.js";
 import { Question } from "../models/question.model.js";
 import { User } from "../models/user.model.js";
 import { Part } from "../models/part.model.js";
+import { shareOptions } from "../config/shareOptions.js";
+import { testStatus } from "../config/testStatus.js";
 
 const createTest = async (testBody) => {
+    const { datetime, duration, close_time } = testBody;
+
+    if (
+        close_time &&
+        new Date(datetime).getTime() > new Date(close_time).getTime()
+    ) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid close time");
+    }
+
     const newTest = await Test.create(testBody);
     return newTest;
 };
@@ -60,7 +71,7 @@ const getTest = async (testId, user) => {
                 );
                 questionsByPart = await questionService.getQuestionsContent(
                     questionsByPart,
-                    user.role
+                    user
                 );
 
                 return { ...part.toObject(), questions: questionsByPart };
@@ -73,10 +84,7 @@ const getTest = async (testId, user) => {
         };
     } else {
         questions = await questionService.getQuestionsByTestId(testId);
-        questions = await questionService.getQuestionsContent(
-            questions,
-            user.role
-        );
+        questions = await questionService.getQuestionsContent(questions, user);
 
         return {
             ...test.toObject(),
@@ -143,6 +151,16 @@ const updateTest = async (testId, testBody) => {
         throw new ApiError(httpStatus.NOT_FOUND, "Test not found");
     }
 
+    if (
+        testBody.shareOption &&
+        testBody.shareOption === shareOptions.RESTRICTED
+    ) {
+        testBody = {
+            ...testBody,
+            taker_ids: [],
+        };
+    }
+
     const updatedTest = await Test.findByIdAndUpdate(
         testId,
         { $set: testBody },
@@ -152,6 +170,29 @@ const updateTest = async (testId, testBody) => {
     );
 
     return updatedTest;
+};
+
+const updateTestStatus = async () => {
+    const now = new Date();
+
+    const tests = await Test.find({});
+
+    tests.forEach(async (test) => {
+        let status;
+        if (test.shareOption) {
+            status = testStatus.PUBLISHABLE;
+        }
+
+        if (new Date(test.datetime).getTime() - now.getTime() < 0) {
+            status = testStatus.OPENED;
+        }
+
+        if (new Date(test.close_time).getTime() - now.getTime() < 0) {
+            status = testStatus.CLOSED;
+        }
+
+        await Test.findByIdAndUpdate(test.id, { $set: { status: status } });
+    });
 };
 
 const findById = async (testId) => {
@@ -167,4 +208,5 @@ export default {
     updateTest,
     findById,
     getAvailableTakers,
+    updateTestStatus,
 };

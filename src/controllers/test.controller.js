@@ -3,9 +3,14 @@ import testService from "../services/test.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import questionService from "../services/question.service.js";
 import userService from "../services/user.service.js";
+import { testStatus } from "../config/testStatus.js";
 
 const createTest = catchAsync(async (req, res, next) => {
-    const body = { ...req.body, maker_id: req.user.id };
+    const body = {
+        ...req.body,
+        maker_id: req.user.id,
+        status: testStatus.DRAFT,
+    };
     const test = await testService.createTest(body);
 
     return res
