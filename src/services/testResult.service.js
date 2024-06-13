@@ -5,6 +5,16 @@ const createTestResult = async (testResultBody) => {
     return testResult;
 };
 
+const getTestResultByTakerId = async (takerId, testId) => {
+    const testResult = await TestResult.findOne({
+        taker_id: takerId,
+        test_id: testId,
+    });
+
+    return testResult;
+};
+
 export default {
     createTestResult,
+    getTestResultByTakerId
 };

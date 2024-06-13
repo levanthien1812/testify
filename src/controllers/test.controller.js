@@ -4,6 +4,7 @@ import catchAsync from "../utils/catchAsync.js";
 import questionService from "../services/question.service.js";
 import userService from "../services/user.service.js";
 import { testStatus } from "../config/testStatus.js";
+import testResultService from "../services/testResult.service.js";
 
 const createTest = catchAsync(async (req, res, next) => {
     const body = {
@@ -107,6 +108,15 @@ const getAvailableTakers = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ takers: takers });
 });
 
+const getSubmission = catchAsync(async (req, res, next) => {
+    const submission = await testResultService.getTestResultByTakerId(
+        req.user._id,
+        req.params.testId
+    );
+
+    return res.status(httpStatus.OK).send({ submission });
+});
+
 export default {
     createTest,
     getTests,
@@ -115,4 +125,5 @@ export default {
     updateTest,
     createTakers,
     getAvailableTakers,
+    getSubmission,
 };
