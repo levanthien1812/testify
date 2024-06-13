@@ -29,10 +29,15 @@ const TestResultSchema = new mongoose.Schema({
         type: String,
         required: false,
     },
-    date: {
+    start_time: {
         type: Date,
-        default: Date.now,
+        required: true,
     },
+    submit_time: {
+        type: Date,
+        required: true,
+    },
+
 });
 
 export const TestResult = mongoose.model("TestResult", TestResultSchema);

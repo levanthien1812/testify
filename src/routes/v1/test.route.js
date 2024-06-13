@@ -62,11 +62,7 @@ router
 
 router
     .route("/:testId/questions/:questionId/answer")
-    .patch(auth("addAnswer"), questionController.addAnswer)
-
-router
-    .route("/:testId/answers")
-    .post(auth("createAnswers"), answerController.createAnswers);
+    .patch(auth("addAnswer"), questionController.addAnswer);
 
 router
     .route("/:testId/takers")
@@ -76,5 +72,10 @@ router
 router
     .route("/:testId/takers/available")
     .get(auth("getAvailableTakers"), testController.getAvailableTakers);
+
+router
+    .route("/:testId/submission")
+    .get(auth("getSubmission"), testController.getSubmission)
+    .post(auth("submitAnswers"), answerController.submitAnswers);
 
 export default router;
