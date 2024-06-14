@@ -10,6 +10,7 @@ import { FillGapsQuestion } from "../models/fillGapsQuestion.model.js";
 import { MatchingQuestion } from "../models/matchingQuestion.model.js";
 import { sameItems } from "../utils/compareArray.js";
 import { MatchingAnswer } from "../models/matchingAnswer.model.js";
+import { questionTypeToModel } from "../utils/mapping.js";
 
 const createAnswers = async (userId, answersBody) => {
     const answers = [];
@@ -36,31 +37,12 @@ const createAnswer = async (userId, answerBody) => {
     });
 
     const answerContent = { answer_id: newAnswer.id, ...answerBody };
-    let answerContentDoc;
-    let questionContentDoc;
-
-    switch (question.type) {
-        case questionTypes.MULITPLE_CHOICES:
-            answerContentDoc = await MultipleChoicesAnswer.create(
-                answerContent
-            );
-            questionContentDoc = await MultipleChoiceQuestion.findOne({
-                question_id: answerBody.question_id,
-            }).select("answer");
-            break;
-        case questionTypes.FILL_GAPS:
-            answerContentDoc = await FillGapsAnswer.create(answerContent);
-            questionContentDoc = await FillGapsQuestion.findOne({
-                question_id: answerBody.question_id,
-            }).select("answer");
-            break;
-        case questionTypes.MATCHING:
-            answerContentDoc = await MatchingAnswer.create(answerContent);
-            questionContentDoc = await MatchingQuestion.findOne({
-                question_id: answerBody.question_id,
-            }).select("answer");
-            break;
-    }
+    
+    const model = questionTypeToModel.get(question.type);
+    let answerContentDoc = await model.create(answerContent)
+    let questionContentDoc = await model.findOne({
+        question_id: answerBody.question_id,
+    }).select("answer");
 
     if (
         sameItems(

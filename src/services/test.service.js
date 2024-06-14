@@ -7,6 +7,8 @@ import { User } from "../models/user.model.js";
 import { Part } from "../models/part.model.js";
 import { shareOptions } from "../config/shareOptions.js";
 import { testStatus } from "../config/testStatus.js";
+import { publicAnswersOptions } from "../config/publicAnswerOptions.js";
+import submissionService from "./submission.service.js";
 
 const createTest = async (testBody) => {
     const { datetime, duration, close_time } = testBody;
@@ -36,7 +38,7 @@ const getTests = async (filter, query) => {
     return testsWithQuestions;
 };
 
-const getTest = async (testId, user) => {
+const getTest = async (testId, user, withAnswers = false) => {
     const test = await Test.findById(testId).populate("taker_ids");
 
     if (!test) {
@@ -58,6 +60,40 @@ const getTest = async (testId, user) => {
                 };
             }
         }
+
+        if (withAnswers) {
+            if (
+                test.public_answers_option ===
+                publicAnswersOptions.AFTER_TAKER_SUBMISSION
+            ) {
+                const submission =
+                    await submissionService.getSubmissionByTakerId(
+                        user._id,
+                        testId
+                    );
+
+                if (!submission) {
+                    throw new ApiError(
+                        httpStatus.NOT_FOUND,
+                        "No submission found!"
+                    );
+                }
+            }
+            if (
+                (test.close_time &&
+                    test.public_answers_option ===
+                        publicAnswersOptions.AFTER_CLOSE_TIME) ||
+                test.public_answers_option ===
+                    publicAnswersOptions.SPECIFIC_DATE
+            ) {
+                if (new Date(test.close_time).getTime() < Date.now()) {
+                    throw new ApiError(
+                        httpStatus.BAD_REQUEST,
+                        "Test's answers is not opened yet!"
+                    );
+                }
+            }
+        }
     }
 
     let parts = await Part.find({ test_id: test.id });
@@ -71,7 +107,8 @@ const getTest = async (testId, user) => {
                 );
                 questionsByPart = await questionService.getQuestionsContent(
                     questionsByPart,
-                    user
+                    user,
+                    withAnswers
                 );
 
                 return { ...part.toObject(), questions: questionsByPart };
@@ -84,7 +121,11 @@ const getTest = async (testId, user) => {
         };
     } else {
         questions = await questionService.getQuestionsByTestId(testId);
-        questions = await questionService.getQuestionsContent(questions, user);
+        questions = await questionService.getQuestionsContent(
+            questions,
+            user,
+            withAnswers
+        );
 
         return {
             ...test.toObject(),
@@ -152,8 +193,8 @@ const updateTest = async (testId, testBody) => {
     }
 
     if (
-        testBody.shareOption &&
-        testBody.shareOption === shareOptions.RESTRICTED
+        testBody.share_option &&
+        testBody.share_option === shareOptions.RESTRICTED
     ) {
         testBody = {
             ...testBody,
@@ -179,7 +220,7 @@ const updateTestStatus = async () => {
 
     tests.forEach(async (test) => {
         let status;
-        if (test.shareOption) {
+        if (test.share_option) {
             status = testStatus.PUBLISHABLE;
         }
 
