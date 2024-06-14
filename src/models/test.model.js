@@ -4,6 +4,7 @@ import { paginate } from "./plugins/paginate.js";
 import { toJSON } from "./plugins/toJSON.js";
 import { testStatus } from "../config/testStatus.js";
 import { shareOptions } from "../config/shareOptions.js";
+import { publicAnswersOptions } from "../config/publicAnswerOptions.js";
 
 const testSchema = mongoose.Schema({
     title: {
@@ -56,10 +57,6 @@ const testSchema = mongoose.Schema({
     code: {
         type: String,
     },
-    is_finished: {
-        type: Boolean,
-        default: false,
-    },
     status: {
         type: String,
         required: true,
@@ -68,9 +65,18 @@ const testSchema = mongoose.Schema({
     close_time: {
         type: Date,
     },
-    shareOption: {
+    share_option: {
         type: String,
         enum: Object.values(shareOptions),
+    },
+    public_answers_option: {
+        type: String,
+        enum: Object.values(publicAnswersOptions),
+        required: true,
+    },
+    public_answers_date: {
+        type: Date,
+        required: false,
     },
     taker_ids: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
     __v: { type: Number, select: false },

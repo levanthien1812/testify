@@ -1,15 +1,15 @@
 import httpStatus from "http-status";
 import answerService from "../services/answer.service.js";
 import catchAsync from "../utils/catchAsync.js";
-import testResultService from "../services/testResult.service.js";
+import submissionService from "../services/submission.service.js";
 
 const submitAnswers = catchAsync(async (req, res, next) => {
-    const existingTestResult = await testResultService.getTestResultByTakerId(
+    const existingSubmission = await submissionService.getSubmissionByTakerId(
         req.user.id,
         req.params.testId
     );
 
-    if (existingTestResult) {
+    if (existingSubmission) {
         return next(httpStatus.BAD_REQUEST, "Test already submitted");
     }
 
@@ -29,7 +29,7 @@ const submitAnswers = catchAsync(async (req, res, next) => {
 
     const totalWrongAnswers = newAnswers.filter((answer) => !answer.is_correct);
 
-    const testResult = await testResultService.createTestResult({
+    const submission = await submissionService.createSubmission({
         taker_id: req.user.id,
         test_id: req.params.testId,
         score: archivedScore,

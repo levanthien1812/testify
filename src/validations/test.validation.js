@@ -1,6 +1,7 @@
 import Joi from "joi";
 import { datetime } from "./custom.validation.js";
 import { testLevels } from "../config/levels.js";
+import { publicAnswersOptions } from "../config/publicAnswerOptions.js";
 
 const createTest = {
     body: Joi.object().keys({
@@ -14,7 +15,11 @@ const createTest = {
         code: Joi.string().allow(""),
         num_questions: Joi.number().min(1).required(),
         num_parts: Joi.number().min(1).default(1),
-        close_time: Joi.date().optional(), 
+        close_time: Joi.date().optional(),
+        public_answers_option: Joi.string().valid(
+            ...Object.values(publicAnswersOptions)
+        ),
+        public_answers_date: Joi.date().optional(),
     }),
 };
 

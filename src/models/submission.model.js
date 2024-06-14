@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 
-const TestResultSchema = new mongoose.Schema({
+const SubmissionSchema = new mongoose.Schema({
     taker_id: {
         type: mongoose.SchemaTypes.ObjectId,
         ref: "User",
@@ -37,7 +37,6 @@ const TestResultSchema = new mongoose.Schema({
         type: Date,
         required: true,
     },
-
 });
 
-export const TestResult = mongoose.model("TestResult", TestResultSchema);
+export const Submission = mongoose.model("Submission", SubmissionSchema);

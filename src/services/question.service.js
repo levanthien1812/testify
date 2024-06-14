@@ -3,39 +3,29 @@ import { Test } from "../models/test.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { Question } from "../models/question.model.js";
 import { questionTypes } from "../config/questionTypes.js";
-import { MultipleChoiceQuestion } from "../models/multipleChoicesQuestion.model.js";
-import { FillGapsQuestion } from "../models/fillGapsQuestion.model.js";
-import { logger } from "../config/logger.js";
-import { MatchingQuestion } from "../models/matchingQuestion.model.js";
 import partService from "./part.service.js";
 import answerService from "./answer.service.js";
+import { questionTypeToModel } from "../utils/mapping.js";
 
 const createQuestionContent = async (questionType, questionContent) => {
-    let questionContentDoc;
-    switch (questionType) {
-        case questionTypes.MULITPLE_CHOICES:
-            questionContentDoc = await MultipleChoiceQuestion.create(
-                questionContent
-            );
-            break;
-        case questionTypes.FILL_GAPS:
-            questionContentDoc = await FillGapsQuestion.create(questionContent);
-            break;
-        case questionTypes.MATCHING:
-            const { left_items: leftItems, right_items: rightItems } =
-                questionContent;
-            if (leftItems.length !== rightItems.length) {
-                throw new ApiError(
-                    httpStatus.BAD_REQUEST,
-                    "Number of left items and right items must be the same "
-                );
-            }
-            questionContentDoc = await MatchingQuestion.create(questionContent);
-            break;
-        default:
-            throw new ApiError(httpStatus.BAD_REQUEST, "Invalid question type");
+    const model = questionTypeToModel.get(questionType);
+
+    if (!model) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid question type");
     }
 
+    if (questionType === questionTypes.MATCHING) {
+        const { left_items: leftItems, right_items: rightItems } =
+            questionContent;
+        if (leftItems.length !== rightItems.length) {
+            throw new ApiError(
+                httpStatus.BAD_REQUEST,
+                "Number of left items and right items must be the same "
+            );
+        }
+    }
+
+    let questionContentDoc = await model.create(questionContent);
     return questionContentDoc;
 };
 
@@ -44,62 +34,31 @@ const updateQuestionContent = async (
     questionType,
     questionContent
 ) => {
-    let updatedQuestionContentDoc;
-    switch (questionType) {
-        case questionTypes.MULITPLE_CHOICES:
-            updatedQuestionContentDoc =
-                await MultipleChoiceQuestion.findOneAndUpdate(
-                    { question_id: questionId },
-                    questionContent,
-                    { new: true }
-                );
-            break;
-        case questionTypes.FILL_GAPS:
-            updatedQuestionContentDoc = await FillGapsQuestion.findOneAndUpdate(
-                { question_id: questionId },
-                questionContent,
-                { new: true }
+    let model = questionTypeToModel.get(questionType);
+
+    if (questionType === questionTypes.MATCHING) {
+        const { left_items: leftItems, right_items: rightItems } =
+            questionContent;
+        if (leftItems.length !== rightItems.length) {
+            throw new ApiError(
+                httpStatus.BAD_REQUEST,
+                "Number of left items and right items must be the same "
             );
-            break;
-        case questionTypes.MATCHING:
-            const { left_items: leftItems, right_items: rightItems } =
-                questionContent;
-            if (leftItems.length !== rightItems.length) {
-                throw new ApiError(
-                    httpStatus.BAD_REQUEST,
-                    "Number of left items and right items must be the same "
-                );
-            }
-            updatedQuestionContentDoc = await MatchingQuestion.findOneAndUpdate(
-                { question_id: questionId },
-                questionContent,
-                { new: true }
-            );
-            break;
+        }
     }
+
+    let updatedQuestionContentDoc = await model.findOneAndUpdate(
+        { question_id: questionId },
+        questionContent,
+        { new: true }
+    );
 
     return updatedQuestionContentDoc;
 };
 
 const deleteQuestionContent = async (questionId, questionType) => {
-    switch (questionType) {
-        case questionTypes.MULITPLE_CHOICES:
-            await MultipleChoiceQuestion.findOneAndDelete({
-                question_id: questionId,
-            });
-
-            break;
-        case questionTypes.FILL_GAPS:
-            await FillGapsQuestion.findOneAndDelete({
-                question_id: questionId,
-            });
-            break;
-        case questionTypes.MATCHING:
-            await MatchingQuestion.findOneAndDelete({
-                question_id: questionId,
-            });
-            break;
-    }
+    let model = questionTypeToModel.get(questionType);
+    await model.findOneAndDelete({ question_id: questionId });
 };
 
 const createQuestion = async (questionBody) => {
@@ -168,28 +127,11 @@ const addAnswer = async (questionId, answerBody) => {
         return new ApiError(httpStatus.NOT_FOUND, "Question not found!");
     }
 
-    let updated;
-
-    switch (question.type) {
-        case questionTypes.MULITPLE_CHOICES:
-            updated = await MultipleChoiceQuestion.findOneAndUpdate(
-                { question_id: questionId },
-                { $set: answerBody }
-            );
-            break;
-        case questionTypes.FILL_GAPS:
-            updated = await FillGapsQuestion.findOneAndUpdate(
-                { question_id: questionId },
-                { $set: answerBody }
-            );
-            break;
-        case questionTypes.MATCHING:
-            updated = await MatchingQuestion.findOneAndUpdate(
-                { question_id: questionId },
-                { $set: answerBody }
-            );
-            break;
-    }
+    const model = questionTypeToModel.get(question.type);
+    let updated = await model.findOneAndUpdate(
+        { question_id: questionId },
+        { $set: answerBody }
+    );
 
     return updated;
 };
@@ -200,43 +142,36 @@ const getQuestionsByTestId = async (testId) => {
     return questions;
 };
 
-const getQuestionContent = async (questionId, user) => {
+const getQuestionContent = async (questionId, user, with_answers) => {
     const question = await Question.findById(questionId);
 
     if (!question) {
         throw new ApiError(httpStatus.NOT_FOUND, "Question not found!");
     }
 
-    let content;
+    const selectFields =
+        (user.role === "maker" || (user.role === "taker" && with_answers)) &&
+        "+answer";
 
-    switch (question.type) {
-        case questionTypes.MULITPLE_CHOICES:
-            content = await MultipleChoiceQuestion.findOne({
-                question_id: questionId,
-            }).select(user.role === "maker" && "+answer");
-            break;
-        case questionTypes.FILL_GAPS:
-            content = await FillGapsQuestion.findOne({
-                question_id: questionId,
-            }).select(user.role === "maker" && "+answer");
-            break;
-        case questionTypes.MATCHING:
-            content = await MatchingQuestion.findOne({
-                question_id: questionId,
-            }).select(user.role === "maker" && "+answer");
-            break;
-    }
+    const model = questionTypeToModel.get(question.type);
+    let content = await model
+        .findOne({ question_id: questionId })
+        .select(selectFields);
 
     return content;
 };
 
-const getQuestionsContent = async (questions, user) => {
+const getQuestionsContent = async (questions, user, withAnswers) => {
     const questionsWithContent = await Promise.all(
         questions.map(async (question) => {
-            const content = await getQuestionContent(question.id, user);
+            const content = await getQuestionContent(
+                question.id,
+                user,
+                withAnswers
+            );
 
             let answer = null;
-            if (user.role === "taker") {
+            if (user.role === "taker" && withAnswers) {
                 answer = await answerService.findByQuestionIdAndUserId(
                     question.id,
                     user.id

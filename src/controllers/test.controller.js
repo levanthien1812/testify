@@ -4,7 +4,7 @@ import catchAsync from "../utils/catchAsync.js";
 import questionService from "../services/question.service.js";
 import userService from "../services/user.service.js";
 import { testStatus } from "../config/testStatus.js";
-import testResultService from "../services/testResult.service.js";
+import submissionService from "../services/submission.service.js";
 
 const createTest = catchAsync(async (req, res, next) => {
     const body = {
@@ -36,8 +36,6 @@ const getTests = catchAsync(async (req, res, next) => {
             : { taker_ids: req.user.id };
     const query = {};
 
-    req.query.finish &&
-        (filter.is_finished = req.query.finish === "true" ? true : false);
     req.query.date_from &&
         (filter.datetime = {
             $gte: new Date(req.query.date_from).toISOString(),
@@ -60,7 +58,11 @@ const getTests = catchAsync(async (req, res, next) => {
 });
 
 const getTest = catchAsync(async (req, res, next) => {
-    const test = await testService.getTest(req.params.testId, req.user);
+    const test = await testService.getTest(
+        req.params.testId,
+        req.user,
+        req.query.with_answers
+    );
 
     return res.status(httpStatus.ACCEPTED).send({ test });
 });
@@ -109,7 +111,7 @@ const getAvailableTakers = catchAsync(async (req, res, next) => {
 });
 
 const getSubmission = catchAsync(async (req, res, next) => {
-    const submission = await testResultService.getTestResultByTakerId(
+    const submission = await submissionService.getSubmissionByTakerId(
         req.user._id,
         req.params.testId
     );
