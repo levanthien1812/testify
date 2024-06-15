@@ -58,10 +58,11 @@ const getTests = catchAsync(async (req, res, next) => {
 });
 
 const getTest = catchAsync(async (req, res, next) => {
+    console.log(req.query.with_answers);
     const test = await testService.getTest(
         req.params.testId,
         req.user,
-        req.query.with_answers
+        !!req.query.with_answers
     );
 
     return res.status(httpStatus.ACCEPTED).send({ test });

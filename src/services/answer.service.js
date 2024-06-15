@@ -10,7 +10,10 @@ import { FillGapsQuestion } from "../models/fillGapsQuestion.model.js";
 import { MatchingQuestion } from "../models/matchingQuestion.model.js";
 import { sameItems } from "../utils/compareArray.js";
 import { MatchingAnswer } from "../models/matchingAnswer.model.js";
-import { questionTypeToModel } from "../utils/mapping.js";
+import {
+    questionTypeToAnswerModel,
+    questionTypeToQuestionModel,
+} from "../utils/mapping.js";
 
 const createAnswers = async (userId, answersBody) => {
     const answers = [];
@@ -37,12 +40,14 @@ const createAnswer = async (userId, answerBody) => {
     });
 
     const answerContent = { answer_id: newAnswer.id, ...answerBody };
-    
-    const model = questionTypeToModel.get(question.type);
-    let answerContentDoc = await model.create(answerContent)
-    let questionContentDoc = await model.findOne({
-        question_id: answerBody.question_id,
-    }).select("answer");
+
+    const model = questionTypeToQuestionModel.get(question.type);
+    let answerContentDoc = await model.create(answerContent);
+    let questionContentDoc = await model
+        .findOne({
+            question_id: answerBody.question_id,
+        })
+        .select("answer");
 
     if (
         sameItems(
@@ -62,43 +67,36 @@ const createAnswer = async (userId, answerBody) => {
     return newAnswer;
 };
 
-const findByQuestionIdAndUserId = async (questionId, userId) => {
+const findByQuestionIdAndUserId = async (
+    questionId,
+    userId,
+    withCorrectAnswer = true
+) => {
     const answer = await Answer.findOne({
         question_id: questionId,
         user_id: userId,
-    }).select("-__v -user_id -question_id");
+    }).select(
+        `-__v -user_id -question_id ${
+            !withCorrectAnswer ? "-is_correct -score" : ""
+        }`
+    );
 
     return answer;
 };
 
-const getMultipleChoicesAnswerByAnswerId = async (answerId) => {
-    const mcqAnswer = await MultipleChoicesAnswer.findOne({
-        answer_id: answerId,
-    });
+const getAnswerContentByAnswerId = async (answerId, questionType) => {
+    const model = questionTypeToAnswerModel.get(questionType);
+    const answerContent = await model
+        .findOne({
+            answer_id: answerId,
+        })
+        .select("-__v -answer_id ");
 
-    return mcqAnswer;
-};
-
-const getFillGapsAnswerByAnswerId = async (answerId) => {
-    const mcqAnswer = await FillGapsAnswer.findOne({
-        answer_id: answerId,
-    });
-
-    return mcqAnswer;
-};
-
-const getMatchingAnswerByAnswerId = async (answerId) => {
-    const mcqAnswer = await MatchingAnswer.findOne({
-        answer_id: answerId,
-    });
-
-    return mcqAnswer;
+    return answerContent;
 };
 
 export default {
     createAnswers,
     findByQuestionIdAndUserId,
-    getMultipleChoicesAnswerByAnswerId,
-    getFillGapsAnswerByAnswerId,
-    getMatchingAnswerByAnswerId,
+    getAnswerContentByAnswerId,
 };

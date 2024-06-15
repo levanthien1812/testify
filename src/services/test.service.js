@@ -40,6 +40,7 @@ const getTests = async (filter, query) => {
 
 const getTest = async (testId, user, withAnswers = false) => {
     const test = await Test.findById(testId).populate("taker_ids");
+    let withCorrectAnswers = false;
 
     if (!test) {
         throw new ApiError(httpStatus.NOT_FOUND, "No test found with this ID");
@@ -61,38 +62,26 @@ const getTest = async (testId, user, withAnswers = false) => {
             }
         }
 
-        if (withAnswers) {
-            if (
-                test.public_answers_option ===
-                publicAnswersOptions.AFTER_TAKER_SUBMISSION
-            ) {
-                const submission =
-                    await submissionService.getSubmissionByTakerId(
-                        user._id,
-                        testId
-                    );
+        if (
+            test.public_answers_option ===
+            publicAnswersOptions.AFTER_TAKER_SUBMISSION
+        ) {
+            const submission = await submissionService.getSubmissionByTakerId(
+                user._id,
+                testId
+            );
 
-                if (!submission) {
-                    throw new ApiError(
-                        httpStatus.NOT_FOUND,
-                        "No submission found!"
-                    );
-                }
-            }
-            if (
-                (test.close_time &&
-                    test.public_answers_option ===
-                        publicAnswersOptions.AFTER_CLOSE_TIME) ||
+            withCorrectAnswers = !!submission;
+        }
+
+        if (
+            (test.close_time &&
                 test.public_answers_option ===
-                    publicAnswersOptions.SPECIFIC_DATE
-            ) {
-                if (new Date(test.close_time).getTime() < Date.now()) {
-                    throw new ApiError(
-                        httpStatus.BAD_REQUEST,
-                        "Test's answers is not opened yet!"
-                    );
-                }
-            }
+                    publicAnswersOptions.AFTER_CLOSE_TIME) ||
+            test.public_answers_option === publicAnswersOptions.SPECIFIC_DATE
+        ) {
+            withCorrectAnswers =
+                new Date(test.public_answers_date).getTime() < Date.now();
         }
     }
 
@@ -108,7 +97,8 @@ const getTest = async (testId, user, withAnswers = false) => {
                 questionsByPart = await questionService.getQuestionsContent(
                     questionsByPart,
                     user,
-                    withAnswers
+                    withAnswers,
+                    withCorrectAnswers,
                 );
 
                 return { ...part.toObject(), questions: questionsByPart };
@@ -124,7 +114,8 @@ const getTest = async (testId, user, withAnswers = false) => {
         questions = await questionService.getQuestionsContent(
             questions,
             user,
-            withAnswers
+            withAnswers,
+            withCorrectAnswers,
         );
 
         return {
