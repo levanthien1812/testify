@@ -5,10 +5,10 @@ import { Question } from "../models/question.model.js";
 import { questionTypes } from "../config/questionTypes.js";
 import partService from "./part.service.js";
 import answerService from "./answer.service.js";
-import { questionTypeToModel } from "../utils/mapping.js";
+import { questionTypeToQuestionModel } from "../utils/mapping.js";
 
 const createQuestionContent = async (questionType, questionContent) => {
-    const model = questionTypeToModel.get(questionType);
+    const model = questionTypeToQuestionModel.get(questionType);
 
     if (!model) {
         throw new ApiError(httpStatus.BAD_REQUEST, "Invalid question type");
@@ -34,7 +34,7 @@ const updateQuestionContent = async (
     questionType,
     questionContent
 ) => {
-    let model = questionTypeToModel.get(questionType);
+    let model = questionTypeToQuestionModel.get(questionType);
 
     if (questionType === questionTypes.MATCHING) {
         const { left_items: leftItems, right_items: rightItems } =
@@ -57,7 +57,7 @@ const updateQuestionContent = async (
 };
 
 const deleteQuestionContent = async (questionId, questionType) => {
-    let model = questionTypeToModel.get(questionType);
+    let model = questionTypeToQuestionModel.get(questionType);
     await model.findOneAndDelete({ question_id: questionId });
 };
 
@@ -127,7 +127,7 @@ const addAnswer = async (questionId, answerBody) => {
         return new ApiError(httpStatus.NOT_FOUND, "Question not found!");
     }
 
-    const model = questionTypeToModel.get(question.type);
+    const model = questionTypeToQuestionModel.get(question.type);
     let updated = await model.findOneAndUpdate(
         { question_id: questionId },
         { $set: answerBody }
@@ -153,7 +153,7 @@ const getQuestionContent = async (questionId, user, with_answers) => {
         (user.role === "maker" || (user.role === "taker" && with_answers)) &&
         "+answer";
 
-    const model = questionTypeToModel.get(question.type);
+    const model = questionTypeToQuestionModel.get(question.type);
     let content = await model
         .findOne({ question_id: questionId })
         .select(selectFields);
@@ -161,21 +161,35 @@ const getQuestionContent = async (questionId, user, with_answers) => {
     return content;
 };
 
-const getQuestionsContent = async (questions, user, withAnswers) => {
+const getQuestionsContent = async (
+    questions,
+    user,
+    withAnswers,
+    withCorrectAnswers
+) => {
     const questionsWithContent = await Promise.all(
         questions.map(async (question) => {
             const content = await getQuestionContent(
                 question.id,
                 user,
-                withAnswers
+                withAnswers,
+                withCorrectAnswers
             );
 
-            let answer = null;
             if (user.role === "taker" && withAnswers) {
-                answer = await answerService.findByQuestionIdAndUserId(
+                let answer = await answerService.findByQuestionIdAndUserId(
                     question.id,
-                    user.id
+                    user.id,
+                    withCorrectAnswers
                 );
+                const answerContent =
+                    await answerService.getAnswerContentByAnswerId(
+                        answer.id,
+                        question.type
+                    );
+
+                answer = { ...answer.toObject(), content: answerContent };
+
                 return { ...question.toObject(), content, answer };
             }
 
