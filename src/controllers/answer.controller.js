@@ -2,6 +2,8 @@ import httpStatus from "http-status";
 import answerService from "../services/answer.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import submissionService from "../services/submission.service.js";
+import { Test } from "../models/test.model.js";
+import { ApiError } from "../utils/apiError.js";
 
 const submitAnswers = catchAsync(async (req, res, next) => {
     const existingSubmission = await submissionService.getSubmissionByTakerId(
@@ -10,7 +12,17 @@ const submitAnswers = catchAsync(async (req, res, next) => {
     );
 
     if (existingSubmission) {
-        return next(httpStatus.BAD_REQUEST, "Test already submitted");
+        return new ApiError(httpStatus.BAD_REQUEST, "Test already submitted");
+    }
+
+    const test = await Test.findById(req.params.testId);
+
+    if (
+        test.close_time &&
+        new Date(test.close_time).getTime() + test.duration * 60 * 1000 <
+            Date.now()
+    ) {
+        return new ApiError(httpStatus.BAD_REQUEST, "Test closed for submissions");
     }
 
     const newAnswers = await answerService.createAnswers(

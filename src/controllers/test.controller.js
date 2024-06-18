@@ -58,7 +58,6 @@ const getTests = catchAsync(async (req, res, next) => {
 });
 
 const getTest = catchAsync(async (req, res, next) => {
-    console.log(req.query.with_answers);
     const test = await testService.getTest(
         req.params.testId,
         req.user,
@@ -111,15 +110,6 @@ const getAvailableTakers = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ takers: takers });
 });
 
-const getSubmission = catchAsync(async (req, res, next) => {
-    const submission = await submissionService.getSubmissionByTakerId(
-        req.user._id,
-        req.params.testId
-    );
-
-    return res.status(httpStatus.OK).send({ submission });
-});
-
 export default {
     createTest,
     getTests,
@@ -128,5 +118,4 @@ export default {
     updateTest,
     createTakers,
     getAvailableTakers,
-    getSubmission,
 };

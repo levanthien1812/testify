@@ -41,9 +41,11 @@ const createAnswer = async (userId, answerBody) => {
 
     const answerContent = { answer_id: newAnswer.id, ...answerBody };
 
-    const model = questionTypeToQuestionModel.get(question.type);
-    let answerContentDoc = await model.create(answerContent);
-    let questionContentDoc = await model
+    const answerModel = questionTypeToAnswerModel.get(question.type);
+    const questionModel = questionTypeToQuestionModel.get(question.type);
+
+    let answerContentDoc = await answerModel.create(answerContent);
+    let questionContentDoc = await questionModel
         .findOne({
             question_id: answerBody.question_id,
         })
