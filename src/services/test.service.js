@@ -98,7 +98,7 @@ const getTest = async (testId, user, withAnswers = false) => {
                     questionsByPart,
                     user,
                     withAnswers,
-                    withCorrectAnswers,
+                    withCorrectAnswers
                 );
 
                 return { ...part.toObject(), questions: questionsByPart };
@@ -115,7 +115,7 @@ const getTest = async (testId, user, withAnswers = false) => {
             questions,
             user,
             withAnswers,
-            withCorrectAnswers,
+            withCorrectAnswers
         );
 
         return {
@@ -185,7 +185,7 @@ const updateTest = async (testId, testBody) => {
 
     if (
         testBody.share_option &&
-        testBody.share_option === shareOptions.RESTRICTED
+        testBody.share_option === shareOptions.ANYONE
     ) {
         testBody = {
             ...testBody,
@@ -204,22 +204,28 @@ const updateTest = async (testId, testBody) => {
     return updatedTest;
 };
 
-const updateTestStatus = async () => {
+const updateTestsStatus = async () => {
     const now = new Date();
 
     const tests = await Test.find({});
 
     tests.forEach(async (test) => {
         let status;
-        if (test.share_option) {
+        if (test.status === testStatus.DRAFT && test.share_option) {
             status = testStatus.PUBLISHABLE;
         }
 
-        if (new Date(test.datetime).getTime() - now.getTime() < 0) {
+        if (
+            test.status === testStatus.PUBLISHED &&
+            new Date(test.datetime).getTime() - now.getTime() < 0
+        ) {
             status = testStatus.OPENED;
         }
 
-        if (new Date(test.close_time).getTime() - now.getTime() < 0) {
+        if (
+            test.status === testStatus.OPENED &&
+            new Date(test.close_time).getTime() - now.getTime() < 0
+        ) {
             status = testStatus.CLOSED;
         }
 
@@ -240,5 +246,5 @@ export default {
     updateTest,
     findById,
     getAvailableTakers,
-    updateTestStatus,
+    updateTestsStatus,
 };

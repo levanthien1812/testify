@@ -7,6 +7,7 @@ import questionController from "../../controllers/question.controller.js";
 import answerController from "../../controllers/answer.controller.js";
 import partValidation from "../../validations/part.validation.js";
 import partController from "../../controllers/part.controller.js";
+import submissionController from "../../controllers/submission.controller.js";
 
 const router = express.Router();
 
@@ -75,7 +76,11 @@ router
 
 router
     .route("/:testId/submission")
-    .get(auth("getSubmission"), testController.getSubmission)
+    .get(auth("getSubmission"), submissionController.getSubmission)
     .post(auth("submitAnswers"), answerController.submitAnswers);
+
+router
+    .route("/:testId/submissions")
+    .get(auth("getSubmissions"), submissionController.getSubmissions);
 
 export default router;
