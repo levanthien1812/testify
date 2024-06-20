@@ -22,7 +22,10 @@ const submitAnswers = catchAsync(async (req, res, next) => {
         new Date(test.close_time).getTime() + test.duration * 60 * 1000 <
             Date.now()
     ) {
-        return new ApiError(httpStatus.BAD_REQUEST, "Test closed for submissions");
+        return new ApiError(
+            httpStatus.BAD_REQUEST,
+            "Test closed for submissions"
+        );
     }
 
     const newAnswers = await answerService.createAnswers(
@@ -33,20 +36,22 @@ const submitAnswers = catchAsync(async (req, res, next) => {
     const archivedScore = newAnswers.reduce(
         (acc, answer) => acc + answer.score,
         0
-    );
+    ).length;
 
     const totalCorrectAnswers = newAnswers.filter(
         (answer) => answer.is_correct
     );
 
-    const totalWrongAnswers = newAnswers.filter((answer) => !answer.is_correct);
+    const totalWrongAnswers = newAnswers.filter(
+        (answer) => !answer.is_correct
+    ).length;
 
     const submission = await submissionService.createSubmission({
         taker_id: req.user.id,
         test_id: req.params.testId,
         score: archivedScore,
-        correct_answers: totalCorrectAnswers.length,
-        wrong_answers: totalWrongAnswers.length,
+        correct_answers: totalCorrectAnswers,
+        wrong_answers: totalWrongAnswers,
         start_time: new Date(req.body.startTime),
         submit_time: new Date(),
     });

@@ -18,6 +18,7 @@ const allRoles = {
         "getAvailableTakers",
         "validateQuestions",
         "getSubmissions",
+        "getTakerSubmission",
     ],
     admin: ["getUsers", "manageUsers"],
 };

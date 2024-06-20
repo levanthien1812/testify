@@ -5,8 +5,8 @@ const fillGapsQuestionSchema = mongoose.Schema({
         type: String,
         required: true,
         match: [
-            /.*\*{3}.*/,
-            "Text is not in correct format, must contain at least one ***",
+            /.*\_{3}.*/,
+            "Text is not in correct format, must contain at least one ___ representing a gap",
         ],
     },
     question_id: {
