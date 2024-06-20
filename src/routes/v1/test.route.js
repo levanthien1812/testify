@@ -83,4 +83,8 @@ router
     .route("/:testId/submissions")
     .get(auth("getSubmissions"), submissionController.getSubmissions);
 
+router
+    .route("/:testId/submissions/:takerId")
+    .get(auth("getTakerSubmission"), testController.getTest);
+
 export default router;

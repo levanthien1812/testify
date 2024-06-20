@@ -3,6 +3,7 @@ import testService from "../services/test.service.js";
 import { ApiError } from "../utils/apiError.js";
 import catchAsync from "../utils/catchAsync.js";
 import { testStatus } from "../config/testStatus.js";
+import submissionService from "../services/submission.service.js";
 
 const getSubmission = catchAsync(async (req, res, next) => {
     const submission = await submissionService.getSubmissionByTakerId(
@@ -14,7 +15,7 @@ const getSubmission = catchAsync(async (req, res, next) => {
 });
 
 const getSubmissions = catchAsync(async (req, res, next) => {
-    const test = testService.findById(req.params.testId);
+    const test = await testService.findById(req.params.testId);
     if (!test) {
         return new ApiError(httpStatus.NOT_FOUND, "Test not found!");
     }

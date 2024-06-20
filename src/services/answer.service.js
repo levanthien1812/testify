@@ -3,13 +3,7 @@ import { Question } from "../models/question.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { Answer } from "../models/answer.model.js";
 import { questionTypes } from "../config/questionTypes.js";
-import { MultipleChoicesAnswer } from "../models/multipleChoicesAnswer.model.js";
-import { FillGapsAnswer } from "../models/fillGapsAnswer.model.js";
-import { MultipleChoiceQuestion } from "../models/multipleChoicesQuestion.model.js";
-import { FillGapsQuestion } from "../models/fillGapsQuestion.model.js";
-import { MatchingQuestion } from "../models/matchingQuestion.model.js";
 import { sameItems } from "../utils/compareArray.js";
-import { MatchingAnswer } from "../models/matchingAnswer.model.js";
 import {
     questionTypeToAnswerModel,
     questionTypeToQuestionModel,

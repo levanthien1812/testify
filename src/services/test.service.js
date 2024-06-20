@@ -17,7 +17,10 @@ const createTest = async (testBody) => {
         close_time &&
         new Date(datetime).getTime() > new Date(close_time).getTime()
     ) {
-        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid close time");
+        throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            "Close time must be after start time"
+        );
     }
 
     const newTest = await Test.create(testBody);
@@ -38,13 +41,22 @@ const getTests = async (filter, query) => {
     return testsWithQuestions;
 };
 
-const getTest = async (testId, user, withAnswers = false) => {
-    const test = await Test.findById(testId).populate("taker_ids");
-    let withCorrectAnswers = false;
+const getTest = async (
+    testId,
+    user,
+    withUserAnswers = false,
+    takerId = undefined
+) => {
+    const test = await Test.findById(testId).populate({
+        path: "taker_ids",
+        select: "-__v -role -maker_id",
+    });
 
     if (!test) {
         throw new ApiError(httpStatus.NOT_FOUND, "No test found with this ID");
     }
+
+    let withCorrectAnswers = false;
 
     if (user.role === "taker") {
         if (!test.taker_ids.map((taker) => taker.id).includes(user.id)) {
@@ -62,15 +74,19 @@ const getTest = async (testId, user, withAnswers = false) => {
             }
         }
 
+        const submission = await submissionService.getSubmissionByTakerId(
+            user._id,
+            testId
+        );
+
+        if (!submission && withUserAnswers) {
+            return new ApiError(httpStatus.BAD_REQUEST, "No submission found");
+        }
+
         if (
             test.public_answers_option ===
             publicAnswersOptions.AFTER_TAKER_SUBMISSION
         ) {
-            const submission = await submissionService.getSubmissionByTakerId(
-                user._id,
-                testId
-            );
-
             withCorrectAnswers = !!submission;
         }
 
@@ -88,6 +104,15 @@ const getTest = async (testId, user, withAnswers = false) => {
     let parts = await Part.find({ test_id: test.id });
     let questions;
 
+    if (takerId && user.role === "maker") {
+        user = await User.findById(takerId);
+        if (!user) {
+            throw new ApiError(httpStatus.NOT_FOUND, "Taker not found");
+        }
+        withCorrectAnswers = true;
+        withUserAnswers = true;
+    }
+
     if (parts.length > 0) {
         parts = await Promise.all(
             parts.map(async (part) => {
@@ -97,7 +122,7 @@ const getTest = async (testId, user, withAnswers = false) => {
                 questionsByPart = await questionService.getQuestionsContent(
                     questionsByPart,
                     user,
-                    withAnswers,
+                    withUserAnswers,
                     withCorrectAnswers
                 );
 
@@ -114,7 +139,7 @@ const getTest = async (testId, user, withAnswers = false) => {
         questions = await questionService.getQuestionsContent(
             questions,
             user,
-            withAnswers,
+            withUserAnswers,
             withCorrectAnswers
         );
 

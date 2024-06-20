@@ -1,10 +1,8 @@
 import httpStatus from "http-status";
 import testService from "../services/test.service.js";
 import catchAsync from "../utils/catchAsync.js";
-import questionService from "../services/question.service.js";
 import userService from "../services/user.service.js";
 import { testStatus } from "../config/testStatus.js";
-import submissionService from "../services/submission.service.js";
 
 const createTest = catchAsync(async (req, res, next) => {
     const body = {
@@ -61,7 +59,8 @@ const getTest = catchAsync(async (req, res, next) => {
     const test = await testService.getTest(
         req.params.testId,
         req.user,
-        !!req.query.with_answers
+        !!req.query.with_user_answers,
+        req.params.takerId
     );
 
     return res.status(httpStatus.ACCEPTED).send({ test });
