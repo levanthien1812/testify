@@ -19,6 +19,7 @@ const allRoles = {
         "validateQuestions",
         "getSubmissions",
         "getTakerSubmission",
+        "publishTest",
     ],
     admin: ["getUsers", "manageUsers"],
 };

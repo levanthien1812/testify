@@ -229,6 +229,20 @@ const updateTest = async (testId, testBody) => {
     return updatedTest;
 };
 
+const publishTest = async (testId) => {
+    const test = await Test.findById(testId);
+
+    const updatedTest = await Test.findByIdAndUpdate(
+        testId,
+        { $set: { status: testStatus.PUBLISHED } },
+        {
+            new: true,
+        }
+    );
+
+    return updatedTest;
+};
+
 const updateTestsStatus = async () => {
     const now = new Date();
 
@@ -269,6 +283,7 @@ export default {
     getTest,
     assignTakers,
     updateTest,
+    publishTest,
     findById,
     getAvailableTakers,
     updateTestsStatus,

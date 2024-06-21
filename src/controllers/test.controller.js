@@ -27,6 +27,12 @@ const updateTest = async (req, res, next) => {
     return res.status(httpStatus.ACCEPTED).send({ test: updatedTest });
 };
 
+const publishTest = async (req, res, next) => {
+    const updatedTest = await testService.publishTest(req.params.testId);
+
+    return res.status(httpStatus.ACCEPTED).send({ test: updatedTest });
+};
+
 const getTests = catchAsync(async (req, res, next) => {
     const filter =
         req.user.role === "maker"
@@ -115,6 +121,7 @@ export default {
     getTest,
     assignTakers,
     updateTest,
+    publishTest,
     createTakers,
     getAvailableTakers,
 };
