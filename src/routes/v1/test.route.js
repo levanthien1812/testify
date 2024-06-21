@@ -30,6 +30,10 @@ router
     .patch(auth("updateTest"), testController.updateTest);
 
 router
+    .route("/:testId/publish")
+    .patch(auth("publishTest"), testController.publishTest);
+
+router
     .route("/:testId/parts")
     .post(
         auth("addPart"),
