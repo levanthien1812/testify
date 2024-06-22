@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
 
 const answerSchema = mongoose.Schema({
-    user_id: {
+    submission_id: {
         type: mongoose.SchemaTypes.ObjectId,
         required: true,
-        ref: "User",
+        ref: "Submission",
     },
     question_id: {
         type: mongoose.SchemaTypes.ObjectId,

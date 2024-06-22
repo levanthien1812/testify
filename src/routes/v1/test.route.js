@@ -4,7 +4,6 @@ import testValidation from "../../validations/test.validation.js";
 import testController from "../../controllers/test.controller.js";
 import { auth } from "../../middlewares/auth.js";
 import questionController from "../../controllers/question.controller.js";
-import answerController from "../../controllers/answer.controller.js";
 import partValidation from "../../validations/part.validation.js";
 import partController from "../../controllers/part.controller.js";
 import submissionController from "../../controllers/submission.controller.js";
@@ -81,7 +80,7 @@ router
 router
     .route("/:testId/submission")
     .get(auth("getSubmission"), submissionController.getSubmission)
-    .post(auth("submitAnswers"), answerController.submitAnswers);
+    .post(auth("createSubmission"), submissionController.createSubmission);
 
 router
     .route("/:testId/submissions")

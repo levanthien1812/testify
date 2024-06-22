@@ -4,6 +4,68 @@ import { ApiError } from "../utils/apiError.js";
 import catchAsync from "../utils/catchAsync.js";
 import { testStatus } from "../config/testStatus.js";
 import submissionService from "../services/submission.service.js";
+import { Test } from "../models/test.model.js";
+import answerService from "../services/answer.service.js";
+
+const createSubmission = catchAsync(async (req, res, next) => {
+    const existingSubmission = await submissionService.getSubmissionByTakerId(
+        req.user.id,
+        req.params.testId
+    );
+
+    if (existingSubmission) {
+        return new ApiError(httpStatus.BAD_REQUEST, "Test already submitted");
+    }
+
+    const test = await Test.findById(req.params.testId);
+
+    if (
+        test.close_time &&
+        new Date(test.close_time).getTime() + test.duration * 60 * 1000 <
+            Date.now()
+    ) {
+        return new ApiError(
+            httpStatus.BAD_REQUEST,
+            "Test closed for submissions"
+        );
+    }
+
+    let submission = await submissionService.createSubmission({
+        taker_id: req.user._id,
+        test_id: req.params.testId,
+        submit_time: new Date(),
+        start_time: new Date(req.body.startTime),
+        wrong_answers: 0,
+        correct_answers: 0,
+        score: 0,
+    });
+
+    const newAnswers = await answerService.createAnswers(
+        submission.id,
+        req.body.answers
+    );
+
+    const archivedScore = newAnswers.reduce(
+        (acc, answer) => acc + answer.score,
+        0
+    );
+
+    const totalCorrectAnswers = newAnswers.filter(
+        (answer) => answer.is_correct
+    ).length;
+
+    const totalWrongAnswers = newAnswers.filter(
+        (answer) => !answer.is_correct
+    ).length;
+
+    submission = await submissionService.updateSubmission(submission.id, {
+        wrong_answers: totalWrongAnswers,
+        correct_answers: totalCorrectAnswers,
+        score: archivedScore,
+    });
+
+    return res.status(httpStatus.CREATED).send({ submission });
+});
 
 const getSubmission = catchAsync(async (req, res, next) => {
     const submission = await submissionService.getSubmissionByTakerId(
@@ -31,4 +93,4 @@ const getSubmissions = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ submissions });
 });
 
-export default { getSubmission, getSubmissions };
+export default { createSubmission, getSubmission, getSubmissions };

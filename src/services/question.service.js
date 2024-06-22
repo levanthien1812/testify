@@ -6,6 +6,7 @@ import { questionTypes } from "../config/questionTypes.js";
 import partService from "./part.service.js";
 import answerService from "./answer.service.js";
 import { questionTypeToQuestionModel } from "../utils/mapping.js";
+import { Submission } from "../models/submission.model.js";
 
 const createQuestionContent = async (questionType, questionContent) => {
     const model = questionTypeToQuestionModel.get(questionType);
@@ -142,21 +143,21 @@ const getQuestionsByTestId = async (testId) => {
     return questions;
 };
 
-const getQuestionContent = async (questionId, user, with_answers) => {
+const getQuestionContent = async (questionId, withCorrectAnswer) => {
     const question = await Question.findById(questionId);
 
     if (!question) {
         throw new ApiError(httpStatus.NOT_FOUND, "Question not found!");
     }
 
-    const selectFields =
-        (user.role === "maker" || (user.role === "taker" && with_answers)) &&
-        "+answer";
+    // const selectFields =
+    //     () &&
+    //     "+answer";
 
     const model = questionTypeToQuestionModel.get(question.type);
     let content = await model
         .findOne({ question_id: questionId })
-        .select(selectFields);
+        .select(withCorrectAnswer && "+answer");
 
     return content;
 };
@@ -164,24 +165,35 @@ const getQuestionContent = async (questionId, user, with_answers) => {
 const getQuestionsContent = async (
     questions,
     user,
-    withAnswers,
-    withCorrectAnswers
+    withTakerAnswers,
+    withCorrectAnswers,
+    takerId = null
 ) => {
     const questionsWithContent = await Promise.all(
         questions.map(async (question) => {
             const content = await getQuestionContent(
                 question.id,
-                user,
-                withAnswers,
-                withCorrectAnswers
+                user.role === "maker" ||
+                    (user.role === "taker" && withCorrectAnswers)
             );
 
-            if (user.role === "taker" && withAnswers) {
-                let answer = await answerService.findByQuestionIdAndUserId(
-                    question.id,
-                    user.id,
-                    withCorrectAnswers
-                );
+            if (
+                (user.role === "taker" && withTakerAnswers) ||
+                (user.role === "maker" && takerId)
+            ) {
+                const submission = await Submission.findOne({
+                    test_id: question.test_id,
+                    taker_id:
+                        (user.role === "maker" && takerId) ||
+                        (user.role === "taker" && user.id),
+                });
+
+                let answer =
+                    await answerService.findByQuestionIdAndSubmissionId(
+                        question.id,
+                        submission.id,
+                        withCorrectAnswers
+                    );
                 const answerContent =
                     await answerService.getAnswerContentByAnswerId(
                         answer.id,

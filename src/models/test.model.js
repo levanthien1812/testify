@@ -79,6 +79,10 @@ const testSchema = mongoose.Schema({
         required: false,
     },
     taker_ids: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
+    are_answers_provided: {
+        type: Boolean,
+        default: false,
+    },
     __v: { type: Number, select: false },
 });
 
