@@ -8,19 +8,20 @@ import {
     questionTypeToAnswerModel,
     questionTypeToQuestionModel,
 } from "../utils/mapping.js";
+import { Submission } from "../models/submission.model.js";
 
-const createAnswers = async (userId, answersBody) => {
+const createAnswers = async (submissionId, answersBody) => {
     const answers = [];
 
     for (const answerBody of answersBody) {
-        const newAnswer = await createAnswer(userId, answerBody);
+        const newAnswer = await createAnswer(submissionId, answerBody);
         answers.push(newAnswer);
     }
 
     return answers;
 };
 
-const createAnswer = async (userId, answerBody) => {
+const createAnswer = async (submissionId, answerBody) => {
     const question = await Question.findById(answerBody.question_id);
 
     if (!question) {
@@ -29,7 +30,7 @@ const createAnswer = async (userId, answerBody) => {
 
     const newAnswer = await Answer.create({
         question_id: answerBody.question_id,
-        user_id: userId,
+        submission_id: submissionId,
         date: new Date(),
     });
 
@@ -45,32 +46,42 @@ const createAnswer = async (userId, answerBody) => {
         })
         .select("answer");
 
-    if (
-        sameItems(
-            answerContentDoc.answer,
-            questionContentDoc.answer,
-            question.type === questionTypes.FILL_GAPS
-        )
-    ) {
-        newAnswer.is_correct = true;
-        newAnswer.score = question.score;
-    } else {
-        newAnswer.is_correct = false;
-        newAnswer.score = 0;
+    if (questionContentDoc.answer) {
+        if (
+            sameItems(
+                answerContentDoc.answer,
+                questionContentDoc.answer,
+                question.type === questionTypes.FILL_GAPS
+            )
+        ) {
+            newAnswer.is_correct = true;
+            newAnswer.score = question.score;
+        } else {
+            newAnswer.is_correct = false;
+            newAnswer.score = 0;
+        }
+        await newAnswer.save();
     }
-    await newAnswer.save();
 
     return newAnswer;
 };
 
-const findByQuestionIdAndUserId = async (
+const scoreAnswers = async (submissionId) => {
+    const submission = await Submission.findById(submissionId);
+
+    if (!submission) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Submission not found!");
+    }
+};
+
+const findByQuestionIdAndSubmissionId = async (
     questionId,
-    userId,
+    submissionId,
     withCorrectAnswer = true
 ) => {
     const answer = await Answer.findOne({
         question_id: questionId,
-        user_id: userId,
+        submission_id: submissionId,
     }).select(
         `-__v -user_id -question_id ${
             !withCorrectAnswer ? "-is_correct -score" : ""
@@ -93,6 +104,6 @@ const getAnswerContentByAnswerId = async (answerId, questionType) => {
 
 export default {
     createAnswers,
-    findByQuestionIdAndUserId,
+    findByQuestionIdAndSubmissionId,
     getAnswerContentByAnswerId,
 };

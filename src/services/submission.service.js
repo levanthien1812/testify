@@ -6,6 +6,15 @@ const createSubmission = async (submissionBody) => {
     return submission;
 };
 
+const updateSubmission = async (submissionId, submissionBody) => {
+    const submission = await Submission.findByIdAndUpdate(
+        submissionId,
+        submissionBody,
+        { new: true }
+    );
+    return submission;
+};
+
 const getSubmissionByTakerId = async (takerId, testId) => {
     const test = await Test.findOne({ _id: testId });
     const publicAnswer =
@@ -31,6 +40,7 @@ const getSubmissionsByTestId = async (testId) => {
 
 export default {
     createSubmission,
+    updateSubmission,
     getSubmissionByTakerId,
     getSubmissionsByTestId,
 };

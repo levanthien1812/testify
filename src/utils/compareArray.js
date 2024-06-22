@@ -1,9 +1,12 @@
-export function sameItems(array1, array2, considerOrder = false) {
+export function sameItems(a, b, considerOrder = false) {
+    if (typeof a !== "object" && typeof b !== "object") {
+        return a === b;
+    }
     if (considerOrder) {
-        return arraysEqual(array1, array2);
+        return arraysEqual(a, b);
     } else {
-        const count1 = countObjectOccurrences(array1);
-        const count2 = countObjectOccurrences(array2);
+        const count1 = countObjectOccurrences(a);
+        const count2 = countObjectOccurrences(b);
         return compareObjects(count1, count2);
     }
 }

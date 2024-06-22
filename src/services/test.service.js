@@ -44,13 +44,21 @@ const getTests = async (filter, query) => {
 const getTest = async (
     testId,
     user,
-    withUserAnswers = false,
-    takerId = undefined
+    withTakerAnswers = false,
+    takerId = null
 ) => {
-    const test = await Test.findById(testId).populate({
-        path: "taker_ids",
-        select: "-__v -role -maker_id",
-    });
+    const test = await Test.findById(testId)
+        .populate({
+            path: "taker_ids",
+            select: "-__v -role -maker_id",
+        })
+        .select(
+            `${
+                user.role === "taker"
+                    ? "-are_answers_provided -share_option -public_answers_option -public_answers_date"
+                    : ""
+            }`
+        );
 
     if (!test) {
         throw new ApiError(httpStatus.NOT_FOUND, "No test found with this ID");
@@ -79,7 +87,7 @@ const getTest = async (
             testId
         );
 
-        if (!submission && withUserAnswers) {
+        if (!submission && withTakerAnswers) {
             return new ApiError(httpStatus.BAD_REQUEST, "No submission found");
         }
 
@@ -101,17 +109,17 @@ const getTest = async (
         }
     }
 
-    let parts = await Part.find({ test_id: test.id });
-    let questions;
-
-    if (takerId && user.role === "maker") {
-        user = await User.findById(takerId);
-        if (!user) {
+    if (user.role === "maker" && takerId) {
+        const taker = await User.findById(takerId);
+        if (!taker) {
             throw new ApiError(httpStatus.NOT_FOUND, "Taker not found");
         }
         withCorrectAnswers = true;
-        withUserAnswers = true;
+        withTakerAnswers = true;
     }
+
+    let parts = await Part.find({ test_id: test.id });
+    let questions;
 
     if (parts.length > 0) {
         parts = await Promise.all(
@@ -122,8 +130,9 @@ const getTest = async (
                 questionsByPart = await questionService.getQuestionsContent(
                     questionsByPart,
                     user,
-                    withUserAnswers,
-                    withCorrectAnswers
+                    withTakerAnswers,
+                    withCorrectAnswers,
+                    takerId
                 );
 
                 return { ...part.toObject(), questions: questionsByPart };
@@ -139,8 +148,9 @@ const getTest = async (
         questions = await questionService.getQuestionsContent(
             questions,
             user,
-            withUserAnswers,
-            withCorrectAnswers
+            withTakerAnswers,
+            withCorrectAnswers,
+            takerId
         );
 
         return {
