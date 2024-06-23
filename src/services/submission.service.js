@@ -1,5 +1,6 @@
 import { Submission } from "../models/submission.model.js";
 import { Test } from "../models/test.model.js";
+import answerService from "./answer.service.js";
 
 const createSubmission = async (submissionBody) => {
     const submission = await Submission.create(submissionBody);
@@ -38,9 +39,40 @@ const getSubmissionsByTestId = async (testId) => {
     return submissions;
 };
 
+const scoreSubmission = async (submissionId) => {
+    let submission = await Submission.findById(submissionId);
+    const test = await Test.findById(submission.test_id);
+
+    const answers = await answerService.getAnswersBySubmissionId(submissionId);
+
+    if (test.are_answers_provided && answers.length > 0) {
+        const archivedScore = answers.reduce(
+            (acc, answer) => acc + answer.score,
+            0
+        );
+
+        const totalCorrectAnswers = answers.filter(
+            (answer) => answer.is_correct
+        ).length;
+
+        const totalWrongAnswers = answers.filter(
+            (answer) => !answer.is_correct
+        ).length;
+
+        submission = await updateSubmission(submission.id, {
+            wrong_answers: totalWrongAnswers,
+            correct_answers: totalCorrectAnswers,
+            score: archivedScore,
+        });
+    }
+
+    return submission
+};
+
 export default {
     createSubmission,
     updateSubmission,
     getSubmissionByTakerId,
     getSubmissionsByTestId,
+    scoreSubmission,
 };
