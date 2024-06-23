@@ -7,6 +7,9 @@ import partService from "./part.service.js";
 import answerService from "./answer.service.js";
 import { questionTypeToQuestionModel } from "../utils/mapping.js";
 import { Submission } from "../models/submission.model.js";
+import testService from "./test.service.js";
+import { autoScoreTypes } from "../config/constants.js";
+import submissionService from "./submission.service.js";
 
 const createQuestionContent = async (questionType, questionContent) => {
     const model = questionTypeToQuestionModel.get(questionType);
@@ -121,6 +124,17 @@ const updateQuestion = async (questionId, questionBody) => {
     }
 };
 
+const checkAnswersProvided = async (testId) => {
+    const questions = await Question.find({ test_id: testId });
+
+    const areAnswersProvided = questions.every((question) => {
+        return autoScoreTypes.includes(question.type) && !!question.answer;
+    });
+
+    return areAnswersProvided;
+};
+
+// add/update answer
 const addAnswer = async (questionId, answerBody) => {
     const question = await Question.findById(questionId);
 
@@ -133,6 +147,28 @@ const addAnswer = async (questionId, answerBody) => {
         { question_id: questionId },
         { $set: answerBody }
     );
+
+    const submissions = await Submission.find({
+        test_id: question.test_id,
+    });
+
+    if (submissions.length > 0) {
+        submissions.map(async (submission) => {
+            const answer = await answerService.findByQuestionIdAndSubmissionId(
+                questionId,
+                submission._id
+            );
+
+            await answerService.scoreAnswerByAnswerId(answer._id);
+            await submissionService.scoreSubmission(submission._id);
+        });
+    }
+
+    if (await checkAnswersProvided(question.test_id)) {
+        await testService.updateTest(question.test_id, {
+            are_answers_provided: true,
+        });
+    }
 
     return updated;
 };
@@ -149,10 +185,6 @@ const getQuestionContent = async (questionId, withCorrectAnswer) => {
     if (!question) {
         throw new ApiError(httpStatus.NOT_FOUND, "Question not found!");
     }
-
-    // const selectFields =
-    //     () &&
-    //     "+answer";
 
     const model = questionTypeToQuestionModel.get(question.type);
     let content = await model
@@ -194,13 +226,16 @@ const getQuestionsContent = async (
                         submission.id,
                         withCorrectAnswers
                     );
-                const answerContent =
-                    await answerService.getAnswerContentByAnswerId(
-                        answer.id,
-                        question.type
-                    );
 
-                answer = { ...answer.toObject(), content: answerContent };
+                if (answer) {
+                    const answerContent =
+                        await answerService.getAnswerContentByAnswerId(
+                            answer.id,
+                            question.type
+                        );
+
+                    answer = { ...answer.toObject(), content: answerContent };
+                }
 
                 return { ...question.toObject(), content, answer };
             }

@@ -37,12 +37,38 @@ const createAnswer = async (submissionId, answerBody) => {
     const answerContent = { answer_id: newAnswer.id, ...answerBody };
 
     const answerModel = questionTypeToAnswerModel.get(question.type);
+    await answerModel.create(answerContent);
+    
+    newAnswer = await scoreAnswerByAnswerId(newAnswer.id);
+    return newAnswer;
+};
+
+// const scoreAnswersBySubmissionId = async (submissionId) => {
+//     const submission = await Submission.findById(submissionId);
+
+//     if (!submission) {
+//         throw new ApiError(httpStatus.NOT_FOUND, "Submission not found!");
+//     }
+// };
+
+const scoreAnswerByAnswerId = async (answerId) => {
+    const answer = await Answer.findById(answerId);
+
+    if (!answer) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Answer not found!");
+    }
+
+    const question = await Question.findById(answer.question_id);
+
     const questionModel = questionTypeToQuestionModel.get(question.type);
 
-    let answerContentDoc = await answerModel.create(answerContent);
+    const answerContentDoc = await getAnswerContentByAnswerId(
+        answerId,
+        question.type
+    );
     let questionContentDoc = await questionModel
         .findOne({
-            question_id: answerBody.question_id,
+            question_id: question.id,
         })
         .select("answer");
 
@@ -54,24 +80,16 @@ const createAnswer = async (submissionId, answerBody) => {
                 question.type === questionTypes.FILL_GAPS
             )
         ) {
-            newAnswer.is_correct = true;
-            newAnswer.score = question.score;
+            answer.is_correct = true;
+            answer.score = question.score;
         } else {
-            newAnswer.is_correct = false;
-            newAnswer.score = 0;
+            answer.is_correct = false;
+            answer.score = 0;
         }
-        await newAnswer.save();
+        await answer.save();
     }
 
-    return newAnswer;
-};
-
-const scoreAnswers = async (submissionId) => {
-    const submission = await Submission.findById(submissionId);
-
-    if (!submission) {
-        throw new ApiError(httpStatus.NOT_FOUND, "Submission not found!");
-    }
+    return answer;
 };
 
 const findByQuestionIdAndSubmissionId = async (
@@ -102,8 +120,19 @@ const getAnswerContentByAnswerId = async (answerId, questionType) => {
     return answerContent;
 };
 
+const getAnswersBySubmissionId = async (submissionId) => {
+    const answers = await Answer.find({
+        submission_id: submissionId,
+    }).select("-__v -question_id -submission_id");
+
+    return answers;
+};
+
+
 export default {
     createAnswers,
     findByQuestionIdAndSubmissionId,
     getAnswerContentByAnswerId,
+    scoreAnswerByAnswerId,
+    getAnswersBySubmissionId,
 };

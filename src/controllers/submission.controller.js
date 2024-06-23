@@ -45,26 +45,11 @@ const createSubmission = catchAsync(async (req, res, next) => {
         req.body.answers
     );
 
-    const archivedScore = newAnswers.reduce(
-        (acc, answer) => acc + answer.score,
-        0
-    );
+    submission = await submissionService.scoreSubmission(submission.id);
 
-    const totalCorrectAnswers = newAnswers.filter(
-        (answer) => answer.is_correct
-    ).length;
-
-    const totalWrongAnswers = newAnswers.filter(
-        (answer) => !answer.is_correct
-    ).length;
-
-    submission = await submissionService.updateSubmission(submission.id, {
-        wrong_answers: totalWrongAnswers,
-        correct_answers: totalCorrectAnswers,
-        score: archivedScore,
-    });
-
-    return res.status(httpStatus.CREATED).send({ submission });
+    return res
+        .status(httpStatus.CREATED)
+        .send({ submission, answers: newAnswers });
 });
 
 const getSubmission = catchAsync(async (req, res, next) => {
