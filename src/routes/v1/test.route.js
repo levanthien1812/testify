@@ -7,6 +7,8 @@ import questionController from "../../controllers/question.controller.js";
 import partValidation from "../../validations/part.validation.js";
 import partController from "../../controllers/part.controller.js";
 import submissionController from "../../controllers/submission.controller.js";
+import answerValidation from "../../validations/answer.validation.js";
+import answerController from "../../controllers/answer.controller.js";
 
 const router = express.Router();
 
@@ -89,5 +91,13 @@ router
 router
     .route("/:testId/submissions/:takerId")
     .get(auth("getTakerSubmission"), testController.getTest);
+
+router
+    .route("/:testId/answers/:answerId")
+    .patch(
+        auth("updateTakerAnswer"),
+        validate(answerValidation.updateAnswerSchema),
+        answerController.updateAnswer
+    );
 
 export default router;
