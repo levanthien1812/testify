@@ -8,7 +8,7 @@ import {
     questionTypeToAnswerModel,
     questionTypeToQuestionModel,
 } from "../utils/mapping.js";
-import { Submission } from "../models/submission.model.js";
+import { autoScoreTypes } from "../config/constants.js";
 
 const createAnswers = async (submissionId, answersBody) => {
     const answers = [];
@@ -38,18 +38,33 @@ const createAnswer = async (submissionId, answerBody) => {
 
     const answerModel = questionTypeToAnswerModel.get(question.type);
     await answerModel.create(answerContent);
-    
-    newAnswer = await scoreAnswerByAnswerId(newAnswer.id);
+
+    if (autoScoreTypes.includes(question.type)) {
+        newAnswer = await scoreAnswerByAnswerId(newAnswer.id);
+    }
+
     return newAnswer;
 };
 
-// const scoreAnswersBySubmissionId = async (submissionId) => {
-//     const submission = await Submission.findById(submissionId);
+const updateAnswer = async (answerId, answerBody) => {
+    const answer = await Answer.findById(answerId);
 
-//     if (!submission) {
-//         throw new ApiError(httpStatus.NOT_FOUND, "Submission not found!");
-//     }
-// };
+    if (!answer) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Answer not found!");
+    }
+
+    const updatedAnswer = await Answer.findByIdAndUpdate(
+        answer.id,
+        { $set: answerBody },
+        {
+            new: true,
+        }
+    );
+
+    await scoreAnswerByAnswerId(updatedAnswer.id);
+
+    return updatedAnswer;
+};
 
 const scoreAnswerByAnswerId = async (answerId) => {
     const answer = await Answer.findById(answerId);
@@ -59,7 +74,6 @@ const scoreAnswerByAnswerId = async (answerId) => {
     }
 
     const question = await Question.findById(answer.question_id);
-
     const questionModel = questionTypeToQuestionModel.get(question.type);
 
     const answerContentDoc = await getAnswerContentByAnswerId(
@@ -101,7 +115,7 @@ const findByQuestionIdAndSubmissionId = async (
         question_id: questionId,
         submission_id: submissionId,
     }).select(
-        `-__v -user_id -question_id ${
+        `-__v -submission_id -question_id ${
             !withCorrectAnswer ? "-is_correct -score" : ""
         }`
     );
@@ -128,9 +142,9 @@ const getAnswersBySubmissionId = async (submissionId) => {
     return answers;
 };
 
-
 export default {
     createAnswers,
+    updateAnswer,
     findByQuestionIdAndSubmissionId,
     getAnswerContentByAnswerId,
     scoreAnswerByAnswerId,
