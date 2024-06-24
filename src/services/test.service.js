@@ -52,13 +52,6 @@ const getTest = async (
             path: "taker_ids",
             select: "-__v -role -maker_id",
         })
-        .select(
-            `${
-                user.role === "taker"
-                    ? "-are_answers_provided -share_option -public_answers_option -public_answers_date"
-                    : ""
-            }`
-        );
 
     if (!test) {
         throw new ApiError(httpStatus.NOT_FOUND, "No test found with this ID");
@@ -67,7 +60,10 @@ const getTest = async (
     let withCorrectAnswers = false;
 
     if (user.role === "taker") {
-        if (!test.taker_ids.map((taker) => taker.id).includes(user.id)) {
+        if (
+            test.share_option === shareOptions.RESTRICTED &&
+            !test.taker_ids.map((taker) => taker.id).includes(user.id)
+        ) {
             throw new ApiError(
                 httpStatus.FORBIDDEN,
                 "You dont have access to this test!"
