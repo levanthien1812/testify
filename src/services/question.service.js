@@ -9,7 +9,6 @@ import { questionTypeToQuestionModel } from "../utils/mapping.js";
 import { Submission } from "../models/submission.model.js";
 import testService from "./test.service.js";
 import { autoScoreTypes } from "../config/constants.js";
-import submissionService from "./submission.service.js";
 
 const createQuestionContent = async (questionType, questionContent) => {
     const model = questionTypeToQuestionModel.get(questionType);
@@ -159,8 +158,10 @@ const addAnswer = async (questionId, answerBody) => {
                 submission._id
             );
 
-            await answerService.scoreAnswerByAnswerId(answer._id);
-            await submissionService.scoreSubmission(submission._id);
+            // In case submission doesn't have this answer
+            if (answer) {
+                await answerService.scoreAnswerByAnswerId(answer._id);
+            }
         });
     }
 

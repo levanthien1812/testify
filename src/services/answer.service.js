@@ -9,6 +9,7 @@ import {
     questionTypeToQuestionModel,
 } from "../utils/mapping.js";
 import { autoScoreTypes } from "../config/constants.js";
+import submissionService from "./submission.service.js";
 
 const createAnswers = async (submissionId, answersBody) => {
     const answers = [];
@@ -28,7 +29,7 @@ const createAnswer = async (submissionId, answerBody) => {
         throw new ApiError(httpStatus.NOT_FOUND, "Question not found!");
     }
 
-    const newAnswer = await Answer.create({
+    let newAnswer = await Answer.create({
         question_id: answerBody.question_id,
         submission_id: submissionId,
         date: new Date(),
@@ -102,6 +103,8 @@ const scoreAnswerByAnswerId = async (answerId) => {
         }
         await answer.save();
     }
+
+    await submissionService.scoreSubmission(answer.submission_id);
 
     return answer;
 };
