@@ -8,6 +8,8 @@ import { jwtStrategy } from "./config/passport.js";
 import { errorConverter, errorHandler } from "./middlewares/error.js";
 import { ApiError } from "./utils/apiError.js";
 import httpStatus from "http-status";
+import swaggerUi from "swagger-ui-express";
+import swaggerSpec from "./config/swagger.js";
 
 const app = express();
 
@@ -24,6 +26,8 @@ app.options("*", cors());
 
 app.use(passport.initialize());
 passport.use("jwt", jwtStrategy);
+
+app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
 app.use("/v1", routes);
 
