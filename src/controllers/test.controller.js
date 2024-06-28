@@ -51,14 +51,15 @@ const getTests = catchAsync(async (req, res, next) => {
         });
     req.query.search &&
         (filter.title = { $regex: new RegExp(req.query.search, "i") });
+    req.query.status && (filter.status = req.query.status);
 
     req.query.sort && (query.sortBy = req.query.sort);
     req.query.page && (query.page = req.query.page);
     req.query.limit && (query.limit = req.query.limit);
+ 
+    const testsResult = await testService.getTests(filter, query);
 
-    const tests = await testService.getTests(filter, query);
-
-    return res.status(httpStatus.ACCEPTED).send({ tests, filter });
+    return res.status(httpStatus.ACCEPTED).send(testsResult); 
 });
 
 const getTest = catchAsync(async (req, res, next) => {

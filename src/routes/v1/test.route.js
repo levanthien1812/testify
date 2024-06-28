@@ -9,6 +9,8 @@ import partController from "../../controllers/part.controller.js";
 import submissionController from "../../controllers/submission.controller.js";
 import answerValidation from "../../validations/answer.validation.js";
 import answerController from "../../controllers/answer.controller.js";
+import { uploadSingle } from "../../middlewares/upload.js";
+import { upload } from "../../config/multer.js";
 
 const router = express.Router();
 
@@ -236,7 +238,11 @@ router
 
 router
     .route("/:testId/questions")
-    .post(auth("createQuestion"), questionController.createQuestion);
+    .post(
+        auth("createQuestion"),
+        upload.array("files[]", 10),
+        questionController.createQuestion
+    );
 
 router
     .route("/:testId/questions/:questionId")

@@ -16,7 +16,7 @@ const multipleChoiceQuestionSchema = mongoose.Schema({
         ref: "Question",
         select: false,
     },
-    image: String,
+    images: [String],
     allow_multiple: { type: Boolean, default: false },
     options: [
         {
