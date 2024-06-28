@@ -64,8 +64,11 @@ const deleteQuestionContent = async (questionId, questionType) => {
     await model.findOneAndDelete({ question_id: questionId });
 };
 
-const createQuestion = async (questionBody) => {
-    const newQuestion = await Question.create(questionBody);
+const createQuestion = async (testId, questionBody) => {
+    const newQuestion = await Question.create({
+        ...questionBody,
+        test_id: testId,
+    });
 
     const questionContent = {
         ...questionBody.content,

@@ -28,17 +28,17 @@ const createTest = async (testBody) => {
 };
 
 const getTests = async (filter, query) => {
-    const tests = await Test.paginate(filter, query);
+    const { results: tests, ...rest } = await Test.paginate(filter, query);
 
     const testsWithQuestions = await Promise.all(
-        tests.results.map(async (test) => {
+        tests.map(async (test) => {
             const questions = await Question.find({ test_id: test.id });
 
             return { ...test.toObject(), questions };
         })
     );
 
-    return testsWithQuestions;
+    return { tests: testsWithQuestions, ...rest };
 };
 
 const getTest = async (
@@ -47,11 +47,10 @@ const getTest = async (
     withTakerAnswers = false,
     takerId = null
 ) => {
-    const test = await Test.findById(testId)
-        .populate({
-            path: "taker_ids",
-            select: "-__v -role -maker_id",
-        })
+    const test = await Test.findById(testId).populate({
+        path: "taker_ids",
+        select: "-__v -role -maker_id",
+    });
 
     if (!test) {
         throw new ApiError(httpStatus.NOT_FOUND, "No test found with this ID");

@@ -28,10 +28,11 @@ const getTests = {
         finish: Joi.string().optional(),
         date_from: Joi.string().optional(),
         date_to: Joi.string().optional(),
-        search: Joi.string().optional(),
+        search: Joi.string().optional().allow(""),
+        status: Joi.string().optional(),
         sort: Joi.string().optional(),
-        page: Joi.string().optional(),
-        limit: Joi.string().optional(),
+        page: Joi.number().optional(),
+        limit: Joi.number().optional(),
     }),
 };
 

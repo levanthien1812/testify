@@ -9,10 +9,16 @@ const createQuestion = catchAsync(async (req, res, next) => {
         throw new ApiError(httpStatus.NOT_FOUND, "Test ID not found");
     }
 
-    const { question, content } = await questionService.createQuestion({
-        ...req.body,
-        test_id: test._id,
-    });
+    const { question, content } = await questionService.createQuestion(
+        test._id,
+        {
+            ...req.body,
+            content: {
+                ...JSON.parse(req.body.content),
+                images: req.files.map((f) => f.path),
+            },
+        }
+    );
     return res.status(httpStatus.ACCEPTED).send({ question, content });
 });
 
