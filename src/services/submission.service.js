@@ -66,7 +66,7 @@ const scoreSubmission = async (submissionId) => {
         });
     }
 
-    return submission
+    return submission;
 };
 
 export default {

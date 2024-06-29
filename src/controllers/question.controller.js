@@ -25,7 +25,13 @@ const createQuestion = catchAsync(async (req, res, next) => {
 const updateQuestion = catchAsync(async (req, res, next) => {
     const { question, content } = await questionService.updateQuestion(
         req.params.questionId,
-        req.body
+        {
+            ...req.body,
+            content: {
+                ...JSON.parse(req.body.content),
+                images: req.files.map((f) => f.path),
+            },
+        }
     );
 
     return res.status(httpStatus.ACCEPTED).send({ question, content });
