@@ -9,6 +9,7 @@ import { shareOptions } from "../config/shareOptions.js";
 import { testStatus } from "../config/testStatus.js";
 import { publicAnswersOptions } from "../config/publicAnswerOptions.js";
 import submissionService from "./submission.service.js";
+import { Submission } from "../models/submission.model.js";
 
 const createTest = async (testBody) => {
     const { datetime, duration, close_time } = testBody;
@@ -30,15 +31,20 @@ const createTest = async (testBody) => {
 const getTests = async (filter, query) => {
     const { results: tests, ...rest } = await Test.paginate(filter, query);
 
-    const testsWithQuestions = await Promise.all(
+    const testsWithAddittionalData = await Promise.all(
         tests.map(async (test) => {
-            const questions = await Question.find({ test_id: test.id });
+            const submissionsCount = await Submission.countDocuments({
+                test_id: test._id,
+            });
 
-            return { ...test.toObject(), questions };
+            return {
+                ...test.toObject(),
+                submissions_count: submissionsCount,
+            };
         })
     );
 
-    return { tests: testsWithQuestions, ...rest };
+    return { tests: testsWithAddittionalData, ...rest };
 };
 
 const getTest = async (

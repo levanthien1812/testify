@@ -9,6 +9,8 @@ import { questionTypeToQuestionModel } from "../utils/mapping.js";
 import { Submission } from "../models/submission.model.js";
 import testService from "./test.service.js";
 import { autoScoreTypes } from "../config/constants.js";
+import fse from "fs-extra";
+import path from "path";
 
 const createQuestionContent = async (questionType, questionContent) => {
     const model = questionTypeToQuestionModel.get(questionType);
@@ -50,6 +52,16 @@ const updateQuestionContent = async (
         }
     }
 
+    if (questionContent.images && questionContent.images.length > 0) {
+        const questionContentDoc = await model.findOne({
+            question_id: questionId,
+        });
+
+        if (questionContentDoc.images) {
+            unlinkImages(questionContentDoc.images);
+        }
+    }
+
     let updatedQuestionContentDoc = await model.findOneAndUpdate(
         { question_id: questionId },
         questionContent,
@@ -61,7 +73,25 @@ const updateQuestionContent = async (
 
 const deleteQuestionContent = async (questionId, questionType) => {
     let model = questionTypeToQuestionModel.get(questionType);
-    await model.findOneAndDelete({ question_id: questionId });
+    const content = await model.findOne({ question_id: questionId });
+
+    if (content.images) {
+        unlinkImages(content.images);
+    }
+};
+
+const unlinkImages = (images) => {
+    images.forEach((image) => {
+        fse.unlinkSync(image, (err) => {
+            if (err) {
+                if (err.code === "ENOENT") {
+                    console.log("The file does not exist");
+                } else {
+                    console.error(err);
+                }
+            }
+        });
+    });
 };
 
 const createQuestion = async (testId, questionBody) => {
@@ -170,7 +200,11 @@ const addAnswer = async (questionId, answerBody) => {
 
     if (await checkAnswersProvided(question.test_id)) {
         await testService.updateTest(question.test_id, {
-            are_answers_provided: true,
+            $set: { are_answers_provided: true },
+        });
+    } else {
+        await testService.updateTest(question.test_id, {
+            $set: { are_answers_provided: false },
         });
     }
 

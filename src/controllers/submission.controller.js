@@ -67,8 +67,11 @@ const getSubmissions = catchAsync(async (req, res, next) => {
         return new ApiError(httpStatus.NOT_FOUND, "Test not found!");
     }
 
-    if (![testStatus.OPENED, testStatus.CLOSED].includes(test.status)) {
-        return new ApiError(httpStatus.NOT_FOUND, "Test is not opened yet!");
+    if (
+        req.user.role === "taker" &&
+        ![testStatus.OPENED, testStatus.CLOSED].includes(test.status)
+    ) {
+        return new ApiError(httpStatus.BAD_REQUEST, "Test is not opened yet!");
     }
 
     const submissions = await submissionService.getSubmissionsByTestId(

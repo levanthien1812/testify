@@ -246,7 +246,11 @@ router
 
 router
     .route("/:testId/questions/:questionId")
-    .patch(auth("updateQuestion"), questionController.updateQuestion);
+    .patch(
+        auth("updateQuestion"),
+        upload.array("files[]", 10),
+        questionController.updateQuestion
+    );
 
 router
     .route("/:testId/questions/validate")

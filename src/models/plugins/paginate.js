@@ -10,7 +10,7 @@ export const paginate = (schema) => {
             });
             sort = sortCriteria.join(" ");
         } else {
-            sort = "createdAt";
+            sort = "-created_at";
         }
 
         const limit =
