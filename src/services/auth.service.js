@@ -55,10 +55,23 @@ const loginGoogle = async (token) => {
         throw new ApiError(httpStatus.BAD_REQUEST, "Invalid token");
     }
 
-    const { email } = payload;
+    const { email, name, picture } = payload;
     const user = await userService.getUserByEmail(email);
     if (user) {
-        return user;
+        if (user.name && user.photo) {
+            return user;
+        }
+
+        const updatedUser = await User.findByIdAndUpdate(
+            user._id,
+            {
+                name: name.normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
+                photo: picture,
+            },
+            { new: true }
+        );
+
+        return updatedUser;
     } else {
         throw new ApiError(httpStatus.NOT_FOUND, "Taker not found");
     }

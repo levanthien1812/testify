@@ -204,7 +204,7 @@ const getAvailableTakers = async (testId, userId) => {
     const test = await Test.findById(testId);
     const addedTakerIds = test.taker_ids;
     const takers = await User.find({
-        maker_id: userId,
+        maker_ids: userId,
         role: "taker",
         _id: { $nin: addedTakerIds },
     });
