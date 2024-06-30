@@ -21,6 +21,7 @@ const allRoles = {
         "getTakerSubmission",
         "publishTest",
         "updateTakerAnswer",
+        "getTakersStatistics",
     ],
     admin: ["getUsers", "manageUsers"],
 };

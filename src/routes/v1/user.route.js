@@ -8,4 +8,8 @@ router.route("/").get(auth("getUsers"), userController.getUsers);
 
 router.route("/takers").post(auth("createTakers"), userController.createTakers);
 
+router
+    .route("/takers/statistics")
+    .get(auth("getTakersStatistics"), userController.getTakersWithStatistics);
+
 export default router;
