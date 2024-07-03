@@ -1,0 +1,41 @@
+import mongoose from "mongoose";
+import config from "../config/config.js";
+import { seedUsers } from "./user.seed.js";
+import { seedTests } from "./test.seed.js";
+import { seedParts } from "./part.seed.js";
+import { seedQuestions } from "./question.seed.js";
+import { seedQuestionContentDocs } from "./questionContent.seed.js";
+import { logger } from "../config/logger.js";
+
+const seedData = async () => {
+    try {
+        await mongoose
+            .connect(process.env.MONGODB_URL, config.mongo.options)
+            .then(() => {
+                console.log("Connected to MongoDB");
+            });
+
+        const db = mongoose.connection;
+
+        logger.info("Dropping database");
+
+        await db.dropDatabase();
+
+        logger.info("Database dropped");
+        logger.info("Start seeding database");
+
+        await seedUsers();
+        await seedTests();
+        await seedParts();
+        await seedQuestions();
+        await seedQuestionContentDocs();
+
+        logger.info("Database seeded");
+
+        // await db.close();
+    } catch (error) {
+        console.log(error);
+    }
+};
+
+seedData();
