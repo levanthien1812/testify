@@ -55,7 +55,7 @@ const getTest = async (
 ) => {
     const test = await Test.findById(testId).populate({
         path: "taker_ids",
-        select: "-__v -role -maker_id",
+        select: "-__v -maker_id",
     });
 
     if (!test) {

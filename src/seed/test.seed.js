@@ -20,7 +20,7 @@ const createRandomTest = async () => {
     const numParts = faker.number.int({ min: 1, max: 4 });
     const numQuestions = faker.number.int({ min: numParts, max: 40 });
 
-    const datetime = faker.date.soon({ days: 30 });
+    const datetime = faker.date.soon({ days: 4 });
 
     const closeTime = new Date(datetime);
     closeTime.setMinutes(
@@ -89,6 +89,7 @@ const createRandomTest = async () => {
         code: faker.string.alphanumeric(),
         status: testStatus.DRAFT,
         close_time: closeTime,
+        share_option: shareOption,
         are_answers_provided: false,
         public_answers_option: publicAnswersOption,
         public_answers_date: publicAnswersDate,
@@ -100,7 +101,7 @@ export const seedTests = async () => {
     logger.info("Seeding tests...");
 
     await Promise.all(
-        [...Array(50)].map(async () => {
+        [...Array(40)].map(async () => {
             const test = await createRandomTest();
             await Test.create(test);
         })

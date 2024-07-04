@@ -4,6 +4,8 @@ import { questionTypes } from "../config/questionTypes.js";
 import { Test } from "../models/test.model.js";
 import { Question } from "../models/question.model.js";
 import { logger } from "../config/logger.js";
+import { createQuestionContentDoc } from "./questionContent.seed.js";
+import { createRandomAnswer } from "./answer.seed.js";
 
 const createQuestions = (totalScore, numQuestions, testId, partId = null) => {
     let scores = [];
@@ -75,7 +77,17 @@ export const seedQuestions = async () => {
     await Promise.all(
         tests.map(async (test) => {
             const questions = await createRandomQuestions(test);
-            await Question.insertMany(questions);
+            const questionDocs = await Question.insertMany(questions);
+
+            await Promise.all(
+                questionDocs.map(async (questionDoc) => {
+                    await createQuestionContentDoc(questionDoc);
+                    await createRandomAnswer(questionDoc);
+                })
+            );
+
+            test.are_answers_provided = true;
+            await test.save();
         })
     );
 };
