@@ -69,15 +69,25 @@ const createRandomUser = async ({ role }) => {
 export const seedUsers = async () => {
     logger.info("Seeding users...");
 
-    for (const _ of Array(3)) {
-        const maker = await createRandomUser({ role: "maker" });
-        await User.create(maker);
-    }
+    const defaultMaker = await createRandomUser({ role: "maker" });
+    const defaultTaker = await createRandomUser({ role: "taker" });
 
-    for (const _ of Array(100)) {
-        const taker = await createRandomUser({ role: "taker" });
-        await User.create(taker);
-    }
+    await User.create(defaultMaker);
+    await User.create(defaultTaker);
+
+    await Promise.all(
+        [...Array(3)].map(async () => {
+            const maker = await createRandomUser({ role: "maker" });
+            await User.create(maker);
+        })
+    );
+
+    await Promise.all(
+        [...Array(60)].map(async () => {
+            const taker = await createRandomUser({ role: "taker" });
+            await User.create(taker);
+        })
+    );
 
     logger.info("Seed users done");
 };
