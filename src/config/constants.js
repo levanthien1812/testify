@@ -6,4 +6,9 @@ export const autoScoreTypes = [
     questionTypes.MULITPLE_CHOICES,
 ];
 
+export const chatOptions = {
+    INDIVIDUAL: "individual",
+    GROUP: "group",
+};
+
 export const manualScoreTypes = [questionTypes.RESPONSE];

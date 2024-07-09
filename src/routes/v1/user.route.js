@@ -6,7 +6,10 @@ const router = express.Router();
 
 router.route("/").get(auth("getUsers"), userController.getUsers);
 
-router.route("/takers").post(auth("createTakers"), userController.createTakers);
+router
+    .route("/takers")
+    .post(auth("createTakers"), userController.createTakers)
+    .get(auth("getTakers"), userController.getTakersByMaker);
 
 router
     .route("/takers/statistics")
