@@ -37,7 +37,8 @@ const envVarsSchema = Joi.object()
     SMTP_PASSWORD: Joi.string().description("password for email server"),
     EMAIL_FROM: Joi.string().description(
       "the from field in the emails sent by the app"
-    )
+    ),
+    WEB_ORIGIN: Joi.string().description("origin of the web app")
   })
   .unknown();
 
@@ -72,5 +73,8 @@ export default {
       password: envVars.SMTP_PASSWORD,
     },
     from: envVars.EMAIL_FROM,
+  },
+  web: {
+    origin: envVars.WEB_ORIGIN,
   }
 };

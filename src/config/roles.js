@@ -1,5 +1,13 @@
 const allRoles = {
-    taker: ["getTest", "getTests", "getSubmission", "createSubmission"],
+    taker: [
+        "getTest",
+        "getTests",
+        "getSubmission",
+        "createSubmission",
+        "getChats",
+        "createMessage",
+        "getMessages",
+    ],
     maker: [
         "getTests",
         "getTest",
@@ -13,6 +21,7 @@ const allRoles = {
         "updateQuestion",
         "addAnswer",
         "createTaker",
+        "getTakers",
         "assignTakers",
         "createTakersForTest",
         "getAvailableTakers",
@@ -22,6 +31,11 @@ const allRoles = {
         "publishTest",
         "updateTakerAnswer",
         "getTakersStatistics",
+        "createChat",
+        "createChats",
+        "getChats",
+        "createMessage",
+        "getMessages",
     ],
     admin: ["getUsers", "manageUsers"],
 };

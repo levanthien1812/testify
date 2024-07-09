@@ -3,13 +3,18 @@ import config from "./config/config.js";
 import mongoose from "mongoose";
 import { logger } from "./config/logger.js";
 import { job } from "./jobs/cron.js";
+import initializeSocket from "./config/socket.js";
+import { createServer } from "http";
 
-let server;
+let server = createServer(app);
+
 mongoose.connect(config.mongo.url, config.mongo.options).then(() => {
     logger.info("Connected to MongoDB");
-    server = app.listen(config.port, () => {
+    server.listen(config.port, () => {
         logger.info(`Testify app listening on port ${config.port}`);
     });
+
+    initializeSocket(server);
 
     job.start();
 });
