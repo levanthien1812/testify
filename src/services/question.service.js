@@ -62,11 +62,24 @@ const updateQuestionContent = async (
         }
     }
 
-    let updatedQuestionContentDoc = await model.findOneAndUpdate(
-        { question_id: questionId },
-        questionContent,
-        { new: true }
-    );
+    let updatedQuestionContentDoc;
+
+    const existingQuestionContentDoc = await model.findOne({
+        question_id: questionId,
+    });
+
+    if (!existingQuestionContentDoc) {
+        updatedQuestionContentDoc = await model.create({
+            ...questionContent,
+            question_id: questionId,
+        });
+    } else {
+        updatedQuestionContentDoc = await model.findOneAndUpdate(
+            { question_id: questionId },
+            questionContent,
+            { new: true }
+        );
+    }
 
     return updatedQuestionContentDoc;
 };
@@ -75,7 +88,7 @@ const deleteQuestionContent = async (questionId, questionType) => {
     let model = questionTypeToQuestionModel.get(questionType);
     const content = await model.findOne({ question_id: questionId });
 
-    if (content.images) {
+    if (content && content.images) {
         unlinkImages(content.images);
     }
 };

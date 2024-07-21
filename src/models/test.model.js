@@ -63,6 +63,10 @@ const testSchema = mongoose.Schema(
             required: true,
             enum: Object.values(testStatus),
         },
+        enable_close_time: {
+            type: Boolean,
+            default: true,
+        },
         close_time: {
             type: Date,
         },

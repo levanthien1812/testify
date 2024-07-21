@@ -9,16 +9,16 @@ const ResponseQuestionSchema = Schema({
         type: String,
         required: true,
     },
-    minLength: {
+    min_length: {
         type: Number,
         required: false,
     },
-    maxLength: {
+    max_length: {
         type: Number,
         required: false,
         default: 100000,
     },
-    image: String,
+    images: [String],
     __v: { type: Number, select: false },
 });
 
