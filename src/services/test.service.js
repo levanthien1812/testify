@@ -12,9 +12,10 @@ import submissionService from "./submission.service.js";
 import { Submission } from "../models/submission.model.js";
 
 const createTest = async (testBody) => {
-    const { datetime, duration, close_time } = testBody;
+    const { datetime, enable_close_time, close_time } = testBody;
 
     if (
+        enable_close_time &&
         close_time &&
         new Date(datetime).getTime() > new Date(close_time).getTime()
     ) {

@@ -13,6 +13,8 @@ const createTest = {
         description: Joi.string().allow(null).allow(""),
         parts: Joi.array().length(0),
         code: Joi.string().allow(""),
+        enable_close_time: Joi.boolean().required(),
+        close_time: Joi.boolean().required(),
         num_questions: Joi.number().min(1).required(),
         num_parts: Joi.number().min(1).default(1),
         close_time: Joi.date().optional(),
