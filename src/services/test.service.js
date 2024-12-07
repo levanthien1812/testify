@@ -5,9 +5,9 @@ import questionService from "./question.service.js";
 import { Question } from "../models/question.model.js";
 import { User } from "../models/user.model.js";
 import { Part } from "../models/part.model.js";
-import { shareOptions } from "../config/shareOptions.js";
-import { testStatus } from "../config/testStatus.js";
-import { publicAnswersOptions } from "../config/publicAnswerOptions.js";
+import { SHARE_OPTION } from "../config/constants/shareOptions.js";
+import { TEST_STATUS } from "../config/constants/testStatus.js";
+import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
 import submissionService from "./submission.service.js";
 import { Submission } from "../models/submission.model.js";
 
@@ -67,7 +67,7 @@ const getTest = async (
 
     if (user.role === "taker") {
         if (
-            test.share_option === shareOptions.RESTRICTED &&
+            test.share_option === SHARE_OPTION.RESTRICTED &&
             !test.taker_ids.map((taker) => taker.id).includes(user.id)
         ) {
             throw new ApiError(
@@ -95,7 +95,7 @@ const getTest = async (
 
         if (
             test.public_answers_option ===
-            publicAnswersOptions.AFTER_TAKER_SUBMISSION
+            PUBLIC_ANSWER_OPTION.AFTER_TAKER_SUBMISSION
         ) {
             withCorrectAnswers = !!submission;
         }
@@ -103,8 +103,8 @@ const getTest = async (
         if (
             (test.close_time &&
                 test.public_answers_option ===
-                    publicAnswersOptions.AFTER_CLOSE_TIME) ||
-            test.public_answers_option === publicAnswersOptions.SPECIFIC_DATE
+                    PUBLIC_ANSWER_OPTION.AFTER_CLOSE_TIME) ||
+            test.public_answers_option === PUBLIC_ANSWER_OPTION.SPECIFIC_DATE
         ) {
             withCorrectAnswers =
                 new Date(test.public_answers_date).getTime() < Date.now();
@@ -156,7 +156,7 @@ const getTest = async (
         );
 
         return {
-            ...test.toObject(),
+            ...test.toOject(),
             parts: [],
             questions: questions,
         };
@@ -222,7 +222,7 @@ const updateTest = async (testId, testBody) => {
 
     if (
         testBody.share_option &&
-        testBody.share_option === shareOptions.ANYONE
+        testBody.share_option === SHARE_OPTION.ANYONE
     ) {
         testBody = {
             ...testBody,
@@ -246,7 +246,7 @@ const publishTest = async (testId) => {
 
     const updatedTest = await Test.findByIdAndUpdate(
         testId,
-        { $set: { status: testStatus.PUBLISHED } },
+        { $set: { status: TEST_STATUS.PUBLISHED } },
         {
             new: true,
         }
@@ -262,22 +262,22 @@ const updateTestsStatus = async () => {
 
     tests.forEach(async (test) => {
         let status;
-        if (test.status === testStatus.DRAFT && test.share_option) {
-            status = testStatus.PUBLISHABLE;
+        if (test.status === TEST_STATUS.DRAFT && test.share_option) {
+            status = TEST_STATUS.PUBLISHABLE;
         }
 
         if (
-            test.status === testStatus.PUBLISHED &&
+            test.status === TEST_STATUS.PUBLISHED &&
             new Date(test.datetime).getTime() - now.getTime() < 0
         ) {
-            status = testStatus.OPENED;
+            status = TEST_STATUS.OPENED;
         }
 
         if (
-            test.status === testStatus.OPENED &&
+            test.status === TEST_STATUS.OPENED &&
             new Date(test.close_time).getTime() - now.getTime() < 0
         ) {
-            status = testStatus.CLOSED;
+            status = TEST_STATUS.CLOSED;
         }
 
         await Test.findByIdAndUpdate(test.id, { $set: { status: status } });

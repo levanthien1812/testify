@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { toJSON } from "./plugins/toJSON.js";
 
 const multipleChoicesAnswerSchema = mongoose.Schema({
     answer_id: {
@@ -9,9 +10,11 @@ const multipleChoicesAnswerSchema = mongoose.Schema({
     answer: {
         type: [mongoose.SchemaTypes.ObjectId],
         required: true,
-        _id: false
+        _id: false,
     },
 });
+
+multipleChoicesAnswerSchema.plugin(toJSON);
 
 export const MultipleChoicesAnswer = mongoose.model(
     "MultipleChoicesAnswer",

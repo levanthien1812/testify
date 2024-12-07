@@ -3,7 +3,7 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import userService from "./user.service.js";
 import tokenService from "./token.service.js";
-import tokenTypes from "../config/tokens.js";
+import TOKEN_TYPE from "../config/constants/tokens.js";
 import { OAuth2Client } from "google-auth-library";
 import { Token } from "../models/token.model.js";
 
@@ -26,7 +26,7 @@ const refreshAuth = async (refreshToken) => {
     try {
         const refreshTokenDoc = await tokenService.verifyToken(
             refreshToken,
-            tokenTypes.REFRESH
+            TOKEN_TYPE.REFRESH
         );
 
         const user = await userService.getUser(refreshTokenDoc.user);
@@ -80,7 +80,7 @@ const loginGoogle = async (token) => {
 const logout = async (refreshToken) => {
     const refreshTokenDoc = await Token.findOne({
         token: refreshToken,
-        type: tokenTypes.REFRESH,
+        type: TOKEN_TYPE.REFRESH,
     });
     if (!refreshTokenDoc) {
         throw new ApiError(httpStatus.NOT_FOUND, "Refresh token not found");

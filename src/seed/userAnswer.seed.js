@@ -4,9 +4,12 @@ import {
     questionTypeToQuestionModel,
 } from "../utils/mapping.js";
 import { sameItems } from "../utils/compareArray.js";
-import { questionTypes } from "../config/questionTypes.js";
+import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import { Answer } from "../models/answer.model.js";
-import { autoScoreTypes, manualScoreTypes } from "../config/constants.js";
+import {
+    AUTO_SCORE_TYPE,
+    MANUAL_SCORE_TYPE,
+} from "../config/constants/constants.js";
 
 export const createRandomAnswer = async (question, submission) => {
     const questionContentModel = questionTypeToQuestionModel.get(question.type);
@@ -26,7 +29,7 @@ export const createRandomAnswer = async (question, submission) => {
 
     let answer;
     switch (question.type) {
-        case questionTypes.MULITPLE_CHOICES:
+        case QUESTION_TYPE.MULITPLE_CHOICES:
             answer = [];
             if (questionContentDoc.options.length > 0) {
                 const randomOption = faker.helpers.arrayElement(
@@ -35,13 +38,13 @@ export const createRandomAnswer = async (question, submission) => {
                 answer = [randomOption._id];
             }
             break;
-        case questionTypes.FILL_GAPS:
+        case QUESTION_TYPE.FILL_GAPS:
             answer = [];
             for (let i = 0; i < questionContentDoc.num_gaps; i++) {
                 answer.push(faker.lorem.word());
             }
             break;
-        case questionTypes.MATCHING:
+        case QUESTION_TYPE.MATCHING:
             answer = [];
             const shuffledLeftItems = faker.helpers.shuffle(
                 questionContentDoc.left_items
@@ -56,7 +59,7 @@ export const createRandomAnswer = async (question, submission) => {
                 });
             }
             break;
-        case questionTypes.RESPONSE:
+        case QUESTION_TYPE.RESPONSE:
             answer = faker.string.alpha({
                 length: {
                     min: questionContentDoc.min_length,
@@ -69,18 +72,18 @@ export const createRandomAnswer = async (question, submission) => {
     }
 
     if (
-        autoScoreTypes.includes(question.type) &&
+        AUTO_SCORE_TYPE.includes(question.type) &&
         sameItems(
             answer,
             questionContentDoc.answer,
-            question.type === questionTypes.FILL_GAPS
+            question.type === QUESTION_TYPE.FILL_GAPS
         )
     ) {
         userAnswer.is_correct = true;
         userAnswer.score = question.score;
     }
 
-    if (manualScoreTypes.includes(question.type)) {
+    if (MANUAL_SCORE_TYPE.includes(question.type)) {
         userAnswer.score = faker.number.float({
             multipleOf: 0.25,
             min: 0,

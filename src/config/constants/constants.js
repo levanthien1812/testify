@@ -1,0 +1,14 @@
+import { QUESTION_TYPE } from "./questionTypes.js";
+
+export const AUTO_SCORE_TYPE = [
+    QUESTION_TYPE.FILL_GAPS,
+    QUESTION_TYPE.MATCHING,
+    QUESTION_TYPE.MULITPLE_CHOICES,
+];
+
+export const CHAT_OPTION = {
+    INDIVIDUAL: "INDIVIDUAL",
+    GROUP: "GROUP",
+};
+
+export const MANUAL_SCORE_TYPE = [QUESTION_TYPE.RESPONSE];

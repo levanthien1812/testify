@@ -1,0 +1,7 @@
+export const TEST_STATUS = {
+    DRAFT: "DRAFT",
+    PUBLISHABLE: "PUBLISHABLE",
+    PUBLISHED: "PUBLISHED",
+    OPENED: "OPENED",
+    CLOSED: "CLOSED",
+};

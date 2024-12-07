@@ -2,13 +2,13 @@ import httpStatus from "http-status";
 import { Test } from "../models/test.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { Question } from "../models/question.model.js";
-import { questionTypes } from "../config/questionTypes.js";
+import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import partService from "./part.service.js";
 import answerService from "./answer.service.js";
 import { questionTypeToQuestionModel } from "../utils/mapping.js";
 import { Submission } from "../models/submission.model.js";
 import testService from "./test.service.js";
-import { autoScoreTypes } from "../config/constants.js";
+import { AUTO_SCORE_TYPE } from "../config/constants/constants.js";
 import fse from "fs-extra";
 import path from "path";
 
@@ -19,7 +19,7 @@ const createQuestionContent = async (questionType, questionContent) => {
         throw new ApiError(httpStatus.BAD_REQUEST, "Invalid question type");
     }
 
-    if (questionType === questionTypes.MATCHING) {
+    if (questionType === QUESTION_TYPE.MATCHING) {
         const { left_items: leftItems, right_items: rightItems } =
             questionContent;
         if (leftItems.length !== rightItems.length) {
@@ -41,7 +41,7 @@ const updateQuestionContent = async (
 ) => {
     let model = questionTypeToQuestionModel.get(questionType);
 
-    if (questionType === questionTypes.MATCHING) {
+    if (questionType === QUESTION_TYPE.MATCHING) {
         const { left_items: leftItems, right_items: rightItems } =
             questionContent;
         if (leftItems.length !== rightItems.length) {
@@ -173,7 +173,7 @@ const checkAnswersProvided = async (testId) => {
     const questions = await Question.find({ test_id: testId });
 
     const areAnswersProvided = questions.every((question) => {
-        return autoScoreTypes.includes(question.type) && !!question.answer;
+        return AUTO_SCORE_TYPE.includes(question.type) && !!question.answer;
     });
 
     return areAnswersProvided;

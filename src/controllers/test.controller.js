@@ -2,13 +2,13 @@ import httpStatus from "http-status";
 import testService from "../services/test.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import userService from "../services/user.service.js";
-import { testStatus } from "../config/testStatus.js";
+import { TEST_STATUS } from "../config/constants/testStatus.js";
 
 const createTest = catchAsync(async (req, res, next) => {
     const body = {
         ...req.body,
         maker_id: req.user.id,
-        status: testStatus.DRAFT,
+        status: TEST_STATUS.DRAFT,
     };
     const test = await testService.createTest(body);
 
@@ -56,10 +56,10 @@ const getTests = catchAsync(async (req, res, next) => {
     req.query.sort && (query.sortBy = req.query.sort);
     req.query.page && (query.page = req.query.page);
     req.query.limit && (query.limit = req.query.limit);
- 
+
     const testsResult = await testService.getTests(filter, query);
 
-    return res.status(httpStatus.ACCEPTED).send(testsResult); 
+    return res.status(httpStatus.ACCEPTED).send(testsResult);
 });
 
 const getTest = catchAsync(async (req, res, next) => {

@@ -1,12 +1,12 @@
 import { faker } from "@faker-js/faker";
-import { questionTypes } from "../config/questionTypes.js";
+import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import { questionTypeToQuestionModel } from "../utils/mapping.js";
 
 export const createQuestionContentDoc = async (questionDoc) => {
     let content;
 
     switch (questionDoc.type) {
-        case questionTypes.MULITPLE_CHOICES:
+        case QUESTION_TYPE.MULITPLE_CHOICES:
             content = {
                 question_id: questionDoc._id,
                 text: faker.lorem.sentence(),
@@ -30,7 +30,7 @@ export const createQuestionContentDoc = async (questionDoc) => {
                 explaination: "",
             };
             break;
-        case questionTypes.FILL_GAPS:
+        case QUESTION_TYPE.FILL_GAPS:
             const numGaps = faker.number.int({ min: 1, max: 3 });
             let text = faker.lorem.sentence();
             const randomPositions = Array(numGaps)
@@ -52,7 +52,7 @@ export const createQuestionContentDoc = async (questionDoc) => {
                 explaination: "",
             };
             break;
-        case questionTypes.MATCHING:
+        case QUESTION_TYPE.MATCHING:
             const numMatches = faker.number.int({ min: 2, max: 4 });
 
             let leftItems = [],
@@ -75,7 +75,7 @@ export const createQuestionContentDoc = async (questionDoc) => {
                 explaination: "",
             };
             break;
-        case questionTypes.RESPONSE:
+        case QUESTION_TYPE.RESPONSE:
             content = {
                 question_id: questionDoc._id,
                 text: faker.lorem.sentence(),

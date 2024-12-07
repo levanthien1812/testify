@@ -1,10 +1,10 @@
 import mongoose from "mongoose";
-import { testLevels } from "../config/levels.js";
+import { TEST_LEVEL } from "../config/constants/levels.js";
 import { paginate } from "./plugins/paginate.js";
 import { toJSON } from "./plugins/toJSON.js";
-import { testStatus } from "../config/testStatus.js";
-import { shareOptions } from "../config/shareOptions.js";
-import { publicAnswersOptions } from "../config/publicAnswerOptions.js";
+import { TEST_STATUS } from "../config/constants/testStatus.js";
+import { SHARE_OPTION } from "../config/constants/shareOptions.js";
+import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
 
 const testSchema = mongoose.Schema(
     {
@@ -43,7 +43,7 @@ const testSchema = mongoose.Schema(
         },
         level: {
             type: String,
-            enum: Object.values(testLevels),
+            enum: Object.values(TEST_LEVEL),
         },
         num_parts: {
             type: Number,
@@ -61,7 +61,7 @@ const testSchema = mongoose.Schema(
         status: {
             type: String,
             required: true,
-            enum: Object.values(testStatus),
+            enum: Object.values(TEST_STATUS),
         },
         enable_close_time: {
             type: Boolean,
@@ -72,11 +72,11 @@ const testSchema = mongoose.Schema(
         },
         share_option: {
             type: String,
-            enum: Object.values(shareOptions),
+            enum: Object.values(SHARE_OPTION),
         },
         public_answers_option: {
             type: String,
-            enum: Object.values(publicAnswersOptions),
+            enum: Object.values(PUBLIC_ANSWER_OPTION),
             required: true,
         },
         public_answers_date: {

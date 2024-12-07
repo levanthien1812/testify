@@ -1,11 +1,11 @@
 import Joi from "joi";
-import { chatOptions } from "../config/constants.js";
+import { CHAT_OPTION } from "../config/constants/constants.js";
 
 const createChat = {
     query: Joi.object().keys({
         option: Joi.string()
             .required()
-            .valid(...Object.values(chatOptions)),
+            .valid(...Object.values(CHAT_OPTION)),
     }),
 };
 

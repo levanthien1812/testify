@@ -1,4 +1,4 @@
-import { questionTypes } from "../config/questionTypes.js";
+import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import { questionTypeToQuestionModel } from "../utils/mapping.js";
 import { faker } from "@faker-js/faker";
 
@@ -11,7 +11,7 @@ export const createRandomAnswer = async (question) => {
         .select("+answer");
 
     switch (question.type) {
-        case questionTypes.MULITPLE_CHOICES:
+        case QUESTION_TYPE.MULITPLE_CHOICES:
             if (questionContentDoc.options.length > 0) {
                 const randomOption = faker.helpers.arrayElement(
                     questionContentDoc.options
@@ -20,14 +20,14 @@ export const createRandomAnswer = async (question) => {
                 await questionContentDoc.save();
             }
             break;
-        case questionTypes.FILL_GAPS:
+        case QUESTION_TYPE.FILL_GAPS:
             for (let i = 0; i < questionContentDoc.num_gaps; i++) {
                 if (!questionContentDoc.answer) questionContentDoc.answer = [];
                 questionContentDoc.answer.push(faker.lorem.word());
                 await questionContentDoc.save();
             }
             break;
-        case questionTypes.MATCHING:
+        case QUESTION_TYPE.MATCHING:
             const shuffledLeftItems = faker.helpers.shuffle(
                 questionContentDoc.left_items
             );

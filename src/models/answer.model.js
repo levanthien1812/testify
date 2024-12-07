@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { toJSON } from "./plugins/toJSON.js";
 
 const answerSchema = mongoose.Schema(
     {
@@ -32,5 +33,7 @@ const answerSchema = mongoose.Schema(
         },
     }
 );
+
+answerSchema.plugin(toJSON);
 
 export const Answer = mongoose.model("Answer", answerSchema);

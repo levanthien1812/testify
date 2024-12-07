@@ -3,7 +3,7 @@ import config from "../config/config.js";
 import { Token } from "../models/token.model.js";
 import jwt from "jsonwebtoken";
 import { ApiError } from "../utils/apiError.js";
-import tokenTypes from "../config/tokens.js";
+import TOKEN_TYPE from "../config/constants/tokens.js";
 import userService from "./user.service.js";
 import httpStatus from "http-status";
 import { logger } from "../config/logger.js";
@@ -52,7 +52,7 @@ const generateAuthToken = async (user) => {
     const accessToken = generateToken(
         user.id,
         accessTokenExpires,
-        tokenTypes.ACCESS
+        TOKEN_TYPE.ACCESS
     );
 
     const refreshTokenExpires = moment().add(
@@ -62,13 +62,13 @@ const generateAuthToken = async (user) => {
     const refreshToken = generateToken(
         user.id,
         refreshTokenExpires,
-        tokenTypes.REFRESH
+        TOKEN_TYPE.REFRESH
     );
     await saveToken(
         refreshToken,
         user.id,
         refreshTokenExpires,
-        tokenTypes.REFRESH
+        TOKEN_TYPE.REFRESH
     );
 
     return {
@@ -98,13 +98,13 @@ const generateResetPasswordToken = async (email) => {
     const resetToken = generateToken(
         user.id,
         resetTokenExpires,
-        tokenTypes.RESET_PASSWORD
+        TOKEN_TYPE.RESET_PASSWORD
     );
     await saveToken(
         resetToken,
         user.id,
         resetTokenExpires,
-        tokenTypes.RESET_PASSWORD
+        TOKEN_TYPE.RESET_PASSWORD
     );
 
     return resetToken;
@@ -118,13 +118,13 @@ const generateVerifyEmailToken = async (user) => {
     const verifyEmailToken = generateToken(
         user.id,
         expires,
-        tokenTypes.VERIFY_EMAIL
+        TOKEN_TYPE.VERIFY_EMAIL
     );
     await saveToken(
         verifyEmailToken,
         user.id,
         expires,
-        tokenTypes.VERIFY_EMAIL
+        TOKEN_TYPE.VERIFY_EMAIL
     );
 
     return verifyEmailToken;

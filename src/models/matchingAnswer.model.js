@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { toJSON } from "./plugins/toJSON.js";
 
 const matchingAnswerSchema = mongoose.Schema({
     answer_id: {
@@ -17,6 +18,8 @@ const matchingAnswerSchema = mongoose.Schema({
         required: true,
     },
 });
+
+matchingAnswerSchema.plugin(toJSON);
 
 export const MatchingAnswer = mongoose.model(
     "MatchingAnswer",
