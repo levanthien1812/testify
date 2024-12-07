@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { toJSON } from "./plugins/toJSON.js";
 
 export const ChoiceType = {
     text: { type: String, required: true },
@@ -35,6 +36,8 @@ const multipleChoiceQuestionSchema = mongoose.Schema({
     },
     __v: { type: Number, select: false },
 });
+
+multipleChoiceQuestionSchema.plugin(toJSON);
 
 export const MultipleChoiceQuestion = mongoose.model(
     "MultipleChoiceQuestion",

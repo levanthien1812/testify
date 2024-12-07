@@ -1,4 +1,5 @@
 import mongoose, { Schema } from "mongoose";
+import { toJSON } from "./plugins/toJSON.js";
 
 const ResponseQuestionSchema = Schema({
     question_id: {
@@ -21,6 +22,8 @@ const ResponseQuestionSchema = Schema({
     images: [String],
     __v: { type: Number, select: false },
 });
+
+ResponseQuestionSchema.plugin(toJSON);
 
 export const ResponseQuestion = mongoose.model(
     "ResponseQuestion",

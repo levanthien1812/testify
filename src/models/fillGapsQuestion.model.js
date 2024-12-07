@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { toJSON } from "./plugins/toJSON.js";
 
 const fillGapsQuestionSchema = mongoose.Schema({
     text: {
@@ -32,6 +33,8 @@ const fillGapsQuestionSchema = mongoose.Schema({
     },
     __v: { type: Number, select: false },
 });
+
+fillGapsQuestionSchema.plugin(toJSON);
 
 export const FillGapsQuestion = mongoose.model(
     "FillGapsQuestion",

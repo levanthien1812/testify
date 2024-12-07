@@ -1,4 +1,5 @@
 import { Chat } from "../models/chat.model.js";
+import messageService from "./message.service.js";
 
 const createChat = async (chatBody) => {
     const existingChat = await Chat.findOne({
@@ -20,7 +21,26 @@ const getChats = async (userId) => {
         .sort("updated_at")
         .populate("members.member", "-password");
 
-    return chats;
+    const chatsWithUnreadMessages = await Promise.all(
+        chats.map(async (chat) => {
+            const messages = await messageService.getMessages(chat._id);
+            const lastMessage =
+                messages.length > 0 ? messages[messages.length - 1] : null;
+
+            const unreadMessages = await messageService.getUnreadMessages(
+                userId,
+                chat._id
+            );
+
+            return {
+                ...chat._doc,
+                unread_messages: unreadMessages,
+                last_message: lastMessage,
+            };
+        })
+    );
+
+    return chatsWithUnreadMessages;
 };
 
 export default { createChat, getChats };

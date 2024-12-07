@@ -1,6 +1,6 @@
 import { faker } from "@faker-js/faker";
 import { Part } from "../models/part.model.js";
-import { questionTypes } from "../config/questionTypes.js";
+import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import { Test } from "../models/test.model.js";
 import { Question } from "../models/question.model.js";
 import { logger } from "../config/logger.js";
@@ -31,10 +31,10 @@ const createQuestions = (totalScore, numQuestions, testId, partId = null) => {
             test_id: testId,
             part_id: partId,
             score,
-            type: Object.values(questionTypes)[
+            type: Object.values(QUESTION_TYPE)[
                 faker.number.int({
                     min: 0,
-                    max: Object.values(questionTypes).length - 1,
+                    max: Object.values(QUESTION_TYPE).length - 1,
                 })
             ],
         };

@@ -6,7 +6,7 @@ import { logger } from "../config/logger.js";
 import { createRandomAnswer } from "./userAnswer.seed.js";
 import { Question } from "../models/question.model.js";
 import submissionService from "../services/submission.service.js";
-import { testStatus } from "../config/testStatus.js";
+import { TEST_STATUS } from "../config/constants/testStatus.js";
 
 const createRandomSubmission = async (test, taker) => {
     const startTime = new Date();
@@ -69,7 +69,7 @@ export const seedSubmissions = async () => {
             });
 
             if (test.datetime.getTime() < new Date().getTime()) {
-                test.status = testStatus.PUBLISHED;
+                test.status = TEST_STATUS.PUBLISHED;
             }
 
             await test.save({ validateBeforeSave: false });

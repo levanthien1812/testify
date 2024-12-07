@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { toJSON } from "./plugins/toJSON.js";
 
 const SubmissionSchema = new mongoose.Schema(
     {
@@ -46,5 +47,7 @@ const SubmissionSchema = new mongoose.Schema(
         },
     }
 );
+
+SubmissionSchema.plugin(toJSON);
 
 export const Submission = mongoose.model("Submission", SubmissionSchema);

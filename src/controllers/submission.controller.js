@@ -2,7 +2,7 @@ import httpStatus from "http-status";
 import testService from "../services/test.service.js";
 import { ApiError } from "../utils/apiError.js";
 import catchAsync from "../utils/catchAsync.js";
-import { testStatus } from "../config/testStatus.js";
+import { TEST_STATUS } from "../config/constants/testStatus.js";
 import submissionService from "../services/submission.service.js";
 import { Test } from "../models/test.model.js";
 import answerService from "../services/answer.service.js";
@@ -69,7 +69,7 @@ const getSubmissions = catchAsync(async (req, res, next) => {
 
     if (
         req.user.role === "taker" &&
-        ![testStatus.OPENED, testStatus.CLOSED].includes(test.status)
+        ![TEST_STATUS.OPENED, TEST_STATUS.CLOSED].includes(test.status)
     ) {
         return new ApiError(httpStatus.BAD_REQUEST, "Test is not opened yet!");
     }

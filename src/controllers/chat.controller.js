@@ -2,7 +2,7 @@ import httpStatus from "http-status";
 import chatService from "../services/chat.service.js";
 import userService from "../services/user.service.js";
 import catchAsync from "../utils/catchAsync.js";
-import { chatOptions } from "../config/constants.js";
+import { CHAT_OPTION } from "../config/constants/constants.js";
 import { generateChatName } from "../utils/chatName.js";
 
 const getMemberNames = async (members) => {
@@ -30,7 +30,7 @@ const createChat = catchAsync(async (req, res, next) => {
 
     let newChats;
 
-    if (option === chatOptions.INDIVIDUAL) {
+    if (option === CHAT_OPTION.INDIVIDUAL) {
         newChats = await Promise.all(
             otherMembers.map(async (member) => {
                 const members = [req.user.id, member];
@@ -51,7 +51,7 @@ const createChat = catchAsync(async (req, res, next) => {
         );
     }
 
-    if (option === chatOptions.GROUP) {
+    if (option === CHAT_OPTION.GROUP) {
         const members = [req.user.id, ...otherMembers];
         const memberNames = await getMemberNames(otherMembers);
 

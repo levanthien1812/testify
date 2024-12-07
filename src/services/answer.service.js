@@ -2,13 +2,13 @@ import httpStatus from "http-status";
 import { Question } from "../models/question.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { Answer } from "../models/answer.model.js";
-import { questionTypes } from "../config/questionTypes.js";
+import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import { sameItems } from "../utils/compareArray.js";
 import {
     questionTypeToAnswerModel,
     questionTypeToQuestionModel,
 } from "../utils/mapping.js";
-import { autoScoreTypes } from "../config/constants.js";
+import { AUTO_SCORE_TYPE } from "../config/constants/constants.js";
 import submissionService from "./submission.service.js";
 
 const createAnswers = async (submissionId, answersBody) => {
@@ -40,7 +40,7 @@ const createAnswer = async (submissionId, answerBody) => {
     const answerModel = questionTypeToAnswerModel.get(question.type);
     await answerModel.create(answerContent);
 
-    if (autoScoreTypes.includes(question.type)) {
+    if (AUTO_SCORE_TYPE.includes(question.type)) {
         newAnswer = await scoreAnswerByAnswerId(newAnswer.id);
     }
 
@@ -92,7 +92,7 @@ const scoreAnswerByAnswerId = async (answerId) => {
             sameItems(
                 answerContentDoc.answer,
                 questionContentDoc.answer,
-                question.type === questionTypes.FILL_GAPS
+                question.type === QUESTION_TYPE.FILL_GAPS
             )
         ) {
             answer.is_correct = true;

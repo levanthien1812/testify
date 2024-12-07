@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import { toJSON } from "./plugins/toJSON.js";
 
 const matchingQuestionSchema = mongoose.Schema({
     text: {
@@ -42,6 +43,8 @@ const matchingQuestionSchema = mongoose.Schema({
     },
     __v: { type: Number, select: false },
 });
+
+matchingQuestionSchema.plugin(toJSON);
 
 export const MatchingQuestion = mongoose.model(
     "MatchingQuestion",

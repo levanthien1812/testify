@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
-import { questionLevels } from "../config/levels.js";
-import { questionTypes } from "../config/questionTypes.js";
+import { QUESTION_LEVEL } from "../config/constants/levels.js";
+import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import { toJSON } from "./plugins/toJSON.js";
 
 const questionSchema = mongoose.Schema(
@@ -17,7 +17,7 @@ const questionSchema = mongoose.Schema(
         },
         level: {
             type: String,
-            enum: Object.values(questionLevels),
+            enum: Object.values(QUESTION_LEVEL),
         },
         score: {
             type: Number,
@@ -31,7 +31,7 @@ const questionSchema = mongoose.Schema(
         },
         type: {
             type: String,
-            enum: Object.values(questionTypes),
+            enum: Object.values(QUESTION_TYPE),
         },
         __v: { type: Number, select: false },
     },

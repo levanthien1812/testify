@@ -1,8 +1,8 @@
-import { testLevels } from "../config/levels.js";
+import { TEST_LEVEL } from "../config/constants/levels.js";
 import { logger } from "../config/logger.js";
-import { publicAnswersOptions } from "../config/publicAnswerOptions.js";
-import { shareOptions } from "../config/shareOptions.js";
-import { testStatus } from "../config/testStatus.js";
+import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
+import { SHARE_OPTION } from "../config/constants/shareOptions.js";
+import { TEST_STATUS } from "../config/constants/testStatus.js";
 import { Test } from "../models/test.model.js";
 import { User } from "../models/user.model.js";
 import { faker } from "@faker-js/faker";
@@ -28,23 +28,23 @@ const createRandomTest = async () => {
     );
 
     const publicAnswersOption =
-        Object.values(publicAnswersOptions)[
+        Object.values(PUBLIC_ANSWER_OPTION)[
             faker.number.int({
                 min: 0,
-                max: Object.values(publicAnswersOptions).length - 1,
+                max: Object.values(PUBLIC_ANSWER_OPTION).length - 1,
             })
         ];
 
     let publicAnswersDate;
 
     switch (publicAnswersOption) {
-        case publicAnswersOptions.AFTER_CLOSE_TIME:
+        case PUBLIC_ANSWER_OPTION.AFTER_CLOSE_TIME:
             publicAnswersDate = closeTime;
             break;
-        case publicAnswersOptions.AFTER_TAKER_SUBMISSION:
+        case PUBLIC_ANSWER_OPTION.AFTER_TAKER_SUBMISSION:
             publicAnswersDate = closeTime;
             break;
-        case publicAnswersOptions.SPECIFIC_DATE:
+        case PUBLIC_ANSWER_OPTION.SPECIFIC_DATE:
             publicAnswersDate = new Date(closeTime);
             publicAnswersDate.setMinutes(
                 publicAnswersDate.getMinutes() +
@@ -55,12 +55,12 @@ const createRandomTest = async () => {
     }
 
     const shareOption =
-        shareOptions[
-            faker.number.int({ min: 0, max: shareOptions.length - 1 })
+        SHARE_OPTION[
+            faker.number.int({ min: 0, max: SHARE_OPTION.length - 1 })
         ];
 
     const randomTakers =
-        shareOption === shareOptions.ANYONE
+        shareOption === SHARE_OPTION.ANYONE
             ? []
             : await User.aggregate([
                   { $match: { role: "taker" } },
@@ -77,17 +77,17 @@ const createRandomTest = async () => {
         maker_id: randomMaker[0]._id,
         duration: faker.number.int({ min: 1, max: 150 }),
         datetime: datetime,
-        level: Object.values(testLevels)[
+        level: Object.values(TEST_LEVEL)[
             faker.number.int({
                 min: 0,
-                max: Object.values(testLevels).length - 1,
+                max: Object.values(TEST_LEVEL).length - 1,
             })
         ],
         num_parts: numParts,
         num_questions: numQuestions,
         max_score: faker.number.int({ min: numQuestions * 0.25, max: 100 }),
         code: faker.string.alphanumeric(),
-        status: testStatus.DRAFT,
+        status: TEST_STATUS.DRAFT,
         close_time: closeTime,
         share_option: shareOption,
         are_answers_provided: false,

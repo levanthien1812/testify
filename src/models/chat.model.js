@@ -1,4 +1,5 @@
 import mongoose, { Mongoose } from "mongoose";
+import { toJSON } from "./plugins/toJSON.js";
 
 const ChatModel = mongoose.Schema(
     {
@@ -45,5 +46,7 @@ const ChatModel = mongoose.Schema(
         },
     }
 );
+
+ChatModel.plugin(toJSON);
 
 export const Chat = mongoose.model("Chat", ChatModel);

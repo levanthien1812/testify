@@ -12,7 +12,18 @@ const getMessages = async (chatId) => {
     return messages;
 };
 
+const getUnreadMessages = async (userId, chatId) => {
+    const unreadMessages = await Message.find({
+        sender_id: userId,
+        chat_id: chatId,
+        readBy: { $ne: userId },
+    }).sort("created_at");
+
+    return unreadMessages;
+};
+
 export default {
     createMessage,
     getMessages,
+    getUnreadMessages,
 };
