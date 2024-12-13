@@ -6,6 +6,7 @@ import { TEST_STATUS } from "../config/constants/testStatus.js";
 import submissionService from "../services/submission.service.js";
 import { Test } from "../models/test.model.js";
 import answerService from "../services/answer.service.js";
+import { ROLES } from "../config/constants/roles.js";
 
 const createSubmission = catchAsync(async (req, res, next) => {
     const existingSubmission = await submissionService.getSubmissionByTakerId(
@@ -68,7 +69,7 @@ const getSubmissions = catchAsync(async (req, res, next) => {
     }
 
     if (
-        req.user.role === "taker" &&
+        req.user.role === ROLES.TAKER &&
         ![TEST_STATUS.OPENED, TEST_STATUS.CLOSED].includes(test.status)
     ) {
         return new ApiError(httpStatus.BAD_REQUEST, "Test is not opened yet!");

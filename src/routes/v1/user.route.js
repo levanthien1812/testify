@@ -1,6 +1,7 @@
 import express from "express";
 import { auth } from "../../middlewares/auth.js";
 import userController from "../../controllers/user.controller.js";
+import { RIGHTS } from "../../config/constants/roles.js";
 
 const router = express.Router();
 
@@ -8,11 +9,14 @@ router.route("/").get(auth("getUsers"), userController.getUsers);
 
 router
     .route("/takers")
-    .post(auth("createTakers"), userController.createTakers)
+    .post(auth(RIGHTS.CREATE_TAKERS_FOR_TEST), userController.createTakers)
     .get(auth("getTakers"), userController.getTakersByMaker);
 
 router
     .route("/takers/statistics")
-    .get(auth("getTakersStatistics"), userController.getTakersWithStatistics);
+    .get(
+        auth(RIGHTS.GET_TAKERS_STATISTICS),
+        userController.getTakersWithStatistics
+    );
 
 export default router;

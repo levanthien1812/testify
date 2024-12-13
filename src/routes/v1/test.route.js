@@ -11,6 +11,7 @@ import answerValidation from "../../validations/answer.validation.js";
 import answerController from "../../controllers/answer.controller.js";
 import { uploadSingle } from "../../middlewares/upload.js";
 import { upload } from "../../config/multer.js";
+import { RIGHTS } from "../../config/constants/roles.js";
 
 const router = express.Router();
 
@@ -160,24 +161,24 @@ const router = express.Router();
 router
     .route("")
     .post(
-        auth("createTest"),
+        auth(RIGHTS.CREATE_TEST),
         validate(testValidation.createTest),
         testController.createTest
     )
     .get(
-        auth("getTests"),
+        auth(RIGHTS.GET_TESTS),
         validate(testValidation.getTests),
         testController.getTests
     );
 
 router
     .route("/:testId")
-    .get(auth("getTest"), testController.getTest)
-    .patch(auth("updateTest"), testController.updateTest);
+    .get(auth(RIGHTS.GET_TEST), testController.getTest)
+    .patch(auth(RIGHTS.UPDATE_TEST), testController.updateTest);
 
 router
     .route("/:testId/publish")
-    .patch(auth("publishTest"), testController.publishTest);
+    .patch(auth(RIGHTS.PUBLISH_TEST), testController.publishTest);
 
 /**
  * @openapi
@@ -219,7 +220,7 @@ router
 router
     .route("/:testId/parts")
     .post(
-        auth("addPart"),
+        auth(RIGHTS.ADD_PART),
         validate(partValidation.addPart),
         partController.addPart
     );
@@ -227,19 +228,19 @@ router
 router
     .route("/:testId/parts/:partId")
     .patch(
-        auth("updatePart"),
+        auth(RIGHTS.UPDATE_PART),
         validate(partValidation.addPart),
         partController.updatePart
     );
 
 router
     .route("/:testId/parts/validate")
-    .get(auth("validateParts"), partController.validateParts);
+    .get(auth(RIGHTS.VALIDATE_PARTS), partController.validateParts);
 
 router
     .route("/:testId/questions")
     .post(
-        auth("createQuestion"),
+        auth(RIGHTS.CREATE_QUESTION),
         upload.array("files[]", 10),
         questionController.createQuestion
     );
@@ -247,45 +248,48 @@ router
 router
     .route("/:testId/questions/:questionId")
     .patch(
-        auth("updateQuestion"),
+        auth(RIGHTS.UPDATE_QUESTION),
         upload.array("files[]", 10),
         questionController.updateQuestion
     );
 
 router
     .route("/:testId/questions/validate")
-    .get(auth("validateQuestions"), questionController.validateQuestions);
+    .get(auth(RIGHTS.VALIDATE_QUESTIONS), questionController.validateQuestions);
 
 router
     .route("/:testId/questions/:questionId/answer")
-    .patch(auth("addAnswer"), questionController.addAnswer);
+    .patch(auth(RIGHTS.ADD_ANSWER), questionController.addAnswer);
 
 router
     .route("/:testId/takers")
-    .patch(auth("assignTakers"), testController.assignTakers)
-    .post(auth("createTakersForTest"), testController.createTakers);
+    .patch(auth(RIGHTS.ASSIGN_TAKERS), testController.assignTakers)
+    .post(auth(RIGHTS.CREATE_TAKER), testController.createTakers);
 
 router
     .route("/:testId/takers/available")
-    .get(auth("getAvailableTakers"), testController.getAvailableTakers);
+    .get(auth(RIGHTS.GET_AVAILABLE_TAKERS), testController.getAvailableTakers);
 
 router
     .route("/:testId/submission")
-    .get(auth("getSubmission"), submissionController.getSubmission)
-    .post(auth("createSubmission"), submissionController.createSubmission);
+    .get(auth(RIGHTS.GET_SUBMISSION), submissionController.getSubmission)
+    .post(
+        auth(RIGHTS.CREATE_SUBMISSION),
+        submissionController.createSubmission
+    );
 
 router
     .route("/:testId/submissions")
-    .get(auth("getSubmissions"), submissionController.getSubmissions);
+    .get(auth(RIGHTS.GET_SUBMISSIONS), submissionController.getSubmissions);
 
 router
     .route("/:testId/submissions/:takerId")
-    .get(auth("getTakerSubmission"), testController.getTest);
+    .get(auth(RIGHTS.GET_TEST), testController.getTest);
 
 router
     .route("/:testId/answers/:answerId")
     .patch(
-        auth("updateTakerAnswer"),
+        auth(RIGHTS.UPDATE_TAKER_ANSWER),
         validate(answerValidation.updateAnswerSchema),
         answerController.updateAnswer
     );

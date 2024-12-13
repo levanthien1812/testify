@@ -4,13 +4,14 @@ import messageController from "../../controllers/message.controller.js";
 import { auth } from "../../middlewares/auth.js";
 import { validate } from "../../middlewares/validate.js";
 import chatValidation from "../../validations/chat.validation.js";
+import { RIGHTS } from "../../config/constants/roles.js";
 
 const route = Router();
 
 route
     .route("/")
     .post(
-        auth("createChats"),
+        auth(RIGHTS.CREATE_CHAT),
         validate(chatValidation.createChat),
         chatController.createChat
     )
@@ -18,7 +19,7 @@ route
 
 route
     .route("/:id/messages")
-    .post(auth("createMessage"), messageController.createMessage)
-    .get(auth("getMessages"), messageController.getMessages);
+    .post(auth(RIGHTS.CREATE_MESSAGE), messageController.createMessage)
+    .get(auth(RIGHTS.GET_MESSAGES), messageController.getMessages);
 
 export default route;

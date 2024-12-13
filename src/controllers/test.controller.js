@@ -3,6 +3,7 @@ import testService from "../services/test.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import userService from "../services/user.service.js";
 import { TEST_STATUS } from "../config/constants/testStatus.js";
+import { ROLES } from "../config/constants/roles.js";
 
 const createTest = catchAsync(async (req, res, next) => {
     const body = {
@@ -35,7 +36,7 @@ const publishTest = async (req, res, next) => {
 
 const getTests = catchAsync(async (req, res, next) => {
     const filter =
-        req.user.role === "maker"
+        req.user.role === ROLES.MAKER
             ? { maker_id: req.user.id }
             : { taker_ids: req.user.id };
     const query = {};
@@ -92,7 +93,7 @@ const createTakers = catchAsync(async (req, res, next) => {
             const newTaker = await userService.createUser({
                 ...takerBody,
                 maker_id: user._id,
-                role: "taker",
+                role: ROLES.TAKER,
             });
 
             return newTaker;
