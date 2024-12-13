@@ -6,10 +6,11 @@ import { TEST_STATUS } from "../config/constants/testStatus.js";
 import { Test } from "../models/test.model.js";
 import { User } from "../models/user.model.js";
 import { faker } from "@faker-js/faker";
+import { ROLES } from "../config/constants/roles.js";
 
 const createRandomTest = async () => {
     const randomMaker = await User.aggregate([
-        { $match: { role: "maker" } },
+        { $match: { role: ROLES.MAKER } },
         {
             $sample: {
                 size: 1,
@@ -63,7 +64,7 @@ const createRandomTest = async () => {
         shareOption === SHARE_OPTION.ANYONE
             ? []
             : await User.aggregate([
-                  { $match: { role: "taker" } },
+                  { $match: { role: ROLES.TAKER } },
                   {
                       $sample: {
                           size: faker.number.int({ min: 5, max: 40 }),

@@ -3,6 +3,7 @@ import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { Test } from "../models/test.model.js";
 import { Submission } from "../models/submission.model.js";
+import { ROLES } from "../config/constants/roles.js";
 
 const createUser = async (body) => {
     const existingUser = await User.findOne({
@@ -11,7 +12,7 @@ const createUser = async (body) => {
     });
 
     if (existingUser) {
-        if (existingUser.role === "maker") {
+        if (existingUser.role === ROLES.MAKER) {
             throw new ApiError(httpStatus.BAD_REQUEST, "User already exists");
         }
 
@@ -34,7 +35,7 @@ const createUser = async (body) => {
 const getTakersByMaker = async (makerId) => {
     const takers = await User.find({
         maker_ids: makerId,
-        role: "taker",
+        role: ROLES.TAKER,
     });
 
     return takers;
@@ -59,7 +60,7 @@ const getTakerStatistics = async (takerId) => {
               }, 0) / submissions.length
             : 0;
 
-return {
+    return {
         taker,
         total_tests_assigned: totalTestsAssigned,
         total_submissions: totalSubmissions,

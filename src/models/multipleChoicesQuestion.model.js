@@ -23,6 +23,7 @@ const multipleChoiceQuestionSchema = mongoose.Schema({
         {
             type: ChoiceType,
             required: true,
+            _id: false,
         },
     ],
     answer: {

@@ -11,6 +11,7 @@ import testService from "./test.service.js";
 import { AUTO_SCORE_TYPE } from "../config/constants/constants.js";
 import fse from "fs-extra";
 import path from "path";
+import { ROLES } from "../config/constants/roles.js";
 
 const createQuestionContent = async (questionType, questionContent) => {
     const model = questionTypeToQuestionModel.get(questionType);
@@ -256,19 +257,19 @@ const getQuestionsContent = async (
         questions.map(async (question) => {
             const content = await getQuestionContent(
                 question.id,
-                user.role === "maker" ||
-                    (user.role === "taker" && withCorrectAnswers)
+                user.role === ROLES.MAKER ||
+                    (user.role === ROLES.TAKER && withCorrectAnswers)
             );
 
             if (
-                (user.role === "taker" && withTakerAnswers) ||
-                (user.role === "maker" && takerId)
+                (user.role === ROLES.TAKER && withTakerAnswers) ||
+                (user.role === ROLES.MAKER && takerId)
             ) {
                 const submission = await Submission.findOne({
                     test_id: question.test_id,
                     taker_id:
-                        (user.role === "maker" && takerId) ||
-                        (user.role === "taker" && user.id),
+                        (user.role === ROLES.MAKER && takerId) ||
+                        (user.role === ROLES.TAKER && user.id),
                 });
 
                 let answer =

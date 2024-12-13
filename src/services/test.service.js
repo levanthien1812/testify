@@ -10,6 +10,7 @@ import { TEST_STATUS } from "../config/constants/testStatus.js";
 import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
 import submissionService from "./submission.service.js";
 import { Submission } from "../models/submission.model.js";
+import { ROLES } from "../config/constants/roles.js";
 
 const createTest = async (testBody) => {
     const { datetime, enable_close_time, close_time } = testBody;
@@ -65,7 +66,7 @@ const getTest = async (
 
     let withCorrectAnswers = false;
 
-    if (user.role === "taker") {
+    if (user.role === ROLES.TAKER) {
         if (
             test.share_option === SHARE_OPTION.RESTRICTED &&
             !test.taker_ids.map((taker) => taker.id).includes(user.id)
@@ -111,7 +112,7 @@ const getTest = async (
         }
     }
 
-    if (user.role === "maker" && takerId) {
+    if (user.role === ROLES.MAKER && takerId) {
         const taker = await User.findById(takerId);
         if (!taker) {
             throw new ApiError(httpStatus.NOT_FOUND, "Taker not found");
@@ -171,7 +172,7 @@ const assignTakers = async (testId, takerIds) => {
 
     let notFoundTakerIds = [];
     takerIds.forEach(async (takerId) => {
-        if (!(await User.find({ _id: takerId, role: "taker" }))) {
+        if (!(await User.find({ _id: takerId, role: ROLES.TAKER }))) {
             notFoundTakerIds.push(takerId);
         }
     });
@@ -206,7 +207,7 @@ const getAvailableTakers = async (testId, userId) => {
     const addedTakerIds = test.taker_ids;
     const takers = await User.find({
         maker_ids: userId,
-        role: "taker",
+        role: ROLES.TAKER,
         _id: { $nin: addedTakerIds },
     });
 

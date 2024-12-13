@@ -9,15 +9,15 @@ import { ResponseAnswer } from "../models/responseAnswer.mode.js";
 import { ResponseQuestion } from "../models/responseQuestion.model.js";
 
 export const questionTypeToQuestionModel = new Map([
-    [QUESTION_TYPE.MULITPLE_CHOICES, MultipleChoiceQuestion],
-    [QUESTION_TYPE.FILL_GAPS, FillGapsQuestion],
+    [QUESTION_TYPE.MULTIPLE_CHOICES, MultipleChoiceQuestion],
+    [QUESTION_TYPE.FILL_IN_THE_GAPS, FillGapsQuestion],
     [QUESTION_TYPE.MATCHING, MatchingQuestion],
     [QUESTION_TYPE.RESPONSE, ResponseQuestion],
 ]);
 
 export const questionTypeToAnswerModel = new Map([
-    [QUESTION_TYPE.MULITPLE_CHOICES, MultipleChoicesAnswer],
-    [QUESTION_TYPE.FILL_GAPS, FillGapsAnswer],
+    [QUESTION_TYPE.MULTIPLE_CHOICES, MultipleChoicesAnswer],
+    [QUESTION_TYPE.FILL_IN_THE_GAPS, FillGapsAnswer],
     [QUESTION_TYPE.MATCHING, MatchingAnswer],
     [QUESTION_TYPE.RESPONSE, ResponseAnswer],
 ]);

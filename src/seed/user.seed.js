@@ -2,9 +2,10 @@ import { faker } from "@faker-js/faker";
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { logger } from "../config/logger.js";
+import { ROLES } from "../config/constants/roles.js";
 
 const createRandomUser = async ({ role }) => {
-    if (role === "maker") {
+    if (role === ROLES.MAKER) {
         const defaultMaker = await User.findOne({
             email: "levanthienabc@gmail.com",
         });
@@ -15,7 +16,7 @@ const createRandomUser = async ({ role }) => {
                 username: "levanthienabc",
                 password: "18122002abc",
                 photo: faker.image.avatar(),
-                role: "maker",
+                role: ROLES.MAKER,
             };
         else
             return {
@@ -27,7 +28,7 @@ const createRandomUser = async ({ role }) => {
                 role: role,
             };
     }
-    if (role === "taker") {
+    if (role === ROLES.TAKER) {
         const defaultTaker = await User.findOne({
             email: "20521947@gm.uit.edu.vn",
         });
@@ -38,13 +39,13 @@ const createRandomUser = async ({ role }) => {
                 username: "thienle123",
                 password: "18122002abc",
                 photo: faker.image.avatar(),
-                role: "taker",
+                role: ROLES.TAKER,
             };
 
         const maker = await User.aggregate([
             {
                 $match: {
-                    role: "maker",
+                    role: ROLES.MAKER,
                 },
             },
             {
@@ -69,22 +70,22 @@ const createRandomUser = async ({ role }) => {
 export const seedUsers = async () => {
     logger.info("Seeding users...");
 
-    const defaultMaker = await createRandomUser({ role: "maker" });
-    const defaultTaker = await createRandomUser({ role: "taker" });
+    const defaultMaker = await createRandomUser({ role: ROLES.MAKER });
+    const defaultTaker = await createRandomUser({ role: ROLES.TAKER });
 
     await User.create(defaultMaker);
     await User.create(defaultTaker);
 
     await Promise.all(
         [...Array(3)].map(async () => {
-            const maker = await createRandomUser({ role: "maker" });
+            const maker = await createRandomUser({ role: ROLES.MAKER });
             await User.create(maker);
         })
     );
 
     await Promise.all(
         [...Array(60)].map(async () => {
-            const taker = await createRandomUser({ role: "taker" });
+            const taker = await createRandomUser({ role: ROLES.TAKER });
             await User.create(taker);
         })
     );

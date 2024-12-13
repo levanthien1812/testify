@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import { User } from "../models/user.model.js";
 import userService from "../services/user.service.js";
 import { logger } from "../config/logger.js";
+import { ROLES } from "../config/constants/roles.js";
 
 const getUsers = async (req, res, next) => {
     const users = await User.find();
@@ -13,7 +14,7 @@ const createTakers = async (req, res, next) => {
         return {
             ...taker,
             maker_id: req.user.id,
-            role: "taker",
+            role: ROLES.TAKER,
         };
     });
 

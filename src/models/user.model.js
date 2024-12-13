@@ -1,5 +1,5 @@
 import mongoose from "mongoose";
-import { roles } from "../config/roles.js";
+import { ROLES } from "../config/constants/roles.js";
 import bcrypt from "bcryptjs";
 import validator from "validator";
 import { toJSON } from "./plugins/toJSON.js";
@@ -44,8 +44,8 @@ const userSchema = mongoose.Schema(
         },
         role: {
             type: String,
-            enum: roles,
-            default: "maker",
+            enum: ROLES,
+            default: ROLES.MAKER,
         },
         maker_ids: [
             {
