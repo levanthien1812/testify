@@ -60,7 +60,7 @@ const getTests = catchAsync(async (req, res, next) => {
 
     const testsResult = await testService.getTests(filter, query);
 
-    return res.status(httpStatus.ACCEPTED).send(testsResult);
+    return res.status(httpStatus.OK).send(testsResult);
 });
 
 const getTest = catchAsync(async (req, res, next) => {
@@ -71,7 +71,7 @@ const getTest = catchAsync(async (req, res, next) => {
         req.params.takerId
     );
 
-    return res.status(httpStatus.ACCEPTED).send({ test });
+    return res.status(httpStatus.OK).send({ test });
 });
 
 const assignTakers = catchAsync(async (req, res, next) => {

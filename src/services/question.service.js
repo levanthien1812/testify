@@ -189,9 +189,27 @@ const addAnswer = async (questionId, answerBody) => {
     }
 
     const model = questionTypeToQuestionModel.get(question.type);
+    let answerContent = {};
+    switch (question.type) {
+        case QUESTION_TYPE.MULTIPLE_CHOICES:
+            answerContent = answerBody.options;
+            break;
+        case QUESTION_TYPE.FILL_IN_THE_GAPS:
+            answerContent = answerBody.gaps;
+            break;
+        case QUESTION_TYPE.MATCHING:
+            answerContent = answerBody.matchings;
+            break;
+        case QUESTION_TYPE.RESPONSE:
+            answerContent = answerBody.RESPONSE;
+            break;
+        default:
+            break;
+    }
+
     let updated = await model.findOneAndUpdate(
         { question_id: questionId },
-        { $set: answerBody }
+        { $set: { answer: answerContent } }
     );
 
     const submissions = await Submission.find({
@@ -249,7 +267,6 @@ const getQuestionContent = async (questionId, withCorrectAnswer) => {
 const getQuestionsContent = async (
     questions,
     user,
-    withTakerAnswers,
     withCorrectAnswers,
     takerId = null
 ) => {
@@ -261,36 +278,36 @@ const getQuestionsContent = async (
                     (user.role === ROLES.TAKER && withCorrectAnswers)
             );
 
-            if (
-                (user.role === ROLES.TAKER && withTakerAnswers) ||
-                (user.role === ROLES.MAKER && takerId)
-            ) {
-                const submission = await Submission.findOne({
-                    test_id: question.test_id,
-                    taker_id:
-                        (user.role === ROLES.MAKER && takerId) ||
-                        (user.role === ROLES.TAKER && user.id),
-                });
+            // if (
+            //     (user.role === ROLES.TAKER) ||
+            //     (user.role === ROLES.MAKER && takerId)
+            // ) {
+            //     const submission = await Submission.findOne({
+            //         test_id: question.test_id,
+            //         taker_id:
+            //             (user.role === ROLES.MAKER && takerId) ||
+            //             (user.role === ROLES.TAKER && user.id),
+            //     });
 
-                let answer =
-                    await answerService.findByQuestionIdAndSubmissionId(
-                        question.id,
-                        submission.id,
-                        withCorrectAnswers
-                    );
+            //     let answer =
+            //         await answerService.findByQuestionIdAndSubmissionId(
+            //             question.id,
+            //             submission.id,
+            //             withCorrectAnswers
+            //         );
 
-                if (answer) {
-                    const answerContent =
-                        await answerService.getAnswerContentByAnswerId(
-                            answer.id,
-                            question.type
-                        );
+            //     if (answer) {
+            //         const answerContent =
+            //             await answerService.getAnswerContentByAnswerId(
+            //                 answer.id,
+            //                 question.type
+            //             );
 
-                    answer = { ...answer.toObject(), content: answerContent };
-                }
+            //         answer = { ...answer.toObject(), content: answerContent };
+            //     }
 
-                return { ...question.toObject(), content, answer };
-            }
+            //     return { ...question.toObject(), content };
+            // }
 
             return { ...question.toObject(), content };
         })
