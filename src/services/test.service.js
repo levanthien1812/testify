@@ -64,6 +64,7 @@ const getTest = async (
         throw new ApiError(httpStatus.NOT_FOUND, "No test found with this ID");
     }
 
+    // Determine if correct answers are returned or not
     let withCorrectAnswers = false;
 
     if (user.role === ROLES.TAKER) {
@@ -133,7 +134,6 @@ const getTest = async (
                 questionsByPart = await questionService.getQuestionsContent(
                     questionsByPart,
                     user,
-                    withTakerAnswers,
                     withCorrectAnswers,
                     takerId
                 );
@@ -151,7 +151,6 @@ const getTest = async (
         questions = await questionService.getQuestionsContent(
             questions,
             user,
-            withTakerAnswers,
             withCorrectAnswers,
             takerId
         );

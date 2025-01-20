@@ -287,6 +287,10 @@ router
     .get(auth(RIGHTS.GET_TEST), testController.getTest);
 
 router
+    .route("/:testId/answers")
+    .get(auth(RIGHTS.GET_ANSWERS), answerController.getAnswers);
+
+router
     .route("/:testId/answers/:answerId")
     .patch(
         auth(RIGHTS.UPDATE_TAKER_ANSWER),
