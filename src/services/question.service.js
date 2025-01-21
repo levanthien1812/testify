@@ -251,6 +251,7 @@ const getQuestionsByTestId = async (testId) => {
 
 const getQuestionContent = async (questionId, withCorrectAnswer) => {
     const question = await Question.findById(questionId);
+    console.log(question.type);
 
     if (!question) {
         throw new ApiError(httpStatus.NOT_FOUND, "Question not found!");
