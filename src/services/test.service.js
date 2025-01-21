@@ -11,6 +11,7 @@ import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js
 import submissionService from "./submission.service.js";
 import { Submission } from "../models/submission.model.js";
 import { ROLES } from "../config/constants/roles.js";
+import { ERROR_CODE, ERROR_MESSAGE } from "../config/constants/errorCode.js";
 
 const createTest = async (testBody) => {
     const { datetime, enable_close_time, close_time } = testBody;
@@ -74,16 +75,36 @@ const getTest = async (
         ) {
             throw new ApiError(
                 httpStatus.FORBIDDEN,
-                "You dont have access to this test!"
+                ERROR_MESSAGE.ERR001,
+                ERROR_CODE.ERR001
             );
-        } else {
-            if (new Date(test.datetime).getTime() - new Date().getTime() > 0) {
-                return {
-                    ...test.toObject(),
-                    parts: [],
-                    questions: [],
-                };
-            }
+        }
+
+        if (
+            test.status === TEST_STATUS.PUBLISHABLE ||
+            test.status === TEST_STATUS.DRAFT
+        ) {
+            throw new ApiError(
+                httpStatus.BAD_REQUEST,
+                ERROR_MESSAGE.ERR002,
+                ERROR_CODE.ERR002
+            );
+        }
+
+        if (test.status === TEST_STATUS.CLOSED) {
+            throw new ApiError(
+                httpStatus.BAD_REQUEST,
+                ERROR_MESSAGE.ERR003,
+                ERROR_CODE.ERR003
+            );
+        }
+
+        if (new Date(test.datetime).getTime() - new Date().getTime() > 0) {
+            return {
+                ...test.toObject(),
+                parts: [],
+                questions: [],
+            };
         }
 
         const submission = await submissionService.getSubmissionByTakerId(
