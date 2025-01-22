@@ -35,30 +35,7 @@ const publishTest = async (req, res, next) => {
 };
 
 const getTests = catchAsync(async (req, res, next) => {
-    const filter =
-        req.user.role === ROLES.MAKER
-            ? { maker_id: req.user.id }
-            : { taker_ids: req.user.id };
-    const query = {};
-
-    req.query.date_from &&
-        (filter.datetime = {
-            $gte: new Date(req.query.date_from).toISOString(),
-        });
-    req.query.date_to &&
-        (filter.datetime = {
-            ...filter.datetime,
-            $lte: new Date(req.query.date_to).toISOString(),
-        });
-    req.query.search &&
-        (filter.title = { $regex: new RegExp(req.query.search, "i") });
-    req.query.status && (filter.status = req.query.status);
-
-    req.query.sort && (query.sortBy = req.query.sort);
-    req.query.page && (query.page = req.query.page);
-    req.query.limit && (query.limit = req.query.limit);
-
-    const testsResult = await testService.getTests(filter, query);
+    const testsResult = await testService.getTests(req.user, req.query);
 
     return res.status(httpStatus.OK).send(testsResult);
 });

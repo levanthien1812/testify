@@ -31,7 +31,34 @@ const createTest = async (testBody) => {
     return newTest;
 };
 
-const getTests = async (filter, query) => {
+const getTests = async (user, reqQuery) => {
+    const filter =
+        user.role === ROLES.MAKER
+            ? { maker_id: user.id }
+            : { taker_ids: user.id };
+    const query = {};
+
+    if (user.role === ROLES.TAKER) {
+        filter.status = { $in: [TEST_STATUS.OPENED, TEST_STATUS.CLOSED] };
+    }
+
+    reqQuery.date_from &&
+        (filter.datetime = {
+            $gte: new Date(reqQuery.date_from).toISOString(),
+        });
+    reqQuery.date_to &&
+        (filter.datetime = {
+            ...filter.datetime,
+            $lte: new Date(reqQuery.date_to).toISOString(),
+        });
+    reqQuery.search &&
+        (filter.title = { $regex: new RegExp(reqQuery.search, "i") });
+    reqQuery.status && (filter.status = reqQuery.status);
+
+    reqQuery.sort && (query.sortBy = reqQuery.sort);
+    reqQuery.page && (query.page = reqQuery.page);
+    reqQuery.limit && (query.limit = reqQuery.limit);
+
     const { results: tests, ...rest } = await Test.paginate(filter, query);
 
     const testsWithAddittionalData = await Promise.all(
