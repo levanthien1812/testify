@@ -287,7 +287,7 @@ router
     .get(auth(RIGHTS.GET_TEST), testController.getTest);
 
 router
-    .route("/:testId/answers")
+    .route("/:testId/submissions/:submissionId/answers")
     .get(auth(RIGHTS.GET_ANSWERS), answerController.getAnswers);
 
 router
