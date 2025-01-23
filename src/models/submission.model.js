@@ -39,6 +39,11 @@ const SubmissionSchema = new mongoose.Schema(
             type: Date,
             required: true,
         },
+        is_evaluated: {
+            type: Boolean,
+            required: true,
+            default: false,
+        },
     },
     {
         timestamps: {

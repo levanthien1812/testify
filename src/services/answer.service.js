@@ -35,7 +35,25 @@ const createAnswer = async (submissionId, answerBody) => {
         date: new Date(),
     });
 
-    const answerContent = { answer_id: newAnswer.id, ...answerBody };
+    let answerContent = { answer_id: newAnswer.id, answer: null };
+    switch (question.type) {
+        case QUESTION_TYPE.MULTIPLE_CHOICES:
+            answerContent.answer = answerBody.content.options;
+            break;
+        case QUESTION_TYPE.FILL_IN_THE_GAPS:
+            answerContent.answer = answerBody.content.gaps;
+            break;
+
+        case QUESTION_TYPE.MATCHING:
+            answerContent.answer = answerBody.content.matchings;
+            break;
+
+        case QUESTION_TYPE.RESPONSE:
+            answerContent.answer = answerBody.content.response;
+            break;
+        default:
+            break;
+    }
 
     const answerModel = questionTypeToAnswerModel.get(question.type);
     await answerModel.create(answerContent);
@@ -140,7 +158,7 @@ const getAnswerContentByAnswerId = async (answerId, questionType) => {
 const getAnswersBySubmissionId = async (submissionId) => {
     const answers = await Answer.find({
         submission_id: submissionId,
-    }).select("-__v -question_id -submission_id");
+    }).select("-submission_id");
 
     return answers;
 };
