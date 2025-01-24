@@ -83,7 +83,11 @@ const testSchema = mongoose.Schema(
             type: Date,
             required: false,
         },
+        // assigned by maker
         taker_ids: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
+        joined_taker_ids: [
+            { type: mongoose.SchemaTypes.ObjectId, ref: "User" },
+        ],
         are_answers_provided: {
             type: Boolean,
             default: false,

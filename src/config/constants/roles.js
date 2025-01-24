@@ -31,6 +31,7 @@ export const RIGHTS = {
     GET_USERS: "GET_USERS",
     MANAGE_USERS: "MANAGE_USERS",
     GET_ANSWERS: "GET_ANSWERS",
+    GET_TAKERS_DETAILS: "GET_TAKERS_DETAILS",
 };
 
 export const ROLES = {

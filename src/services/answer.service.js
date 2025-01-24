@@ -10,6 +10,7 @@ import {
 } from "../utils/mapping.js";
 import { AUTO_SCORE_TYPE } from "../config/constants/constants.js";
 import submissionService from "./submission.service.js";
+import _ from "lodash";
 
 const createAnswers = async (submissionId, answersBody) => {
     const answers = [];
@@ -35,25 +36,10 @@ const createAnswer = async (submissionId, answerBody) => {
         date: new Date(),
     });
 
-    let answerContent = { answer_id: newAnswer.id, answer: null };
-    switch (question.type) {
-        case QUESTION_TYPE.MULTIPLE_CHOICES:
-            answerContent.answer = answerBody.content.options;
-            break;
-        case QUESTION_TYPE.FILL_IN_THE_GAPS:
-            answerContent.answer = answerBody.content.gaps;
-            break;
-
-        case QUESTION_TYPE.MATCHING:
-            answerContent.answer = answerBody.content.matchings;
-            break;
-
-        case QUESTION_TYPE.RESPONSE:
-            answerContent.answer = answerBody.content.response;
-            break;
-        default:
-            break;
-    }
+    let answerContent = {
+        answer_id: newAnswer.id,
+        answer: { ...answerBody.content },
+    };
 
     const answerModel = questionTypeToAnswerModel.get(question.type);
     await answerModel.create(answerContent);
@@ -95,23 +81,25 @@ const scoreAnswerByAnswerId = async (answerId) => {
     const question = await Question.findById(answer.question_id);
     const questionModel = questionTypeToQuestionModel.get(question.type);
 
-    const answerContentDoc = await getAnswerContentByAnswerId(
+    const answerContent = await getAnswerContentByAnswerId(
         answerId,
         question.type
     );
-    let questionContentDoc = await questionModel
+    let questionContent = await questionModel
         .findOne({
             question_id: question.id,
         })
         .select("answer");
+    console.log(_.isEqual(answerContent.answer, questionContent.answer));
 
-    if (questionContentDoc.answer) {
+    if (questionContent.answer) {
         if (
-            sameItems(
-                answerContentDoc.answer,
-                questionContentDoc.answer,
-                question.type === QUESTION_TYPE.FILL_GAPS
-            )
+            // sameItems(
+            //     answerContent.answer,
+            //     questionContent.answer,
+            //     question.type === QUESTION_TYPE.FILL_GAPS
+            // )
+            _.isEqual(answerContent.answer, questionContent.answer)
         ) {
             answer.is_correct = true;
             answer.score = question.score;
@@ -144,7 +132,12 @@ const findByQuestionIdAndSubmissionId = async (
     return answer;
 };
 
-const getAnswerContentByAnswerId = async (answerId, questionType) => {
+const getAnswerContentByAnswerId = async (answerId, questionType = null) => {
+    if (!questionType) {
+        const answer = await Answer.findById(answerId);
+        const question = await Question.findById(answer.question_id);
+        questionType = question.type;
+    }
     const model = questionTypeToAnswerModel.get(questionType);
     const answerContent = await model
         .findOne({
@@ -160,7 +153,14 @@ const getAnswersBySubmissionId = async (submissionId) => {
         submission_id: submissionId,
     }).select("-submission_id");
 
-    return answers;
+    const answersWithContent = await Promise.all(
+        answers.map(async (answer) => {
+            const answerContent = await getAnswerContentByAnswerId(answer.id);
+            return { ...answer.toObject(), content: answerContent.answer };
+        })
+    );
+
+    return answersWithContent;
 };
 
 export default {

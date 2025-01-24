@@ -7,8 +7,14 @@ const ResponseAnswerSchema = Schema({
         required: true,
     },
     answer: {
-        type: String,
+        type: {
+            response: {
+                type: String,
+                _id: false,
+            },
+        },
         required: true,
+        _id: false,
     },
     __v: { type: Number, select: false },
 });

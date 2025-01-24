@@ -8,7 +8,11 @@ const fillGapsAnswerSchema = mongoose.Schema({
         ref: "Answer",
     },
     answer: {
-        type: [String],
+        type: {
+            gaps: {
+                type: [String],
+            },
+        },
         required: true,
         _id: false,
     },

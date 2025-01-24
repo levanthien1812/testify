@@ -8,10 +8,16 @@ const multipleChoicesAnswerSchema = mongoose.Schema({
         ref: "Answer",
     },
     answer: {
-        type: [mongoose.SchemaTypes.ObjectId],
+        type: {
+            options: {
+                type: [mongoose.SchemaTypes.ObjectId],
+                _id: false,
+            },
+        },
         required: true,
         _id: false,
     },
+    __v: { type: Number, select: false },
 });
 
 multipleChoicesAnswerSchema.plugin(toJSON);
