@@ -189,27 +189,10 @@ const addAnswer = async (questionId, answerBody) => {
     }
 
     const model = questionTypeToQuestionModel.get(question.type);
-    let answerContent = {};
-    switch (question.type) {
-        case QUESTION_TYPE.MULTIPLE_CHOICES:
-            answerContent = answerBody.options;
-            break;
-        case QUESTION_TYPE.FILL_IN_THE_GAPS:
-            answerContent = answerBody.gaps;
-            break;
-        case QUESTION_TYPE.MATCHING:
-            answerContent = answerBody.matchings;
-            break;
-        case QUESTION_TYPE.RESPONSE:
-            answerContent = answerBody.RESPONSE;
-            break;
-        default:
-            break;
-    }
 
     let updated = await model.findOneAndUpdate(
         { question_id: questionId },
-        { $set: { answer: answerContent } }
+        { $set: { answer: answerBody } }
     );
 
     const submissions = await Submission.find({
@@ -251,7 +234,6 @@ const getQuestionsByTestId = async (testId) => {
 
 const getQuestionContent = async (questionId, withCorrectAnswer) => {
     const question = await Question.findById(questionId);
-    console.log(question.type);
 
     if (!question) {
         throw new ApiError(httpStatus.NOT_FOUND, "Question not found!");
@@ -278,37 +260,6 @@ const getQuestionsContent = async (
                 user.role === ROLES.MAKER ||
                     (user.role === ROLES.TAKER && withCorrectAnswers)
             );
-
-            // if (
-            //     (user.role === ROLES.TAKER) ||
-            //     (user.role === ROLES.MAKER && takerId)
-            // ) {
-            //     const submission = await Submission.findOne({
-            //         test_id: question.test_id,
-            //         taker_id:
-            //             (user.role === ROLES.MAKER && takerId) ||
-            //             (user.role === ROLES.TAKER && user.id),
-            //     });
-
-            //     let answer =
-            //         await answerService.findByQuestionIdAndSubmissionId(
-            //             question.id,
-            //             submission.id,
-            //             withCorrectAnswers
-            //         );
-
-            //     if (answer) {
-            //         const answerContent =
-            //             await answerService.getAnswerContentByAnswerId(
-            //                 answer.id,
-            //                 question.type
-            //             );
-
-            //         answer = { ...answer.toObject(), content: answerContent };
-            //     }
-
-            //     return { ...question.toObject(), content };
-            // }
 
             return { ...question.toObject(), content };
         })

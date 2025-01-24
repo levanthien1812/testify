@@ -8,12 +8,17 @@ const matchingAnswerSchema = mongoose.Schema({
         ref: "Answer",
     },
     answer: {
-        type: [
-            {
-                left: mongoose.SchemaTypes.ObjectId,
-                right: mongoose.SchemaTypes.ObjectId,
+        type: {
+            matchings: {
+                type: [
+                    {
+                        left: mongoose.SchemaTypes.ObjectId,
+                        right: mongoose.SchemaTypes.ObjectId,
+                    },
+                ],
+                _id: false,
             },
-        ],
+        },
         _id: false,
         required: true,
     },

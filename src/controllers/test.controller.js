@@ -85,6 +85,18 @@ const createTakers = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.ACCEPTED).send({ test: updatedTest });
 });
 
+const getTakersDetails = catchAsync(async (req, res, next) => {
+    const { taker_ids } = req.body;
+    const takers = await Promise.all(
+        taker_ids.map(async (id) => {
+            const taker = await userService.getUserById(id);
+            return taker;
+        })
+    );
+
+    return res.status(httpStatus.OK).send({ takers });
+});
+
 const getAvailableTakers = catchAsync(async (req, res, next) => {
     const takers = await testService.getAvailableTakers(
         req.params.testId,
@@ -103,4 +115,5 @@ export default {
     publishTest,
     createTakers,
     getAvailableTakers,
+    getTakersDetails,
 };

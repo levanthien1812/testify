@@ -27,7 +27,12 @@ const multipleChoiceQuestionSchema = mongoose.Schema({
         },
     ],
     answer: {
-        type: [mongoose.SchemaTypes.ObjectId],
+        type: {
+            options: {
+                type: [mongoose.SchemaTypes.ObjectId],
+                _id: false,
+            },
+        },
         required: true,
         select: false,
         _id: false,

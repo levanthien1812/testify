@@ -83,10 +83,7 @@ const getTest = async (
     withTakerAnswers = false,
     takerId = null
 ) => {
-    const test = await Test.findById(testId).populate({
-        path: "taker_ids",
-        select: "-__v -maker_id",
-    });
+    const test = await Test.findById(testId);
 
     if (!test) {
         throw new ApiError(httpStatus.NOT_FOUND, "No test found with this ID");
