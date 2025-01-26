@@ -13,6 +13,8 @@ import { uploadSingle } from "../../middlewares/upload.js";
 import { upload } from "../../config/multer.js";
 import { RIGHTS } from "../../config/constants/roles.js";
 import userValidation from "../../validations/user.validation.js";
+import passcodeController from "../../controllers/passcode.controller.js";
+import passcodeValidation from "../../validations/passcode.validation.js";
 
 const router = express.Router();
 
@@ -125,6 +127,14 @@ router
         auth(RIGHTS.UPDATE_TAKER_ANSWER),
         validate(answerValidation.updateAnswerSchema),
         answerController.updateAnswer
+    );
+
+router
+    .route("/:testId/passcode")
+    .post(
+        auth(RIGHTS.GENERATE_PASSCODE),
+        validate(passcodeValidation.generatePasscode),
+        passcodeController.generatePasscode
     );
 
 export default router;
