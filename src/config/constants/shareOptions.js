@@ -1,4 +1,5 @@
 export const SHARE_OPTION = {
     ANYONE: "ANYONE",
     RESTRICTED: "RESTRICTED",
+    PASSCODE: "PASSCODE",
 };

@@ -5,8 +5,16 @@ import { toJSON } from "./plugins/toJSON.js";
 import { TEST_STATUS } from "../config/constants/testStatus.js";
 import { SHARE_OPTION } from "../config/constants/shareOptions.js";
 import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
+import { PassCode } from "./passcode.model.js";
 
-const testSchema = mongoose.Schema(
+const TestOption = new mongoose.Schema({
+    allow_close_time: { type: Boolean, required: true },
+    allow_view_submission_after_test: { type: Boolean, required: true },
+    allow_multiple_submissions: { type: Boolean, required: true },
+    allow_save_progress: { type: Boolean, required: true },
+});
+
+const TestSchema = mongoose.Schema(
     {
         title: {
             type: String,
@@ -92,6 +100,15 @@ const testSchema = mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        passcode: {
+            type: mongoose.SchemaTypes.ObjectId,
+            ref: "PassCode",
+            required: false,
+        },
+        options: {
+            type: TestOption,
+            required: true,
+        },
         __v: { type: Number, select: false },
     },
     {
@@ -102,7 +119,9 @@ const testSchema = mongoose.Schema(
     }
 );
 
-testSchema.plugin(toJSON);
-testSchema.plugin(paginate);
+TestSchema.plugin(toJSON);
+TestOption.plugin(toJSON);
 
-export const Test = mongoose.model("Test", testSchema);
+TestSchema.plugin(paginate);
+
+export const Test = mongoose.model("Test", TestSchema);

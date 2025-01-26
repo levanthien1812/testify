@@ -1,0 +1,10 @@
+export const PASSCODE_METHOD = {
+    AUTO_GENERATED: "AUTO_GENERATED",
+    MANUALLY_ENTERED: "MANUALLY_ENTERED",
+};
+
+export const PASSCODE_FORMAT = {
+    "XXX-YYY": "XXX-YYY",
+    YYYYYY: "YYYYYY",
+    XXXX: "XXXX",
+};

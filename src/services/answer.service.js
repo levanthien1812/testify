@@ -44,10 +44,6 @@ const createAnswer = async (submissionId, answerBody) => {
     const answerModel = questionTypeToAnswerModel.get(question.type);
     await answerModel.create(answerContent);
 
-    if (AUTO_SCORE_TYPE.includes(question.type)) {
-        newAnswer = await scoreAnswerByAnswerId(newAnswer.id);
-    }
-
     return newAnswer;
 };
 
@@ -108,7 +104,7 @@ const scoreAnswerByAnswerId = async (answerId) => {
             answer.score = 0;
         }
         await answer.save();
-    }
+    } else return;
 
     await submissionService.scoreSubmission(answer.submission_id);
 
@@ -155,6 +151,8 @@ const getAnswersBySubmissionId = async (submissionId) => {
 
     const answersWithContent = await Promise.all(
         answers.map(async (answer) => {
+            await scoreAnswerByAnswerId(answer.id);
+
             const answerContent = await getAnswerContentByAnswerId(answer.id);
             return { ...answer.toObject(), content: answerContent.answer };
         })
