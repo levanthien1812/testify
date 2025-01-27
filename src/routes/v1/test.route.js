@@ -130,7 +130,7 @@ router
     );
 
 router
-    .route("/:testId/passcode")
+    .route("/:testId/passcode/generate")
     .post(
         auth(RIGHTS.GENERATE_PASSCODE),
         validate(passcodeValidation.generatePasscode),

@@ -5,7 +5,12 @@ import { toJSON } from "./plugins/toJSON.js";
 const PassCodeSchema = new mongoose.Schema({
     code: { type: String, required: true },
     valid_till: { type: Date, required: false },
-    method: { type: Object.values(PASSCODE_METHOD), required: true },
+    valid_in: { type: Number, required: false },
+    method: {
+        type: String,
+        enum: Object.values(PASSCODE_METHOD),
+        required: true,
+    },
     format: { type: String, required: false },
     test_id: {
         type: mongoose.Schema.Types.ObjectId,
