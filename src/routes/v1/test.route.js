@@ -137,4 +137,12 @@ router
         passcodeController.generatePasscode
     );
 
+router
+    .route("/passcode/check")
+    .post(
+        auth(RIGHTS.CHECK_PASSCODE),
+        validate(passcodeValidation.checkPasscode),
+        passcodeController.checkPasscode
+    );
+
 export default router;
