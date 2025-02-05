@@ -13,3 +13,8 @@ export const QUESTION_LEVEL = {
     HARD: "HARD",
     VERY_HARD: "VERY_HARD",
 };
+
+export const PUBLIC_ANSWER_VISIBILITY_LEVEL = {
+    SUMMARY: "SUMMARY",
+    DETAILED: "DETAILED",
+};

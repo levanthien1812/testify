@@ -86,7 +86,6 @@ const scoreAnswerByAnswerId = async (answerId) => {
             question_id: question.id,
         })
         .select("answer");
-    console.log(_.isEqual(answerContent.answer, questionContent.answer));
 
     if (questionContent.answer) {
         if (
@@ -106,7 +105,7 @@ const scoreAnswerByAnswerId = async (answerId) => {
         await answer.save();
     } else return;
 
-    await submissionService.scoreSubmission(answer.submission_id);
+    // await submissionService.scoreSubmission(answer.submission_id);
 
     return answer;
 };
@@ -151,7 +150,7 @@ const getAnswersBySubmissionId = async (submissionId) => {
 
     const answersWithContent = await Promise.all(
         answers.map(async (answer) => {
-            await scoreAnswerByAnswerId(answer.id);
+            // await scoreAnswerByAnswerId(answer.id);
 
             const answerContent = await getAnswerContentByAnswerId(answer.id);
             return { ...answer.toObject(), content: answerContent.answer };

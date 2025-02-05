@@ -201,7 +201,7 @@ const getTest = async (
         );
 
         return {
-            ...test.toOject(),
+            ...test.toObject(),
             parts: [],
             questions: questions,
         };

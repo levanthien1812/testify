@@ -10,6 +10,13 @@ const generatePasscode = {
     },
 };
 
+const checkPasscode = {
+    body: {
+        passcode: Joi.string().required(),
+    },
+};
+
 export default {
     generatePasscode,
+    checkPasscode,
 };
