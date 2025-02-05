@@ -1,5 +1,8 @@
 import mongoose from "mongoose";
-import { TEST_LEVEL } from "../config/constants/levels.js";
+import {
+    PUBLIC_ANSWER_VISIBILITY_LEVEL,
+    TEST_LEVEL,
+} from "../config/constants/levels.js";
 import { paginate } from "./plugins/paginate.js";
 import { toJSON } from "./plugins/toJSON.js";
 import { TEST_STATUS } from "../config/constants/testStatus.js";
@@ -8,10 +11,80 @@ import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js
 import { PassCode } from "./passcode.model.js";
 
 const TestOption = new mongoose.Schema({
-    allow_close_time: { type: Boolean, required: true },
-    allow_view_submission_after_test: { type: Boolean, required: true },
-    allow_multiple_submissions: { type: Boolean, required: true },
-    allow_save_progress: { type: Boolean, required: true },
+    allow_close_time: {
+        type: {
+            enable: { type: Boolean, required: true },
+            close_time: { type: Date, required: false },
+        },
+        required: true,
+    },
+    allow_view_submission_after_test: {
+        type: { enable: { type: Boolean, required: true } },
+        required: true,
+    },
+    allow_multiple_submissions: {
+        type: {
+            enable: { type: Boolean, required: true },
+            maximum_submissions: { type: Number, required: false },
+        },
+        required: true,
+    },
+    allow_save_progress: {
+        type: { enable: { type: Boolean, required: true } },
+        required: true,
+    },
+    allow_show_taker_answers_after_test: {
+        type: {
+            enable: { type: Boolean, required: true },
+            delay_time: { type: Number, required: false },
+        },
+        required: true,
+    },
+    allow_show_maker_answers_after_test: {
+        type: {
+            enable: { type: Boolean, required: true },
+            visibility_level: {
+                type: String,
+                enum: Object.values(PUBLIC_ANSWER_VISIBILITY_LEVEL),
+                required: false,
+            },
+            public_answers_option: {
+                type: String,
+                enum: Object.values(PUBLIC_ANSWER_OPTION),
+                required: true,
+            },
+            public_answers_date: {
+                type: Date,
+                required: false,
+            },
+        },
+        required: true,
+    },
+    allow_shuffle_questions: {
+        type: {
+            enable: { type: Boolean, required: true },
+        },
+        required: true,
+    },
+    allow_shuffle_answers: {
+        type: {
+            enable: { type: Boolean, required: true },
+        },
+        required: true,
+    },
+    allow_review_before_submission: {
+        type: {
+            enable: { type: Boolean, required: true },
+        },
+        required: true,
+    },
+    disallow_time_limit: {
+        type: {
+            enable: { type: Boolean, required: true },
+            duration: { type: Number, required: false }, // Time limit in minutes
+        },
+        required: true,
+    },
 });
 
 const TestSchema = mongoose.Schema(
@@ -63,33 +136,14 @@ const TestSchema = mongoose.Schema(
             min: 1,
             required: true,
         },
-        code: {
-            type: String,
-        },
         status: {
             type: String,
             required: true,
             enum: Object.values(TEST_STATUS),
         },
-        enable_close_time: {
-            type: Boolean,
-            default: true,
-        },
-        close_time: {
-            type: Date,
-        },
         share_option: {
             type: String,
             enum: Object.values(SHARE_OPTION),
-        },
-        public_answers_option: {
-            type: String,
-            enum: Object.values(PUBLIC_ANSWER_OPTION),
-            required: true,
-        },
-        public_answers_date: {
-            type: Date,
-            required: false,
         },
         // assigned by maker
         taker_ids: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
