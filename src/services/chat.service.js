@@ -33,7 +33,7 @@ const getChats = async (userId) => {
             );
 
             return {
-                ...chat._doc,
+                ...chat.toObject(),
                 unread_messages: unreadMessages,
                 last_message: lastMessage,
             };

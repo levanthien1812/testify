@@ -15,11 +15,15 @@ route
         validate(chatValidation.createChat),
         chatController.createChat
     )
-    .get(auth("getChats"), chatController.getChats);
+    .get(auth(RIGHTS.GET_CHATS), chatController.getChats);
 
 route
     .route("/:id/messages")
     .post(auth(RIGHTS.CREATE_MESSAGE), messageController.createMessage)
+    .patch(
+        auth(RIGHTS.UPDATE_MESSAGE),
+        messageController.updateMessagesReadByByChatId
+    )
     .get(auth(RIGHTS.GET_MESSAGES), messageController.getMessages);
 
 export default route;

@@ -14,16 +14,27 @@ const getMessages = async (chatId) => {
 
 const getUnreadMessages = async (userId, chatId) => {
     const unreadMessages = await Message.find({
-        sender_id: userId,
+        // sender_id: userId,
         chat_id: chatId,
-        readBy: { $ne: userId },
+        read_by: { $nin: [userId] },
     }).sort("created_at");
 
     return unreadMessages;
+};
+
+const updateMessagesReadByByChatId = async (chatId, readBy) => {
+    // the logic for updating read field will be more complicated in case group chat
+    const messages = await Message.updateMany(
+        { chat_id: chatId },
+        { $addToSet: { read_by: { $each: readBy } } },
+        { new: true }
+    );
+    return messages;
 };
 
 export default {
     createMessage,
     getMessages,
     getUnreadMessages,
+    updateMessagesReadByByChatId,
 };

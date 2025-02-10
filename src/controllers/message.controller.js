@@ -20,4 +20,13 @@ const getMessages = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ messages });
 });
 
-export default { createMessage, getMessages };
+const updateMessagesReadByByChatId = catchAsync(async (req, res, next) => {
+    const messages = await messageService.updateMessagesReadByByChatId(
+        req.params.id,
+        req.body?.readBy
+    );
+
+    return res.status(httpStatus.OK).send({ messages });
+});
+
+export default { createMessage, getMessages, updateMessagesReadByByChatId };
