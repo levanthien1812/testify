@@ -6,15 +6,17 @@ const deleteAtPath = (obj, path, index) => {
     deleteAtPath(obj[path[index]], path, index + 1);
 };
 
-export const toJSON = (schema, options = {}) => {
+export const toJSON = (schema, options = { timestamps: false }) => {
     schema.set("toObject", {
         virtuals: true,
         transform: (doc, ret) => {
             ret.id = ret._id.toString();
             delete ret._id;
             delete ret.__v;
-            delete ret.updated_at;
-            delete ret.created_at;
+            if (!options.timestamps) {
+                delete ret.updated_at;
+                delete ret.created_at;
+            }
 
             // Optionally, include other fields to exclude:
             const fieldsToExclude = options.exclude || [];
@@ -27,8 +29,10 @@ export const toJSON = (schema, options = {}) => {
             ret.id = ret._id.toString();
             delete ret._id;
             delete ret.__v;
-            delete ret.updated_at;
-            delete ret.created_at;
+            if (!options.timestamps) {
+                delete ret.updated_at;
+                delete ret.created_at;
+            }
 
             // Optionally, include other fields to exclude:
             const fieldsToExclude = options.exclude || [];

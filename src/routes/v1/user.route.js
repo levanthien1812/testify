@@ -10,7 +10,7 @@ router.route("/").get(auth("getUsers"), userController.getUsers);
 router
     .route("/takers")
     .post(auth(RIGHTS.CREATE_TAKERS_FOR_TEST), userController.createTakers)
-    .get(auth("getTakers"), userController.getTakersByMaker);
+    .get(auth(RIGHTS.GET_TAKERS), userController.getTakersByMaker);
 
 router
     .route("/takers/statistics")

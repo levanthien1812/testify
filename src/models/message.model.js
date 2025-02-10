@@ -1,5 +1,6 @@
 import { sendAt } from "cron";
 import { Schema, model } from "mongoose";
+import { toJSON } from "./plugins/toJSON.js";
 
 const MessageSchema = Schema(
     {
@@ -21,7 +22,7 @@ const MessageSchema = Schema(
             type: String,
             required: false,
         },
-        readBy: [
+        read_by: [
             {
                 type: Schema.Types.ObjectId,
                 ref: "User",
@@ -35,5 +36,7 @@ const MessageSchema = Schema(
         },
     }
 );
+
+MessageSchema.plugin(toJSON, { timestamps: true });
 
 export const Message = model("Message", MessageSchema);
