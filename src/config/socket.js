@@ -24,6 +24,14 @@ const initializeSocket = (server) => {
             console.log("added");
         });
 
+        socket.on("remove-online-users", (userId) => {
+            const updatedOnlineUsers = onlineUsers.filter(
+                (user) => user.user_id !== userId && user.socket_id === sockerId
+            );
+            io.emit("send-online-users", updatedOnlineUsers);
+            console.log("added");
+        });
+
         socket.on("send-message", (message, receiverIds) => {
             receiverIds.forEach((receiverId) => {
                 const user = onlineUsers.find(
