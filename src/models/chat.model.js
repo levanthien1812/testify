@@ -14,6 +14,7 @@ const ChatModel = mongoose.Schema(
                     type: String,
                     trim: true,
                 },
+                _id: false,
             },
         ],
         is_group_chat: {
