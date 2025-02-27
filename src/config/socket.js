@@ -9,6 +9,7 @@ const initializeSocket = (server) => {
             origin: [config.web.origin],
             methods: ["GET", "POST"],
         },
+        maxHttpBufferSize: 1e8,
     });
 
     let onlineUsers = [];

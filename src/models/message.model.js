@@ -6,7 +6,15 @@ const MessageSchema = Schema(
     {
         text: {
             type: String,
-            required: true,
+            validate: {
+                validator: function (value) {
+                    if (this.images.length === 0) {
+                        return value.trim().length > 0;
+                    }
+                    return true;
+                },
+                message: "Text is required when no images are uploaded.",
+            },
         },
         chat_id: {
             type: Schema.Types.ObjectId,
@@ -18,10 +26,12 @@ const MessageSchema = Schema(
             ref: "User",
             required: true,
         },
-        image: {
-            type: String,
-            required: false,
-        },
+        images: [
+            {
+                type: String,
+                required: false,
+            },
+        ],
         read_by: [
             {
                 type: Schema.Types.ObjectId,
