@@ -4,8 +4,7 @@ import catchAsync from "../utils/catchAsync.js";
 
 const createMessage = catchAsync(async (req, res, next) => {
     const messageBody = {
-        text: req.body.text,
-        chat_id: req.params.id,
+        ...req.body,
         sender_id: req.user.id,
     };
 
