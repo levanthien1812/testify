@@ -42,6 +42,11 @@ const MessageSchema = Schema(
             type: Schema.Types.Boolean,
             required: false,
         },
+        reply_to: {
+            type: Schema.Types.ObjectId,
+            required: false,
+            ref: "Message",
+        },
     },
     {
         timestamps: {
