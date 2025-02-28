@@ -29,9 +29,9 @@ const updateMessagesReadByByChatId = catchAsync(async (req, res, next) => {
 });
 
 const deleteMessage = catchAsync(async (req, res, next) => {
-    const deleted = await messageService.deleteMessage(req.params.messageId);
+    await messageService.deleteMessage(req.params.messageId);
 
-    return res.status(httpStatus.OK).send({ deleted });
+    return res.status(httpStatus.OK).send({ deleted: true });
 });
 
 export default {

@@ -33,7 +33,15 @@ const updateMessagesReadByByChatId = async (chatId, readBy) => {
 };
 
 const deleteMessage = async (id) => {
-    const message = await Message.findByIdAndDelete(id);
+    const message = await Message.findByIdAndUpdate(
+        id,
+        {
+            deleted: true,
+        },
+        {
+            new: true,
+        }
+    );
     return message;
 };
 

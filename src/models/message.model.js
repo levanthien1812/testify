@@ -38,6 +38,10 @@ const MessageSchema = Schema(
                 ref: "User",
             },
         ],
+        deleted: {
+            type: Schema.Types.Boolean,
+            required: false,
+        },
     },
     {
         timestamps: {
