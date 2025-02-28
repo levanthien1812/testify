@@ -55,6 +55,22 @@ const initializeSocket = (server) => {
             });
         });
 
+        socket.on(SOCKET_EVENTS.DELETE_MESSAGE, async (message) => {
+            const chat = await Chat.findById(message.chat_id);
+            if (!chat || chat.members?.length === 0) return;
+            chat.members.forEach((member) => {
+                const user = onlineUsers.find(
+                    (user) => user.user_id === member.member.toString()
+                );
+                if (user) {
+                    io.to(user.socket_id).emit(
+                        SOCKET_EVENTS.DELETE_MESSAGE,
+                        message
+                    );
+                }
+            });
+        });
+
         socket.on(SOCKET_EVENTS.DISCONNECT, () => {
             console.log("user disconnected");
             onlineUsers = onlineUsers.filter(
