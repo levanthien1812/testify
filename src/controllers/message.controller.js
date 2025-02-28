@@ -28,4 +28,15 @@ const updateMessagesReadByByChatId = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ messages });
 });
 
-export default { createMessage, getMessages, updateMessagesReadByByChatId };
+const deleteMessage = catchAsync(async (req, res, next) => {
+    const deleted = await messageService.deleteMessage(req.params.messageId);
+
+    return res.status(httpStatus.OK).send({ deleted });
+});
+
+export default {
+    createMessage,
+    getMessages,
+    updateMessagesReadByByChatId,
+    deleteMessage,
+};

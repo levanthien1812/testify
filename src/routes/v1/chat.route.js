@@ -26,4 +26,8 @@ route
     )
     .get(auth(RIGHTS.GET_MESSAGES), messageController.getMessages);
 
+route
+    .route("/:id/messages/:messageId")
+    .delete(auth(RIGHTS.DELETE_MESSAGE), messageController.deleteMessage);
+
 export default route;
