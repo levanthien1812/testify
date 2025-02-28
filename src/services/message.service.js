@@ -32,9 +32,15 @@ const updateMessagesReadByByChatId = async (chatId, readBy) => {
     return messages;
 };
 
+const deleteMessage = async (id) => {
+    const message = await Message.findByIdAndDelete(id);
+    return message;
+};
+
 export default {
     createMessage,
     getMessages,
     getUnreadMessages,
     updateMessagesReadByByChatId,
+    deleteMessage,
 };
