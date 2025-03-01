@@ -17,6 +17,29 @@ const initializeSocket = (server) => {
     io.on(SOCKET_EVENTS.CONNECTION, (socket) => {
         console.log("a user connected");
 
+        const emitEventToOnlineUsers = async (
+            event,
+            data,
+            options = { includeSender: true }
+        ) => {
+            const chat = await Chat.findById(data.chat_id);
+            if (!chat || chat.members?.length === 0) return;
+            chat.members
+                .filter(
+                    (member) =>
+                        options.includeSender ||
+                        member.member.toString() !== data.senderId
+                )
+                .forEach((member) => {
+                    const user = onlineUsers.find(
+                        (user) => user.user_id === member.member.toString()
+                    );
+                    if (user) {
+                        io.to(user.socket_id).emit(event, data);
+                    }
+                });
+        };
+
         socket.on(SOCKET_EVENTS.JOIN_CHAT, (chatId) => {
             console.log(`User ${socket.id} joined chat ${chatId}`);
             socket.join(chatId);
@@ -40,35 +63,24 @@ const initializeSocket = (server) => {
         });
 
         socket.on(SOCKET_EVENTS.SEND_MESSAGE, async (message) => {
-            const chat = await Chat.findById(message.chat_id);
-            if (!chat || chat.members?.length === 0) return;
-            chat.members.forEach((member) => {
-                const user = onlineUsers.find(
-                    (user) => user.user_id === member.member.toString()
-                );
-                if (user) {
-                    io.to(user.socket_id).emit(
-                        SOCKET_EVENTS.GET_MESSAGE,
-                        message
-                    );
-                }
-            });
+            await emitEventToOnlineUsers(SOCKET_EVENTS.GET_MESSAGE, message);
         });
 
         socket.on(SOCKET_EVENTS.DELETE_MESSAGE, async (message) => {
-            const chat = await Chat.findById(message.chat_id);
-            if (!chat || chat.members?.length === 0) return;
-            chat.members.forEach((member) => {
-                const user = onlineUsers.find(
-                    (user) => user.user_id === member.member.toString()
-                );
-                if (user) {
-                    io.to(user.socket_id).emit(
-                        SOCKET_EVENTS.DELETE_MESSAGE,
-                        message
-                    );
+            await emitEventToOnlineUsers(SOCKET_EVENTS.DELETE_MESSAGE, message);
+        });
+
+        socket.on(SOCKET_EVENTS.TYPING, async (data) => {
+            await emitEventToOnlineUsers(
+                SOCKET_EVENTS.TYPING,
+                {
+                    ...data,
+                    chat_id: data.chatId,
+                },
+                {
+                    includeSender: false,
                 }
-            });
+            );
         });
 
         socket.on(SOCKET_EVENTS.DISCONNECT, () => {
