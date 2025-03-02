@@ -7,6 +7,19 @@ const createMessage = async (messageBody) => {
     return message;
 };
 
+const updateMessage = async (messageId, messageBody) => {
+    const message = await Message.findByIdAndUpdate(
+        messageId,
+        {
+            ...messageBody,
+        },
+        {
+            new: true,
+        }
+    );
+    return message;
+};
+
 const getMessages = async (chatId) => {
     const messages = await Message.find({ chat_id: chatId });
     return messages;
@@ -47,6 +60,7 @@ const deleteMessage = async (id) => {
 
 export default {
     createMessage,
+    updateMessage,
     getMessages,
     getUnreadMessages,
     updateMessagesReadByByChatId,

@@ -28,6 +28,7 @@ route
 
 route
     .route("/:id/messages/:messageId")
+    .patch(auth(RIGHTS.UPDATE_MESSAGE), messageController.updateMessage)
     .delete(auth(RIGHTS.DELETE_MESSAGE), messageController.deleteMessage);
 
 export default route;

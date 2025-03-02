@@ -13,6 +13,15 @@ const createMessage = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.CREATED).send({ message });
 });
 
+const updateMessage = catchAsync(async (req, res, next) => {
+    const message = await messageService.updateMessage(
+        req.params.messageId,
+        req.body
+    );
+
+    return res.status(httpStatus.CREATED).send({ message });
+});
+
 const getMessages = catchAsync(async (req, res, next) => {
     const messages = await messageService.getMessages(req.params.id);
 
@@ -36,6 +45,7 @@ const deleteMessage = catchAsync(async (req, res, next) => {
 
 export default {
     createMessage,
+    updateMessage,
     getMessages,
     updateMessagesReadByByChatId,
     deleteMessage,
