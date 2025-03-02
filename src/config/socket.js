@@ -83,6 +83,10 @@ const initializeSocket = (server) => {
             );
         });
 
+        socket.on(SOCKET_EVENTS.SEND_REACTION, async (data) => {
+            await emitEventToOnlineUsers(SOCKET_EVENTS.RECEIVE_REACTION, data);
+        });
+
         socket.on(SOCKET_EVENTS.DISCONNECT, () => {
             console.log("user disconnected");
             onlineUsers = onlineUsers.filter(

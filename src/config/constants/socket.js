@@ -17,4 +17,6 @@ export const SOCKET_EVENTS = {
     REMOVE_ONLINE_USERS: "remove-online-users",
     DELETE_MESSAGE: "delete-message",
     TYPING: "typing",
+    SEND_REACTION: "send-reaction",
+    RECEIVE_REACTION: "receive-reaction",
 };
