@@ -3,9 +3,12 @@ import messageService from "../services/message.service.js";
 import catchAsync from "../utils/catchAsync.js";
 
 const createMessage = catchAsync(async (req, res, next) => {
+    console.log(req.files);
+
     const messageBody = {
         ...req.body,
         sender_id: req.user.id,
+        images: req.files ? req.files.map((f) => f.path) : [],
     };
 
     const message = await messageService.createMessage(messageBody);

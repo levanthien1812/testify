@@ -5,6 +5,7 @@ import { auth } from "../../middlewares/auth.js";
 import { validate } from "../../middlewares/validate.js";
 import chatValidation from "../../validations/chat.validation.js";
 import { RIGHTS } from "../../config/constants/roles.js";
+import { upload } from "../../config/multer.js";
 
 const route = Router();
 
@@ -19,7 +20,11 @@ route
 
 route
     .route("/:id/messages")
-    .post(auth(RIGHTS.CREATE_MESSAGE), messageController.createMessage)
+    .post(
+        auth(RIGHTS.CREATE_MESSAGE),
+        upload.array("files[]", 10),
+        messageController.createMessage
+    )
     .patch(
         auth(RIGHTS.UPDATE_MESSAGE),
         messageController.updateMessagesReadByByChatId
