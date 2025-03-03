@@ -42,6 +42,12 @@ const MessageSchema = Schema(
             type: Schema.Types.Boolean,
             required: false,
         },
+        removed_for: [
+            {
+                type: Schema.Types.ObjectId,
+                ref: "User",
+            },
+        ],
         reply_to: {
             type: Schema.Types.ObjectId,
             required: false,
