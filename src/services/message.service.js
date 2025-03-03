@@ -58,6 +58,26 @@ const deleteMessage = async (id) => {
     return message;
 };
 
+const getMessageById = async (id) => {
+    const message = await Message.findById(id);
+    return message;
+};
+
+const pushRemoveFor = async (messageId, valueToPush) => {
+    const message = await Message.findByIdAndUpdate(
+        messageId,
+        {
+            $addToSet: {
+                removed_for: valueToPush,
+            },
+        },
+        {
+            new: true,
+        }
+    );
+    return message;
+};
+
 export default {
     createMessage,
     updateMessage,
@@ -65,4 +85,6 @@ export default {
     getUnreadMessages,
     updateMessagesReadByByChatId,
     deleteMessage,
+    getMessageById,
+    pushRemoveFor,
 };

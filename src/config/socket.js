@@ -28,7 +28,7 @@ const initializeSocket = (server) => {
                 .filter(
                     (member) =>
                         options.includeSender ||
-                        member.member.toString() !== data.senderId
+                        member.member.toString() !== data.sender_id
                 )
                 .forEach((member) => {
                     const user = onlineUsers.find(
@@ -71,16 +71,9 @@ const initializeSocket = (server) => {
         });
 
         socket.on(SOCKET_EVENTS.TYPING, async (data) => {
-            await emitEventToOnlineUsers(
-                SOCKET_EVENTS.TYPING,
-                {
-                    ...data,
-                    chat_id: data.chatId,
-                },
-                {
-                    includeSender: false,
-                }
-            );
+            await emitEventToOnlineUsers(SOCKET_EVENTS.TYPING, data, {
+                includeSender: false,
+            });
         });
 
         socket.on(SOCKET_EVENTS.SEND_REACTION, async (data) => {

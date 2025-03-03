@@ -3,8 +3,6 @@ import messageService from "../services/message.service.js";
 import catchAsync from "../utils/catchAsync.js";
 
 const createMessage = catchAsync(async (req, res, next) => {
-    console.log(req.files);
-
     const messageBody = {
         ...req.body,
         sender_id: req.user.id,
@@ -41,6 +39,16 @@ const updateMessagesReadByByChatId = catchAsync(async (req, res, next) => {
 });
 
 const deleteMessage = catchAsync(async (req, res, next) => {
+    const message = await messageService.getMessageById(req.params.messageId);
+
+    if (message.sender_id.toString() !== req.user.id) {
+        const updatedMessage = await messageService.pushRemoveFor(
+            message.id,
+            req.user.id
+        );
+        return res.status(httpStatus.OK).send({ message: updatedMessage });
+    }
+
     await messageService.deleteMessage(req.params.messageId);
 
     return res.status(httpStatus.OK).send({ deleted: true });
