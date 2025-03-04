@@ -20,9 +20,20 @@ const updateMessage = async (messageId, messageBody) => {
     return message;
 };
 
-const getMessages = async (chatId) => {
-    const messages = await Message.find({ chat_id: chatId });
-    return messages;
+const getMessages = async (chatId, reqQuery = {}) => {
+    const filter = { chat_id: chatId };
+    const query = { sortBy: "created_at:desc" };
+    if (reqQuery.page) query.page = reqQuery.page;
+    if (reqQuery.limit) query.limit = reqQuery.limit;
+
+    console.log({ query });
+
+    const { results: messages, ...rest } = await Message.paginate(
+        filter,
+        query
+    );
+
+    return messages.reverse();
 };
 
 const getUnreadMessages = async (userId, chatId) => {

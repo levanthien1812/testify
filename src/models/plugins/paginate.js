@@ -16,15 +16,21 @@ export const paginate = (schema) => {
         const limit =
             options.limit && parseInt(options.limit, 10) > 0
                 ? parseInt(options.limit, 10)
-                : 8;
+                : 0;
         const page =
             options.page && parseInt(options.page, 10) > 0
                 ? parseInt(options.page, 10)
-                : 1;
-        const skip = (page - 1) * limit;
+                : 0;
+        const skip = page ? (page - 1) * limit : 0;
+
+        console.log({ skip });
 
         const countPromise = this.countDocuments(filter).exec();
-        let docsPromise = this.find(filter).sort(sort).skip(skip).limit(limit);
+
+        let docsPromise = this.find(filter);
+        if (sort) docsPromise.sort(sort);
+        if (skip) docsPromise.skip(skip);
+        if (limit) docsPromise.limit(limit);
 
         if (options.populate) {
             options.populate.split(",").forEach((populateOption) => {

@@ -1,6 +1,7 @@
 import { sendAt } from "cron";
 import { Schema, model } from "mongoose";
 import { toJSON } from "./plugins/toJSON.js";
+import { paginate } from "./plugins/paginate.js";
 
 const MessageSchema = Schema(
     {
@@ -71,5 +72,6 @@ const MessageSchema = Schema(
 );
 
 MessageSchema.plugin(toJSON, { timestamps: true });
+MessageSchema.plugin(paginate);
 
 export const Message = model("Message", MessageSchema);

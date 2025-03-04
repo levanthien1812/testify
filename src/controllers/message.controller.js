@@ -24,7 +24,8 @@ const updateMessage = catchAsync(async (req, res, next) => {
 });
 
 const getMessages = catchAsync(async (req, res, next) => {
-    const messages = await messageService.getMessages(req.params.id);
+    // console.log({ query: req.query });
+    const messages = await messageService.getMessages(req.params.id, req.query);
 
     return res.status(httpStatus.OK).send({ messages });
 });
