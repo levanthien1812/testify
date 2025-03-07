@@ -25,11 +25,14 @@ route
         upload.array("files[]", 10),
         messageController.createMessage
     )
+    .get(auth(RIGHTS.GET_MESSAGES), messageController.getMessages);
+
+route
+    .route("/:id/messages/update-readby")
     .patch(
         auth(RIGHTS.UPDATE_MESSAGE),
         messageController.updateMessagesReadByByChatId
-    )
-    .get(auth(RIGHTS.GET_MESSAGES), messageController.getMessages);
+    );
 
 route
     .route("/:id/messages/:messageId")
