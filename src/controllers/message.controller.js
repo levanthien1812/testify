@@ -33,7 +33,7 @@ const getMessages = catchAsync(async (req, res, next) => {
 const updateMessagesReadByByChatId = catchAsync(async (req, res, next) => {
     const messages = await messageService.updateMessagesReadByByChatId(
         req.params.id,
-        req.body?.readBy
+        req.user.id
     );
 
     return res.status(httpStatus.OK).send({ messages });

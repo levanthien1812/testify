@@ -2,6 +2,7 @@ import { sendAt } from "cron";
 import { Schema, model } from "mongoose";
 import { toJSON } from "./plugins/toJSON.js";
 import { paginate } from "./plugins/paginate.js";
+import { Chat } from "./chat.model.js";
 
 const MessageSchema = Schema(
     {
@@ -39,6 +40,10 @@ const MessageSchema = Schema(
                 ref: "User",
             },
         ],
+        is_read: {
+            type: Schema.Types.Boolean,
+            required: false,
+        },
         deleted: {
             type: Schema.Types.Boolean,
             required: false,
@@ -70,6 +75,34 @@ const MessageSchema = Schema(
         },
     }
 );
+
+MessageSchema.pre("save", async function (next) {
+    if (this.isModified("read_by")) {
+        try {
+            const chat = await Chat.findById(this.chat_id);
+
+            if (chat) {
+                const membersToConsider = chat.members.filter(
+                    (memberId) => !memberId.equals(this.sender_id)
+                );
+
+                const allMembersRead = membersToConsider.every((memberId) =>
+                    this.read_by.some((readId) => readId.equals(memberId))
+                );
+
+                this.is_read = allMembersRead;
+            } else {
+                this.is_read = false; //if chat is not found, then the message cannot be read by all.
+            }
+            next();
+        } catch (error) {
+            console.error("Error in pre-save middleware:", error);
+            next(error); // Pass the error to the next middleware
+        }
+    } else {
+        next(); // If read_by is not modified, proceed without changes
+    }
+});
 
 MessageSchema.plugin(toJSON, { timestamps: true });
 MessageSchema.plugin(paginate);
