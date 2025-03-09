@@ -18,6 +18,11 @@ route
     )
     .get(auth(RIGHTS.GET_CHATS), chatController.getChats);
 
+route.route("/:id").patch(auth(RIGHTS.UPDATE_CHAT), chatController.updateChat);
+route
+    .route("/:id/update-nickname")
+    .patch(auth(RIGHTS.UPDATE_NICKNAME), chatController.updateNickname);
+
 route
     .route("/:id/messages")
     .post(

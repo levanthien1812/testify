@@ -34,7 +34,6 @@ const createChat = catchAsync(async (req, res, next) => {
         newChats = await Promise.all(
             otherMembers.map(async (member) => {
                 const members = [req.user.id, member];
-                const memberNames = await getMemberNames([member]);
 
                 let chatBody = {
                     members: members.map((member) => ({
@@ -43,7 +42,7 @@ const createChat = catchAsync(async (req, res, next) => {
                     })),
                     is_group_chat: false,
                     group_admin: null,
-                    chat_name: generateChatName(memberNames),
+                    chat_name: "",
                 };
                 const newChat = await chatService.createChat(chatBody);
                 return newChat;
@@ -77,7 +76,24 @@ const getChats = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ chats });
 });
 
+const updateChat = catchAsync(async (req, res, next) => {
+    const updatedChat = await chatService.updateChat(req.params.id, req.body);
+
+    return res.status(httpStatus.OK).send({ chat: updatedChat });
+});
+
+const updateNickname = catchAsync(async (req, res, next) => {
+    const updatedChat = await chatService.updateNickname(
+        req.params.id,
+        req.body
+    );
+
+    return res.status(httpStatus.OK).send({ chat: updatedChat });
+});
+
 export default {
     createChat,
     getChats,
+    updateChat,
+    updateNickname,
 };

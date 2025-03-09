@@ -14,6 +14,14 @@ const createChat = async (chatBody) => {
     return newChat;
 };
 
+const updateChat = async (chatId, chatBody) => {
+    const updatedChat = await Chat.findOneAndUpdate({ _id: chatId }, chatBody, {
+        new: true,
+    });
+
+    return updatedChat;
+};
+
 const getChats = async (userId) => {
     const chats = await Chat.find({
         "members.member": userId,
@@ -43,4 +51,14 @@ const getChats = async (userId) => {
     return chatsWithUnreadMessages;
 };
 
-export default { createChat, getChats };
+const updateNickname = async (chatId, { memberId, nickname }) => {
+    const updatedChat = await Chat.findOneAndUpdate(
+        { _id: chatId, "members.member": memberId },
+        { $set: { "members.$.nick_name": nickname } },
+        { new: true }
+    );
+
+    return updatedChat;
+};
+
+export default { createChat, getChats, updateChat, updateNickname };
