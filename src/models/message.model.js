@@ -3,6 +3,10 @@ import { Schema, model } from "mongoose";
 import { toJSON } from "./plugins/toJSON.js";
 import { paginate } from "./plugins/paginate.js";
 import { Chat } from "./chat.model.js";
+import {
+    MESSAGE_TYPE,
+    NOTIFICATION_TYPE,
+} from "../config/constants/message.js";
 
 const MessageSchema = Schema(
     {
@@ -67,6 +71,15 @@ const MessageSchema = Schema(
                 _id: false,
             },
         ],
+        type: {
+            type: String,
+            enum: Object.values(MESSAGE_TYPE),
+            default: MESSAGE_TYPE.MESSAGE,
+        },
+        notification_type: {
+            type: String,
+            enum: Object.values(NOTIFICATION_TYPE),
+        },
     },
     {
         timestamps: {

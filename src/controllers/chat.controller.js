@@ -4,6 +4,11 @@ import userService from "../services/user.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import { CHAT_OPTION } from "../config/constants/constants.js";
 import { generateChatName } from "../utils/chatName.js";
+import messageService from "../services/message.service.js";
+import {
+    MESSAGE_TYPE,
+    NOTIFICATION_TYPE,
+} from "../config/constants/message.js";
 
 const getMemberNames = async (members) => {
     const memberNames = await Promise.all(
@@ -88,7 +93,17 @@ const updateNickname = catchAsync(async (req, res, next) => {
         req.body
     );
 
-    return res.status(httpStatus.OK).send({ chat: updatedChat });
+    const notiMessage = await messageService.createMessage({
+        chat_id: req.params.id,
+        sender_id: req.user.id,
+        type: MESSAGE_TYPE.NOTIFICATION,
+        notification_type: NOTIFICATION_TYPE.NICK_NAME_CHANGED,
+        text: `Your nickname has been changed to ${req.body.nickname}`,
+    });
+
+    return res
+        .status(httpStatus.OK)
+        .send({ chat: updatedChat, message: notiMessage });
 });
 
 export default {
