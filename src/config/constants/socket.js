@@ -19,4 +19,5 @@ export const SOCKET_EVENTS = {
     TYPING: "typing",
     SEND_REACTION: "send-reaction",
     RECEIVE_REACTION: "receive-reaction",
+    CHANGE_NICKNAME: "change-nickname",
 };

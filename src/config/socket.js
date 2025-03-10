@@ -17,6 +17,7 @@ const initializeSocket = (server) => {
     io.on(SOCKET_EVENTS.CONNECTION, (socket) => {
         console.log("a user connected");
 
+        // data must include chat_id
         const emitEventToOnlineUsers = async (
             event,
             data,
@@ -78,6 +79,10 @@ const initializeSocket = (server) => {
 
         socket.on(SOCKET_EVENTS.SEND_REACTION, async (data) => {
             await emitEventToOnlineUsers(SOCKET_EVENTS.RECEIVE_REACTION, data);
+        });
+
+        socket.on(SOCKET_EVENTS.CHANGE_NICKNAME, async (data) => {
+            await emitEventToOnlineUsers(SOCKET_EVENTS.GET_MESSAGE, data);
         });
 
         socket.on(SOCKET_EVENTS.DISCONNECT, () => {
