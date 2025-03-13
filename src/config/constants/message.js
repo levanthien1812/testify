@@ -8,3 +8,5 @@ export const NOTIFICATION_TYPE = {
     NICK_NAME_CHANGED: "NICK_NAME_CHANGED",
     NICK_NAME_REMOVED: "NICK_NAME_REMOVED",
 };
+
+export const URL_REGEX = /(https?:\/\/[^\s]+)/g;
