@@ -93,12 +93,14 @@ const updateNickname = catchAsync(async (req, res, next) => {
         req.body
     );
 
+    const updatedMember = await userService.getUserById(req.body.memberId);
+
     const notiMessage = await messageService.createMessage({
         chat_id: req.params.id,
         sender_id: req.user.id,
         type: MESSAGE_TYPE.NOTIFICATION,
         notification_type: NOTIFICATION_TYPE.NICK_NAME_CHANGED,
-        text: `Your nickname has been changed to ${req.body.nickname}`,
+        text: `${updatedMember.name} nickname has been changed to ${req.body.nickname}`,
     });
 
     return res
