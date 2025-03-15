@@ -19,7 +19,7 @@ const updateMessage = async (messageId, messageBody) => {
             new: true,
         }
     );
-    return generateLinkPreviews([message]);
+    return (await generateLinkPreviews([message]))[0];
 };
 
 const getMessages = async (chatId, reqQuery = {}) => {

@@ -6,6 +6,9 @@ import { CHAT_OPTION } from "../config/constants/constants.js";
 import { generateChatName } from "../utils/chatName.js";
 import messageService from "../services/message.service.js";
 import {
+    CHAT_BACKGROUND_COLORS,
+    MESSAGE_BACKGROUND_COLORS,
+    MESSAGE_FONT_SIZES,
     MESSAGE_TYPE,
     NOTIFICATION_TYPE,
 } from "../config/constants/message.js";
@@ -84,7 +87,45 @@ const getChats = catchAsync(async (req, res, next) => {
 const updateChat = catchAsync(async (req, res, next) => {
     const updatedChat = await chatService.updateChat(req.params.id, req.body);
 
-    return res.status(httpStatus.OK).send({ chat: updatedChat });
+    let returnedValue = { chat: updatedChat };
+
+    const user = await userService.getUserById(req.user.id);
+    if (req.body.appearances) {
+        let notiType, notiText;
+        if (req.body.appearances.background_color) {
+            notiType = NOTIFICATION_TYPE.APPEARANCES_CHANGED_BACKGROUND_COLOR;
+            notiText = `${user.name} has changed background color to ${
+                CHAT_BACKGROUND_COLORS[req.body.appearances.background_color]
+                    ?.color_name
+            }`;
+        }
+        if (req.body.appearances.messages_color) {
+            notiType = NOTIFICATION_TYPE.APPEARANCES_CHANGED_MESSAGES_COLOR;
+            notiText = `${user.name} has changed message color to ${
+                MESSAGE_BACKGROUND_COLORS[req.body.appearances.messages_color]
+                    ?.color_name
+            }`;
+        }
+        if (req.body.appearances.messages_font_size) {
+            notiType = NOTIFICATION_TYPE.APPEARANCES_CHANGED_MESSAGES_FONT_SIZE;
+            notiText = `${user.name} has changed message font size to ${
+                MESSAGE_FONT_SIZES[req.body.appearances.messages_font_size]
+                    ?.font_name
+            }`;
+        }
+
+        const notiMessage = await messageService.createMessage({
+            chat_id: req.params.id,
+            sender_id: req.user.id,
+            type: MESSAGE_TYPE.NOTIFICATION,
+            notification_type: notiType,
+            text: notiText,
+        });
+
+        returnedValue = { ...returnedValue, message: notiMessage };
+    }
+
+    return res.status(httpStatus.OK).send(returnedValue);
 });
 
 const updateNickname = catchAsync(async (req, res, next) => {

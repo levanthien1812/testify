@@ -32,11 +32,15 @@ const ChatModel = mongoose.Schema(
         appearances: {
             background_color: {
                 type: String,
-                default: "#ffffff",
+                default: "lightBlue",
             },
             messages_color: {
                 type: String,
-                default: "#000000",
+                default: "blueGray",
+            },
+            messages_font_size: {
+                type: String,
+                default: "medium",
             },
         },
     },
