@@ -20,4 +20,7 @@ export const SOCKET_EVENTS = {
     SEND_REACTION: "send-reaction",
     RECEIVE_REACTION: "receive-reaction",
     CHANGE_NICKNAME: "change-nickname",
+    RECEIVE_CHANGE_NICKNAME: "receive-change-nickname",
+    CHANGE_APPREARANCES: "change-appearances",
+    RECEIVE_CHANGE_APPREARANCES: "receive-change-appearances",
 };

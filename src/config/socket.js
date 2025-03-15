@@ -82,7 +82,34 @@ const initializeSocket = (server) => {
         });
 
         socket.on(SOCKET_EVENTS.CHANGE_NICKNAME, async (data) => {
-            await emitEventToOnlineUsers(SOCKET_EVENTS.GET_MESSAGE, data);
+            await emitEventToOnlineUsers(
+                SOCKET_EVENTS.GET_MESSAGE,
+                data.message
+            );
+            await emitEventToOnlineUsers(
+                SOCKET_EVENTS.RECEIVE_CHANGE_NICKNAME,
+                {
+                    chat_id: data.message.chat_id,
+                    member_id: data.memberId,
+                    nickname: data.nickname,
+                },
+                { includeSender: false }
+            );
+        });
+
+        socket.on(SOCKET_EVENTS.CHANGE_APPREARANCES, async (data) => {
+            await emitEventToOnlineUsers(
+                SOCKET_EVENTS.GET_MESSAGE,
+                data.message
+            );
+            await emitEventToOnlineUsers(
+                SOCKET_EVENTS.RECEIVE_CHANGE_APPREARANCES,
+                {
+                    chat_id: data.message.chat_id,
+                    appearances: data.appearances,
+                },
+                { includeSender: false }
+            );
         });
 
         socket.on(SOCKET_EVENTS.DISCONNECT, () => {
