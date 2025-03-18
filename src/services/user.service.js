@@ -68,6 +68,15 @@ const getTakerStatistics = async (takerId) => {
     };
 };
 
+const blockUser = async (userId, blockedUserId) => {
+    const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $addToSet: { blocked_users: blockedUserId } },
+        { new: true }
+    );
+    return updatedUser;
+};
+
 const getUser = async (id) => {
     return User.findById(id);
 };
@@ -87,4 +96,5 @@ export default {
     getUserById,
     getTakersByMaker,
     getTakerStatistics,
+    blockUser,
 };

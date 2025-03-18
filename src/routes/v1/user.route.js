@@ -19,4 +19,8 @@ router
         userController.getTakersWithStatistics
     );
 
+router
+    .route("/block/:blockedUserId")
+    .patch(auth(RIGHTS.BLOCK_USER), userController.blockUser);
+
 export default router;
