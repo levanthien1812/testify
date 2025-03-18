@@ -112,6 +112,17 @@ const initializeSocket = (server) => {
             );
         });
 
+        socket.on(SOCKET_EVENTS.ADD_CHATS, async (data) => {
+            await Promise.all(
+                data.map(async (chat) => {
+                    await emitEventToOnlineUsers(
+                        SOCKET_EVENTS.RECEIVE_ADD_CHAT,
+                        { chat_id: chat.id, chat: chat }
+                    );
+                })
+            );
+        });
+
         socket.on(SOCKET_EVENTS.DISCONNECT, () => {
             console.log("user disconnected");
             onlineUsers = onlineUsers.filter(

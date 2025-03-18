@@ -11,7 +11,11 @@ const createChat = async (chatBody) => {
     }
 
     const newChat = await Chat.create(chatBody);
-    return newChat;
+
+    return await Chat.findById(newChat.id).populate(
+        "members.member",
+        "-password"
+    );
 };
 
 const updateChat = async (chatId, chatBody) => {

@@ -3,6 +3,7 @@ import { User } from "../models/user.model.js";
 import userService from "../services/user.service.js";
 import { logger } from "../config/logger.js";
 import { ROLES } from "../config/constants/roles.js";
+import catchAsync from "../utils/catchAsync.js";
 
 const getUsers = async (req, res, next) => {
     const users = await User.find();
@@ -59,9 +60,28 @@ const getTakersWithStatistics = async (req, res, next) => {
         .send({ takers: takersWithStatistics });
 };
 
+const blockUser = catchAsync(async (req, res, next) => {
+    const userId = req.user.id;
+    const blockedUserId = req.params.blockedUserId;
+
+    const blockedUser = await userService.getUserById(blockedUserId);
+    if (!blockedUser) {
+        return res
+            .status(httpStatus.NOT_FOUND)
+            .send("User to block not found!");
+    }
+
+    const updatedUser = await userService.blockUser(userId, blockedUserId);
+
+    return res
+        .status(httpStatus.CREATED)
+        .send({ user: updatedUser, blockedUserId: blockedUserId });
+});
+
 export default {
     getUsers,
     createTakers,
     getTakersByMaker,
     getTakersWithStatistics,
+    blockUser,
 };

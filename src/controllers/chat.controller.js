@@ -42,6 +42,7 @@ const createChat = catchAsync(async (req, res, next) => {
         newChats = await Promise.all(
             otherMembers.map(async (member) => {
                 const members = [req.user.id, member];
+                const memberNames = await getMemberNames(otherMembers);
 
                 let chatBody = {
                     members: members.map((member) => ({
@@ -50,7 +51,7 @@ const createChat = catchAsync(async (req, res, next) => {
                     })),
                     is_group_chat: false,
                     group_admin: null,
-                    chat_name: "",
+                    chat_name: generateChatName(memberNames),
                 };
                 const newChat = await chatService.createChat(chatBody);
                 return newChat;
