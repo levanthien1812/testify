@@ -71,11 +71,21 @@ const blockUser = catchAsync(async (req, res, next) => {
             .send("User to block not found!");
     }
 
-    const updatedUser = await userService.blockUser(userId, blockedUserId);
+    const { updatedUser, updatedBlockedUser } = await userService.blockUser(
+        userId,
+        blockedUserId
+    );
 
     return res
         .status(httpStatus.CREATED)
-        .send({ user: updatedUser, blockedUserId: blockedUserId });
+        .send({ user: updatedUser, blockedUser: updatedBlockedUser });
+});
+
+const getBlockedInfo = catchAsync(async (req, res) => {
+    const blockedUsers = await userService.getBlockedUsers(req.user.id);
+    const blockedBy = await userService.getBlockedBy(req.user.id);
+
+    return res.status(httpStatus.OK).send({ blockedUsers, blockedBy });
 });
 
 export default {
@@ -84,4 +94,5 @@ export default {
     getTakersByMaker,
     getTakersWithStatistics,
     blockUser,
+    getBlockedInfo,
 };

@@ -31,7 +31,7 @@ const getChats = async (userId) => {
         "members.member": userId,
     })
         .sort("updated_at")
-        .populate("members.member", "-password");
+        .populate("members.member", "-password -blocked_users");
 
     const chatsWithUnreadMessages = await Promise.all(
         chats.map(async (chat) => {
