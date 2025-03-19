@@ -74,7 +74,46 @@ const blockUser = async (userId, blockedUserId) => {
         { $addToSet: { blocked_users: blockedUserId } },
         { new: true }
     );
-    return updatedUser;
+
+    const updatedBlockedUser = await User.findByIdAndUpdate(
+        blockedUserId,
+        { $addToSet: { blocked_by: userId } },
+        { new: true }
+    );
+
+    return { updatedUser, updatedBlockedUser };
+};
+
+const getBlockedUsers = async (userId) => {
+    const user = await User.findById(userId);
+    if (!user) return [];
+
+    const blockedUsers = await Promise.all(
+        user.blocked_users.map(async (blockedUserId) => {
+            const blockedUser = await User.findById(blockedUserId).select(
+                "-password -blocked_users"
+            );
+            return blockedUser;
+        })
+    );
+
+    return blockedUsers;
+};
+
+const getBlockedBy = async (userId) => {
+    const user = await User.findById(userId);
+    if (!user) return [];
+
+    const blockedBy = await Promise.all(
+        user.blocked_by.map(async (blockedUserId) => {
+            const blockedUser = await User.findById(blockedUserId).select(
+                "-password -blocked_users"
+            );
+            return blockedUser;
+        })
+    );
+
+    return blockedBy;
 };
 
 const getUser = async (id) => {
@@ -97,4 +136,6 @@ export default {
     getTakersByMaker,
     getTakerStatistics,
     blockUser,
+    getBlockedUsers,
+    getBlockedBy,
 };

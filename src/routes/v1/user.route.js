@@ -23,4 +23,8 @@ router
     .route("/block/:blockedUserId")
     .patch(auth(RIGHTS.BLOCK_USER), userController.blockUser);
 
+router
+    .route("/block/")
+    .get(auth(RIGHTS.GET_BLOCKED_INFO), userController.getBlockedInfo);
+
 export default router;

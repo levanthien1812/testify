@@ -63,6 +63,12 @@ const userSchema = mongoose.Schema(
                 ref: "User",
             },
         ],
+        blocked_by: [
+            {
+                type: mongoose.SchemaTypes.ObjectId,
+                ref: "User",
+            },
+        ],
     },
     {
         timestamp: true,
