@@ -123,6 +123,28 @@ const initializeSocket = (server) => {
             );
         });
 
+        socket.on(SOCKET_EVENTS.BLOCK_USER, async (data) => {
+            onlineUsers.forEach((user) => {
+                if (user.user_id === data.blocked_user_id) {
+                    io.to(user.socket_id).emit(
+                        SOCKET_EVENTS.RECEIVE_BLOCK_USER,
+                        data
+                    );
+                }
+            });
+        });
+
+        socket.on(SOCKET_EVENTS.UNBLOCK_USER, async (data) => {
+            onlineUsers.forEach((user) => {
+                if (user.user_id === data.unblocked_user_id) {
+                    io.to(user.socket_id).emit(
+                        SOCKET_EVENTS.RECEIVE_UNBLOCK_USER,
+                        data
+                    );
+                }
+            });
+        });
+
         socket.on(SOCKET_EVENTS.DISCONNECT, () => {
             console.log("user disconnected");
             onlineUsers = onlineUsers.filter(

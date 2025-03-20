@@ -25,4 +25,8 @@ export const SOCKET_EVENTS = {
     RECEIVE_CHANGE_APPREARANCES: "receive-change-appearances",
     ADD_CHATS: "add-chats",
     RECEIVE_ADD_CHAT: "receive-add-chat",
+    BLOCK_USER: "block-user",
+    UNBLOCK_USER: "unblock-user",
+    RECEIVE_BLOCK_USER: "receive-block-user",
+    RECEIVE_UNBLOCK_USER: "receive-unblock-user",
 };

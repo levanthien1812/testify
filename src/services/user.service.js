@@ -84,6 +84,22 @@ const blockUser = async (userId, blockedUserId) => {
     return { updatedUser, updatedBlockedUser };
 };
 
+const unblockUser = async (userId, blockedUserId) => {
+    const updatedUser = await User.findByIdAndUpdate(
+        userId,
+        { $pull: { blocked_users: blockedUserId } },
+        { new: true }
+    );
+
+    const updatedBlockedUser = await User.findByIdAndUpdate(
+        blockedUserId,
+        { $pull: { blocked_by: userId } },
+        { new: true }
+    );
+
+    return { updatedUser, updatedBlockedUser };
+};
+
 const getBlockedUsers = async (userId) => {
     const user = await User.findById(userId);
     if (!user) return [];
@@ -136,6 +152,7 @@ export default {
     getTakersByMaker,
     getTakerStatistics,
     blockUser,
+    unblockUser,
     getBlockedUsers,
     getBlockedBy,
 };
