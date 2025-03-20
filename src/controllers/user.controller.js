@@ -81,6 +81,27 @@ const blockUser = catchAsync(async (req, res, next) => {
         .send({ user: updatedUser, blockedUser: updatedBlockedUser });
 });
 
+const unblockUser = catchAsync(async (req, res, next) => {
+    const userId = req.user.id;
+    const blockedUserId = req.params.blockedUserId;
+
+    const blockedUser = await userService.getUserById(blockedUserId);
+    if (!blockedUser) {
+        return res
+            .status(httpStatus.NOT_FOUND)
+            .send("User to block not found!");
+    }
+
+    const { updatedUser, updatedBlockedUser } = await userService.unblockUser(
+        userId,
+        blockedUserId
+    );
+
+    return res
+        .status(httpStatus.CREATED)
+        .send({ user: updatedUser, unblockedUser: updatedBlockedUser });
+});
+
 const getBlockedInfo = catchAsync(async (req, res) => {
     const blockedUsers = await userService.getBlockedUsers(req.user.id);
     const blockedBy = await userService.getBlockedBy(req.user.id);
@@ -94,5 +115,6 @@ export default {
     getTakersByMaker,
     getTakersWithStatistics,
     blockUser,
+    unblockUser,
     getBlockedInfo,
 };
