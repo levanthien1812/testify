@@ -12,6 +12,7 @@ import { AUTO_SCORE_TYPE } from "../config/constants/constants.js";
 import fse from "fs-extra";
 import path from "path";
 import { ROLES } from "../config/constants/roles.js";
+import { Part } from "../models/part.model.js";
 
 const createQuestionContent = async (questionType, questionContent) => {
     const model = questionTypeToQuestionModel.get(questionType);
@@ -92,6 +93,9 @@ const deleteQuestionContent = async (questionId, questionType) => {
     if (content && content.images) {
         unlinkImages(content.images);
     }
+
+    const deleted = await model.deleteOne({ question_id: questionId });
+    return deleted;
 };
 
 const unlinkImages = (images) => {
@@ -124,6 +128,11 @@ const createQuestion = async (testId, questionBody) => {
         questionContent
     );
 
+    if (questionContentDoc) {
+        newQuestion.is_content_provided = true;
+        await newQuestion.save();
+    }
+
     return { question: newQuestion, content: questionContentDoc };
 };
 
@@ -140,6 +149,10 @@ const updateQuestion = async (questionId, questionBody) => {
         { new: true }
     );
 
+    updatedQuestion.is_content_provided = false;
+
+    let updatedQuestionContentDoc;
+
     if (question.type !== questionBody.type) {
         // Delete previous question content doc
         await deleteQuestionContent(questionId, question.type);
@@ -150,24 +163,27 @@ const updateQuestion = async (questionId, questionBody) => {
             question_id: question._id,
         };
 
-        const questionContentDoc = await createQuestionContent(
+        updatedQuestionContentDoc = await createQuestionContent(
             questionBody.type,
             questionContent
         );
-
-        return { question: updatedQuestion, content: questionContentDoc };
     } else {
-        const updatedQuestionContentDoc = await updateQuestionContent(
+        updatedQuestionContentDoc = await updateQuestionContent(
             questionId,
             question.type,
             questionBody.content
         );
-
-        return {
-            question: updatedQuestion,
-            content: updatedQuestionContentDoc,
-        };
     }
+
+    if (updatedQuestionContentDoc) {
+        updatedQuestion.is_content_provided = true;
+    }
+    await updatedQuestion.save();
+
+    return {
+        question: updatedQuestion,
+        content: updatedQuestionContentDoc,
+    };
 };
 
 const checkAnswersProvided = async (testId) => {
@@ -317,6 +333,42 @@ const getQuestionsByPart = async (partId) => {
     return await Question.find({ part_id: partId });
 };
 
+const deleteQuestion = async (questionId) => {
+    const question = await Question.findById(questionId);
+
+    await deleteQuestionContent(questionId, question.type);
+
+    const test = await Test.findById(question.test_id);
+    await Test.findByIdAndUpdate(question.test_id, {
+        $inc: { num_questions: -1 },
+    });
+
+    if (test.num_parts === 1 && test.num_questions > 0) {
+        // Reorder subsequent questions
+        await Question.updateMany(
+            { test_id: question.test_id, order: { $gt: question.order } },
+            { $inc: { order: -1 } }
+        );
+    } else {
+        const part = await Part.findById(question.part_id);
+        if (part.num_questions > 0) {
+            await Part.findByIdAndUpdate(question.part_id, {
+                $inc: { num_questions: -1 },
+            });
+        }
+
+        // Reorder subsequent questions
+        await Question.updateMany(
+            { part_id: question.part, order: { $gt: question.order } },
+            { $inc: { order: -1 } }
+        );
+    }
+
+    const deleted = await Question.findByIdAndDelete(questionId);
+
+    return deleted;
+};
+
 export default {
     createQuestion,
     updateQuestion,
@@ -326,4 +378,5 @@ export default {
     getQuestionsContent,
     getQuestionsByPart,
     validateQuestions,
+    deleteQuestion,
 };

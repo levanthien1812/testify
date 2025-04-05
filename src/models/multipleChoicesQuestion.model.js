@@ -33,7 +33,7 @@ const multipleChoiceQuestionSchema = mongoose.Schema({
                 _id: false,
             },
         },
-        required: true,
+        // required: true,
         select: false,
         _id: false,
     },

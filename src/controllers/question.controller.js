@@ -53,9 +53,18 @@ const validateQuestions = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.ACCEPTED).send({ validated });
 });
 
+const deleteQuestion = catchAsync(async (req, res, next) => {
+    const question = await questionService.deleteQuestion(
+        req.params.questionId
+    );
+
+    return res.status(httpStatus.OK).send({ deleted: true });
+});
+
 export default {
     createQuestion,
     addAnswer,
     validateQuestions,
     updateQuestion,
+    deleteQuestion,
 };
