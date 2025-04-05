@@ -74,7 +74,8 @@ router
         auth(RIGHTS.UPDATE_QUESTION),
         upload.array("files[]", 10),
         questionController.updateQuestion
-    );
+    )
+    .delete(auth(RIGHTS.DELETE_QUESTION), questionController.deleteQuestion);
 
 router
     .route("/:testId/questions/validate")

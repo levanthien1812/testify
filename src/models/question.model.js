@@ -33,6 +33,10 @@ const questionSchema = mongoose.Schema(
             type: String,
             enum: Object.values(QUESTION_TYPE),
         },
+        is_content_provided: {
+            type: Boolean,
+            default: false,
+        },
         __v: { type: Number, select: false },
     },
     {
