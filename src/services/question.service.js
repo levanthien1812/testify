@@ -13,6 +13,7 @@ import fse from "fs-extra";
 import path from "path";
 import { ROLES } from "../config/constants/roles.js";
 import { Part } from "../models/part.model.js";
+import mongoose from "mongoose";
 
 const createQuestionContent = async (questionType, questionContent) => {
     const model = questionTypeToQuestionModel.get(questionType);
@@ -333,40 +334,43 @@ const getQuestionsByPart = async (partId) => {
     return await Question.find({ part_id: partId });
 };
 
-const deleteQuestion = async (questionId) => {
-    const question = await Question.findById(questionId);
+const deleteQuestion = async (questionId, testId, questionBody) => {
+    if (mongoose.Types.ObjectId.isValid(questionId)) {
+        const question = await Question.findById(questionId);
+        await deleteQuestionContent(questionId, question.type);
+        await Question.findByIdAndDelete(questionId);
+    }
 
-    await deleteQuestionContent(questionId, question.type);
-
-    const test = await Test.findById(question.test_id);
-    await Test.findByIdAndUpdate(question.test_id, {
+    const test = await Test.findById(testId);
+    await Test.findByIdAndUpdate(testId, {
         $inc: { num_questions: -1 },
     });
 
     if (test.num_parts === 1 && test.num_questions > 0) {
         // Reorder subsequent questions
         await Question.updateMany(
-            { test_id: question.test_id, order: { $gt: question.order } },
+            { test_id: testId, order: { $gt: questionBody.order } },
             { $inc: { order: -1 } }
         );
     } else {
-        const part = await Part.findById(question.part_id);
+        const part = await Part.findById(questionBody.part_id);
         if (part.num_questions > 0) {
-            await Part.findByIdAndUpdate(question.part_id, {
+            await Part.findByIdAndUpdate(questionBody.part_id, {
                 $inc: { num_questions: -1 },
             });
         }
 
         // Reorder subsequent questions
         await Question.updateMany(
-            { part_id: question.part, order: { $gt: question.order } },
+            {
+                part_id: questionBody.part_id,
+                order: { $gt: questionBody.order },
+            },
             { $inc: { order: -1 } }
         );
     }
 
-    const deleted = await Question.findByIdAndDelete(questionId);
-
-    return deleted;
+    return true;
 };
 
 export default {

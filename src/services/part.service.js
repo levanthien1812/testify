@@ -67,6 +67,6 @@ const updatePart = async (partId, partBody) => {
     });
 
     return updatedPart;
-}
+};
 
 export default { addPart, validateParts, getPartsByTestId, updatePart };

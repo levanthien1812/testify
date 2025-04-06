@@ -55,7 +55,9 @@ const validateQuestions = catchAsync(async (req, res, next) => {
 
 const deleteQuestion = catchAsync(async (req, res, next) => {
     const question = await questionService.deleteQuestion(
-        req.params.questionId
+        req.params.questionId,
+        req.params.testId,
+        req.body
     );
 
     return res.status(httpStatus.OK).send({ deleted: true });

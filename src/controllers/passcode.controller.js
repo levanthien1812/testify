@@ -14,7 +14,7 @@ const generatePasscode = catchAsync(async (req, res, next) => {
     let passcodeString;
     do {
         passcodeString = generatePasscodeByFormat(passcodeBody.format);
-    } while (!!!(await passcodeService.findPasscodeByCode(passcodeString)));
+    } while (!!(await passcodeService.findPasscodeByCode(passcodeString)));
 
     const passcode = await passcodeService.createPasscode({
         code: passcodeString,
