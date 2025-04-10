@@ -37,8 +37,20 @@ const checkPasscode = catchAsync(async (req, res, next) => {
 
     return res.status(httpStatus.OK).send({ passcode });
 });
+const getPasscodeByTestId = catchAsync(async (req, res, next) => {
+    const passcode = await passcodeService.findPasscodeByTestId(
+        req.params.testId
+    );
+
+    if (!passcode) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Passcode not found!");
+    }
+
+    return res.status(httpStatus.OK).send({ passcode });
+});
 
 export default {
     generatePasscode,
     checkPasscode,
+    getPasscodeByTestId,
 };

@@ -12,8 +12,13 @@ const deletePasscodeByTestId = async (testId) => {
     return await PassCode.deleteMany({ test_id: testId });
 };
 
+const findPasscodeByTestId = async (testId) => {
+    return await PassCode.findOne({ test_id: testId });
+};
+
 export default {
     createPasscode,
     deletePasscodeByTestId,
     findPasscodeByCode,
+    findPasscodeByTestId,
 };
