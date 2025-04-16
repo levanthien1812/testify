@@ -14,28 +14,37 @@ const TestOption = new mongoose.Schema({
     allow_close_time: {
         type: {
             enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
             close_time: { type: Date, required: false },
         },
         required: true,
     },
     allow_view_submission_after_test: {
-        type: { enable: { type: Boolean, required: true } },
+        type: {
+            enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
+        },
         required: true,
     },
     allow_multiple_submissions: {
         type: {
             enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
             maximum_submissions: { type: Number, required: false },
         },
         required: true,
     },
     allow_save_progress: {
-        type: { enable: { type: Boolean, required: true } },
+        type: {
+            enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
+        },
         required: true,
     },
     allow_show_taker_answers_after_test: {
         type: {
             enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
             delay_time: { type: Number, required: false },
         },
         required: true,
@@ -43,6 +52,7 @@ const TestOption = new mongoose.Schema({
     allow_show_maker_answers_after_test: {
         type: {
             enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
             visibility_level: {
                 type: String,
                 enum: Object.values(PUBLIC_ANSWER_VISIBILITY_LEVEL),
@@ -63,24 +73,28 @@ const TestOption = new mongoose.Schema({
     allow_shuffle_questions: {
         type: {
             enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
         },
         required: true,
     },
     allow_shuffle_answers: {
         type: {
             enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
         },
         required: true,
     },
     allow_review_before_submission: {
         type: {
             enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
         },
         required: true,
     },
     disallow_time_limit: {
         type: {
             enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
             duration: { type: Number, required: false }, // Time limit in minutes
         },
         required: true,
