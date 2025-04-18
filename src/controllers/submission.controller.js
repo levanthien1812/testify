@@ -9,16 +9,30 @@ import answerService from "../services/answer.service.js";
 import { ROLES } from "../config/constants/roles.js";
 
 const createSubmission = catchAsync(async (req, res, next) => {
-    const existingSubmission = await submissionService.getSubmissionByTakerId(
+    const existingSubmissions = await submissionService.getSubmissionsByTakerId(
         req.user.id,
         req.params.testId
     );
 
-    if (existingSubmission) {
-        return new ApiError(httpStatus.BAD_REQUEST, "Test already submitted");
-    }
+    const test = await testService.findById(req.params.testId);
 
-    const test = await Test.findById(req.params.testId);
+    if (test.options.allow_multiple_submissions.enable) {
+        if (
+            existingSubmissions.length >=
+            test.options.allow_multiple_submissions.maximum_submissions
+        )
+            return new ApiError(
+                httpStatus.BAD_REQUEST,
+                "Maximum submissions reached"
+            );
+    } else {
+        if (existingSubmissions.length > 0) {
+            return new ApiError(
+                httpStatus.BAD_REQUEST,
+                "Test already submitted"
+            );
+        }
+    }
 
     if (
         test.close_time &&
@@ -36,9 +50,6 @@ const createSubmission = catchAsync(async (req, res, next) => {
         test_id: req.params.testId,
         submit_time: new Date(),
         start_time: new Date(req.body.startTime),
-        wrong_answers: 0,
-        correct_answers: 0,
-        score: 0,
     });
 
     const newAnswers = await answerService.createAnswers(
@@ -46,8 +57,9 @@ const createSubmission = catchAsync(async (req, res, next) => {
         req.body.answers
     );
 
-    submission = await submissionService.scoreSubmission(submission.id);
-
+    if (test.are_answers_provided && test) {
+        submission = await submissionService.scoreSubmission(submission.id);
+    }
     return res
         .status(httpStatus.CREATED)
         .send({ submission, answers: newAnswers });

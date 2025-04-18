@@ -80,7 +80,7 @@ const getTests = async (user, reqQuery) => {
 const getTest = async (
     testId,
     user,
-    withTakerAnswers = false,
+    includeTakerAnswers = false,
     takerId = null
 ) => {
     const test = await Test.findById(testId);
@@ -90,7 +90,7 @@ const getTest = async (
     }
 
     // Determine if correct answers are returned or not
-    let withCorrectAnswers = false;
+    let includeCorrectAnswers = false;
 
     if (user.role === ROLES.TAKER) {
         if (
@@ -123,7 +123,7 @@ const getTest = async (
             );
         }
 
-        if (new Date(test.datetime).getTime() - new Date().getTime() > 0) {
+        if (test.status === TEST_STATUS.PUBLISHED) {
             return {
                 ...test.toObject(),
                 parts: [],
@@ -131,40 +131,43 @@ const getTest = async (
             };
         }
 
-        const submission = await submissionService.getSubmissionByTakerId(
+        const submissions = await submissionService.getSubmissionsByTakerId(
             user._id,
             testId
         );
 
-        if (!submission && withTakerAnswers) {
+        if (submissions.length === 0 && includeTakerAnswers) {
             return new ApiError(httpStatus.BAD_REQUEST, "No submission found");
         }
 
-        if (
-            test.public_answers_option ===
-            PUBLIC_ANSWER_OPTION.AFTER_TAKER_SUBMISSION
-        ) {
-            withCorrectAnswers = !!submission;
-        }
+        if (test.options.allow_show_maker_answers_after_test.enable) {
+            if (
+                test.options.allow_show_maker_answers_after_test
+                    .public_answers_option ===
+                PUBLIC_ANSWER_OPTION.AFTER_TAKER_SUBMISSION
+            ) {
+                includeCorrectAnswers = submissions.length > 0;
+            }
 
-        if (
-            (test.close_time &&
-                test.public_answers_option ===
-                    PUBLIC_ANSWER_OPTION.AFTER_CLOSE_TIME) ||
-            test.public_answers_option === PUBLIC_ANSWER_OPTION.SPECIFIC_DATE
-        ) {
-            withCorrectAnswers =
-                new Date(test.public_answers_date).getTime() < Date.now();
+            if (
+                (test.options.allow_show_maker_answers_after_test
+                    .public_answers_option ===
+                    PUBLIC_ANSWER_OPTION.AFTER_CLOSE_TIME &&
+                    test.options.allow_close_time.enable &&
+                    test.options.allow_close_time.close_time) ||
+                test.options.allow_show_maker_answers_after_test
+                    .public_answers_option ===
+                    PUBLIC_ANSWER_OPTION.SPECIFIC_DATE
+            ) {
+                includeCorrectAnswers =
+                    new Date(test.public_answers_date).getTime() < Date.now();
+            }
         }
     }
 
     if (user.role === ROLES.MAKER && takerId) {
-        const taker = await User.findById(takerId);
-        if (!taker) {
-            throw new ApiError(httpStatus.NOT_FOUND, "Taker not found");
-        }
-        withCorrectAnswers = true;
-        withTakerAnswers = true;
+        includeCorrectAnswers = true;
+        includeTakerAnswers = true;
     }
 
     let parts = await Part.find({ test_id: test.id });
@@ -179,7 +182,7 @@ const getTest = async (
                 questionsByPart = await questionService.getQuestionsContent(
                     questionsByPart,
                     user,
-                    withCorrectAnswers,
+                    includeCorrectAnswers,
                     takerId
                 );
 
@@ -196,7 +199,7 @@ const getTest = async (
         questions = await questionService.getQuestionsContent(
             questions,
             user,
-            withCorrectAnswers,
+            includeCorrectAnswers,
             takerId
         );
 

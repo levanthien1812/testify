@@ -88,14 +88,7 @@ const scoreAnswerByAnswerId = async (answerId) => {
         .select("answer");
 
     if (questionContent.answer) {
-        if (
-            // sameItems(
-            //     answerContent.answer,
-            //     questionContent.answer,
-            //     question.type === QUESTION_TYPE.FILL_GAPS
-            // )
-            _.isEqual(answerContent.answer, questionContent.answer)
-        ) {
+        if (_.isEqual(answerContent.answer, questionContent.answer)) {
             answer.is_correct = true;
             answer.score = question.score;
         } else {
@@ -104,8 +97,6 @@ const scoreAnswerByAnswerId = async (answerId) => {
         }
         await answer.save();
     } else return;
-
-    // await submissionService.scoreSubmission(answer.submission_id);
 
     return answer;
 };
@@ -150,8 +141,6 @@ const getAnswersBySubmissionId = async (submissionId) => {
 
     const answersWithContent = await Promise.all(
         answers.map(async (answer) => {
-            // await scoreAnswerByAnswerId(answer.id);
-
             const answerContent = await getAnswerContentByAnswerId(answer.id);
             return { ...answer.toObject(), content: answerContent.answer };
         })

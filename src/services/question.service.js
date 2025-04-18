@@ -212,24 +212,6 @@ const addAnswer = async (questionId, answerBody) => {
         { $set: { answer: answerBody } }
     );
 
-    const submissions = await Submission.find({
-        test_id: question.test_id,
-    });
-
-    if (submissions.length > 0) {
-        submissions.map(async (submission) => {
-            const answer = await answerService.findByQuestionIdAndSubmissionId(
-                questionId,
-                submission._id
-            );
-
-            // In case submission doesn't have this answer
-            if (answer) {
-                await answerService.scoreAnswerByAnswerId(answer._id);
-            }
-        });
-    }
-
     if (await checkAnswersProvided(question.test_id)) {
         await testService.updateTest(question.test_id, {
             $set: { are_answers_provided: true },
@@ -267,7 +249,7 @@ const getQuestionContent = async (questionId, withCorrectAnswer) => {
 const getQuestionsContent = async (
     questions,
     user,
-    withCorrectAnswers,
+    includeCorrectAnswers,
     takerId = null
 ) => {
     const questionsWithContent = await Promise.all(
@@ -275,7 +257,7 @@ const getQuestionsContent = async (
             const content = await getQuestionContent(
                 question.id,
                 user.role === ROLES.MAKER ||
-                    (user.role === ROLES.TAKER && withCorrectAnswers)
+                    (user.role === ROLES.TAKER && includeCorrectAnswers)
             );
 
             return { ...question.toObject(), content };
