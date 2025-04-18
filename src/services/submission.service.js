@@ -1,3 +1,4 @@
+import { PUBLIC_ANSWER_VISIBILITY_LEVEL } from "../config/constants/levels.js";
 import { Submission } from "../models/submission.model.js";
 import { Test } from "../models/test.model.js";
 import answerService from "./answer.service.js";
@@ -16,24 +17,53 @@ const updateSubmission = async (submissionId, submissionBody) => {
     return submission;
 };
 
-const getSubmissionByTakerId = async (takerId, testId) => {
+const getSubmissionsByTakerId = async (takerId, testId) => {
     const test = await Test.findOne({ _id: testId });
-    const publicAnswer =
-        new Date(test.public_answers_date).getTime() < Date.now();
 
-    const submission = await Submission.findOne({
+    let fieldsToSelect = [];
+    if (test.options.allow_show_maker_answers_after_test.enable) {
+        if (
+            new Date(
+                test.options.allow_show_maker_answers_after_test.public_answers_date
+            ) > new Date()
+        ) {
+            switch (
+                test.options.allow_show_maker_answers_after_test
+                    .visibility_level
+            ) {
+                case PUBLIC_ANSWER_VISIBILITY_LEVEL.SUMMARY:
+                    fieldsToSelect = [
+                        "score",
+                        "-correct_answers",
+                        "-wrong_answers",
+                        "-remark",
+                    ];
+                    break;
+                case PUBLIC_ANSWER_VISIBILITY_LEVEL.DETAILED:
+                    fieldsToSelect = [
+                        "score",
+                        "correct_answers",
+                        "wrong_answers",
+                        "remark",
+                    ];
+                    break;
+                default:
+                    break;
+            }
+        }
+    }
+
+    const submissions = await Submission.find({
         taker_id: takerId,
         test_id: testId,
-    }).select(
-        `${!publicAnswer ? "-score -wrong_answers -correct_answers" : ""}`
-    );
+    }).select(fieldsToSelect.join(" "));
 
-    return submission;
+    return submissions;
 };
 
 const getSubmissionsByTestId = async (testId) => {
     const submissions = await Submission.find({ test_id: testId }).populate({
-        path: "taker_id"
+        path: "taker_id",
     });
     return submissions;
 };
@@ -71,7 +101,7 @@ const scoreSubmission = async (submissionId) => {
 export default {
     createSubmission,
     updateSubmission,
-    getSubmissionByTakerId,
+    getSubmissionsByTakerId,
     getSubmissionsByTestId,
     scoreSubmission,
 };

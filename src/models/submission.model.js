@@ -15,21 +15,15 @@ const SubmissionSchema = new mongoose.Schema(
         },
         score: {
             type: Number,
-            required: true,
         },
         correct_answers: {
             type: Number,
-            required: true,
-            default: 0,
         },
         wrong_answers: {
             type: Number,
-            required: true,
-            default: 0,
         },
         remark: {
             type: String,
-            required: false,
         },
         start_time: {
             type: Date,

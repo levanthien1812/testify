@@ -22,8 +22,6 @@ const answerSchema = mongoose.Schema(
         },
         score: {
             type: Number,
-            required: true,
-            default: 0,
         },
     },
     {
