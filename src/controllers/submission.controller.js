@@ -58,7 +58,11 @@ const createSubmission = catchAsync(async (req, res, next) => {
     );
 
     if (test.are_answers_provided && test) {
-        submission = await submissionService.scoreSubmission(submission.id);
+        submission = await submissionService.scoreSubmission(submission.id, {
+            excludeScore:
+                req.user.role === ROLES.TAKER &&
+                !test.options.allow_show_maker_answers_after_test.enable,
+        });
     }
     return res
         .status(httpStatus.CREATED)

@@ -2,15 +2,11 @@ import httpStatus from "http-status";
 import { Question } from "../models/question.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { Answer } from "../models/answer.model.js";
-import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
-import { sameItems } from "../utils/compareArray.js";
 import {
     questionTypeToAnswerModel,
     questionTypeToQuestionModel,
 } from "../utils/mapping.js";
-import { AUTO_SCORE_TYPE } from "../config/constants/constants.js";
-import submissionService from "./submission.service.js";
-import _ from "lodash";
+import { isEqual } from "../utils/isEqual.js";
 
 const createAnswers = async (submissionId, answersBody) => {
     const answers = [];
@@ -44,6 +40,8 @@ const createAnswer = async (submissionId, answerBody) => {
     const answerModel = questionTypeToAnswerModel.get(question.type);
     await answerModel.create(answerContent);
 
+    newAnswer = await scoreAnswerByAnswerId(newAnswer.id);
+
     return newAnswer;
 };
 
@@ -54,7 +52,7 @@ const updateAnswer = async (answerId, answerBody) => {
         throw new ApiError(httpStatus.BAD_REQUEST, "Answer not found!");
     }
 
-    const updatedAnswer = await Answer.findByIdAndUpdate(
+    let updatedAnswer = await Answer.findByIdAndUpdate(
         answer.id,
         { $set: answerBody },
         {
@@ -62,7 +60,7 @@ const updateAnswer = async (answerId, answerBody) => {
         }
     );
 
-    await scoreAnswerByAnswerId(updatedAnswer.id);
+    updatedAnswer = await scoreAnswerByAnswerId(updatedAnswer.id);
 
     return updatedAnswer;
 };
@@ -88,7 +86,12 @@ const scoreAnswerByAnswerId = async (answerId) => {
         .select("answer");
 
     if (questionContent.answer) {
-        if (_.isEqual(answerContent.answer, questionContent.answer)) {
+        if (
+            isEqual(
+                answerContent.answer?.toObject(),
+                questionContent.answer?.toObject()
+            )
+        ) {
             answer.is_correct = true;
             answer.score = question.score;
         } else {
@@ -96,7 +99,7 @@ const scoreAnswerByAnswerId = async (answerId) => {
             answer.score = 0;
         }
         await answer.save();
-    } else return;
+    }
 
     return answer;
 };
@@ -129,15 +132,15 @@ const getAnswerContentByAnswerId = async (answerId, questionType = null) => {
         .findOne({
             answer_id: answerId,
         })
-        .select("-__v -answer_id ");
+        .select(`-__v -answer_id`);
 
     return answerContent;
 };
 
-const getAnswersBySubmissionId = async (submissionId) => {
+const getAnswersBySubmissionId = async (submissionId, options) => {
     const answers = await Answer.find({
         submission_id: submissionId,
-    }).select("-submission_id");
+    }).select(`${options?.excludeScore ? "-score -is_correct" : ""}`);
 
     const answersWithContent = await Promise.all(
         answers.map(async (answer) => {

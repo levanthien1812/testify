@@ -68,11 +68,14 @@ const getSubmissionsByTestId = async (testId) => {
     return submissions;
 };
 
-const scoreSubmission = async (submissionId) => {
+const scoreSubmission = async (submissionId, options) => {
     let submission = await Submission.findById(submissionId);
     const test = await Test.findById(submission.test_id);
 
-    const answers = await answerService.getAnswersBySubmissionId(submissionId);
+    const answers = await answerService.getAnswersBySubmissionId(
+        submissionId,
+        options
+    );
 
     if (test.are_answers_provided && answers.length > 0) {
         const archivedScore = answers.reduce(
@@ -98,10 +101,16 @@ const scoreSubmission = async (submissionId) => {
     return submission;
 };
 
+const findById = async (submissionId) => {
+    const submission = await Submission.findById(submissionId);
+    return submission;
+};
+
 export default {
     createSubmission,
     updateSubmission,
     getSubmissionsByTakerId,
     getSubmissionsByTestId,
     scoreSubmission,
+    findById,
 };

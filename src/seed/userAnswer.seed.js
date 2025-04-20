@@ -3,7 +3,7 @@ import {
     questionTypeToAnswerModel,
     questionTypeToQuestionModel,
 } from "../utils/mapping.js";
-import { sameItems } from "../utils/compareArray.js";
+import { sameItems } from "../utils/isEqual.js";
 import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import { Answer } from "../models/answer.model.js";
 import {
