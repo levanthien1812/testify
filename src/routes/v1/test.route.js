@@ -69,6 +69,14 @@ router
     );
 
 router
+    .route("/:testId/questions/reorder")
+    .patch(auth(RIGHTS.REORDER_QUESTIONS), questionController.reorderQuestions);
+
+router
+    .route("/:testId/questions/validate")
+    .get(auth(RIGHTS.VALIDATE_QUESTIONS), questionController.validateQuestions);
+
+router
     .route("/:testId/questions/:questionId")
     .patch(
         auth(RIGHTS.UPDATE_QUESTION),
@@ -76,10 +84,6 @@ router
         questionController.updateQuestion
     )
     .delete(auth(RIGHTS.DELETE_QUESTION), questionController.deleteQuestion);
-
-router
-    .route("/:testId/questions/validate")
-    .get(auth(RIGHTS.VALIDATE_QUESTIONS), questionController.validateQuestions);
 
 router
     .route("/:testId/questions/:questionId/answer")

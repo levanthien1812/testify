@@ -355,6 +355,48 @@ const deleteQuestion = async (questionId, testId, questionBody) => {
     return true;
 };
 
+const reorderQuestions = async (testId, questionBody) => {
+    const { startOrder, endOrder, partId } = questionBody;
+    const questionAtStartOrder = await Question.findOne({
+        test_id: testId,
+        order: startOrder,
+        ...(partId ? { part_id: partId } : {}),
+    });
+
+    if (startOrder < endOrder) {
+        for (let i = startOrder + 1; i <= endOrder; i++) {
+            await Question.findOneAndUpdate(
+                {
+                    test_id: testId,
+                    order: i,
+                    ...(partId ? { part_id: partId } : {}),
+                },
+                {
+                    $inc: { order: -1 },
+                }
+            );
+        }
+    } else {
+        for (let i = startOrder - 1; i >= endOrder; i--) {
+            await Question.findOneAndUpdate(
+                {
+                    test_id: testId,
+                    order: i,
+                    ...(partId ? { part_id: partId } : {}),
+                },
+                {
+                    $inc: { order: 1 },
+                }
+            );
+        }
+    }
+    await Question.findByIdAndUpdate(questionAtStartOrder._id, {
+        order: endOrder,
+    });
+
+    return true;
+};
+
 export default {
     createQuestion,
     updateQuestion,
@@ -365,4 +407,5 @@ export default {
     getQuestionsByPart,
     validateQuestions,
     deleteQuestion,
+    reorderQuestions,
 };

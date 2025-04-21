@@ -19,21 +19,26 @@ const createTest = {
             .keys({
                 allow_close_time: Joi.object().keys({
                     enable: Joi.boolean().required(),
+                    let_taker_know: Joi.boolean().optional(),
                     close_time: Joi.date().optional(),
                 }),
                 allow_view_submission_after_test: Joi.object().keys({
                     enable: Joi.boolean().required(),
+                    let_taker_know: Joi.boolean().optional(),
                 }),
                 allow_multiple_submissions: Joi.object().keys({
                     enable: Joi.boolean().required(),
                     maximum_submissions: Joi.number().min(1).optional(),
+                    let_taker_know: Joi.boolean().optional(),
                 }),
                 allow_save_progress: Joi.object().keys({
                     enable: Joi.boolean().required(),
+                    let_taker_know: Joi.boolean().optional(),
                 }),
                 allow_show_taker_answers_after_test: Joi.object().keys({
                     enable: Joi.boolean().required(),
                     delay_time: Joi.number().min(0).optional(),
+                    let_taker_know: Joi.boolean().optional(),
                 }),
                 allow_show_maker_answers_after_test: Joi.object().keys({
                     enable: Joi.boolean().required(),
@@ -42,18 +47,24 @@ const createTest = {
                         ...Object.values(PUBLIC_ANSWER_OPTION)
                     ),
                     public_answers_date: Joi.date().optional(),
+                    let_taker_know: Joi.boolean().optional(),
                 }),
                 allow_shuffle_questions: Joi.object().keys({
                     enable: Joi.boolean().required(),
+                    let_taker_know: Joi.boolean().optional(),
                 }),
                 allow_shuffle_answers: Joi.object().keys({
                     enable: Joi.boolean().required(),
+                    let_taker_know: Joi.boolean().optional(),
                 }),
                 allow_review_before_submission: Joi.object().keys({
                     enable: Joi.boolean().required(),
+                    let_taker_know: Joi.boolean().optional(),
                 }),
                 disallow_time_limit: Joi.object().keys({
                     enable: Joi.boolean().required(),
+                    let_taker_know: Joi.boolean().optional(),
+                    duration: Joi.number().min(0).optional(),
                 }),
             }),
     }),

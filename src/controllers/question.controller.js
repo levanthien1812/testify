@@ -63,10 +63,20 @@ const deleteQuestion = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ deleted: true });
 });
 
+const reorderQuestions = catchAsync(async (req, res, next) => {
+    const reordered = await questionService.reorderQuestions(
+        req.params.testId,
+        req.body
+    );
+
+    return res.status(httpStatus.ACCEPTED).send({ reordered });
+});
+
 export default {
     createQuestion,
     addAnswer,
     validateQuestions,
     updateQuestion,
     deleteQuestion,
+    reorderQuestions,
 };
