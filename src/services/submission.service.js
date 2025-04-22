@@ -1,4 +1,5 @@
 import { PUBLIC_ANSWER_VISIBILITY_LEVEL } from "../config/constants/levels.js";
+import { ROLES } from "../config/constants/roles.js";
 import { Submission } from "../models/submission.model.js";
 import { Test } from "../models/test.model.js";
 import answerService from "./answer.service.js";
@@ -17,11 +18,14 @@ const updateSubmission = async (submissionId, submissionBody) => {
     return submission;
 };
 
-const getSubmissionsByTakerId = async (takerId, testId) => {
+const getSubmissionsByTakerId = async (takerId, testId, userRole) => {
     const test = await Test.findOne({ _id: testId });
 
     let fieldsToSelect = [];
-    if (test.options.allow_show_maker_answers_after_test.enable) {
+    if (
+        userRole === ROLES.TAKER &&
+        test.options.allow_show_maker_answers_after_test.enable
+    ) {
         if (
             new Date(
                 test.options.allow_show_maker_answers_after_test.public_answers_date
@@ -68,27 +72,24 @@ const getSubmissionsByTestId = async (testId) => {
     return submissions;
 };
 
-const scoreSubmission = async (submissionId, options) => {
+const scoreSubmission = async (submissionId) => {
     let submission = await Submission.findById(submissionId);
     const test = await Test.findById(submission.test_id);
 
-    const answers = await answerService.getAnswersBySubmissionId(
-        submissionId,
-        options
-    );
+    const answers = await answerService.getAnswersBySubmissionId(submissionId);
 
     if (test.are_answers_provided && answers.length > 0) {
         const archivedScore = answers.reduce(
-            (acc, answer) => acc + answer.score,
+            (acc, answer) => acc + (answer.score || 0),
             0
         );
 
         const totalCorrectAnswers = answers.filter(
-            (answer) => answer.is_correct
+            (answer) => answer.is_correct === true
         ).length;
 
         const totalWrongAnswers = answers.filter(
-            (answer) => !answer.is_correct
+            (answer) => answer.is_correct === false
         ).length;
 
         submission = await updateSubmission(submission.id, {

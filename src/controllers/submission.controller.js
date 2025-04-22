@@ -11,7 +11,8 @@ import { ROLES } from "../config/constants/roles.js";
 const createSubmission = catchAsync(async (req, res, next) => {
     const existingSubmissions = await submissionService.getSubmissionsByTakerId(
         req.user.id,
-        req.params.testId
+        req.params.testId,
+        req.user.role
     );
 
     const test = await testService.findById(req.params.testId);
@@ -57,13 +58,10 @@ const createSubmission = catchAsync(async (req, res, next) => {
         req.body.answers
     );
 
-    if (test.are_answers_provided && test) {
-        submission = await submissionService.scoreSubmission(submission.id, {
-            excludeScore:
-                req.user.role === ROLES.TAKER &&
-                !test.options.allow_show_maker_answers_after_test.enable,
-        });
+    if (test.are_answers_provided) {
+        await submissionService.scoreSubmission(submission);
     }
+
     return res
         .status(httpStatus.CREATED)
         .send({ submission, answers: newAnswers });
@@ -81,14 +79,22 @@ const getSubmission = catchAsync(async (req, res, next) => {
 const getSubmissions = catchAsync(async (req, res, next) => {
     const test = await testService.findById(req.params.testId);
     if (!test) {
-        return new ApiError(httpStatus.NOT_FOUND, "Test not found!");
+        throw new ApiError(httpStatus.NOT_FOUND, "Test not found!");
     }
 
-    if (
-        req.user.role === ROLES.TAKER &&
-        ![TEST_STATUS.OPENED, TEST_STATUS.CLOSED].includes(test.status)
-    ) {
-        return new ApiError(httpStatus.BAD_REQUEST, "Test is not opened yet!");
+    if (req.user.role === ROLES.TAKER) {
+        if (![TEST_STATUS.OPENED, TEST_STATUS.CLOSED].includes(test.status)) {
+            throw new ApiError(
+                httpStatus.BAD_REQUEST,
+                "Test is not opened yet!"
+            );
+        }
+        if (test.options.allow_view_submission_after_test.enable === false) {
+            throw new ApiError(
+                httpStatus.BAD_REQUEST,
+                "You are not allowed to view submissions after test"
+            );
+        }
     }
 
     const submissions = await submissionService.getSubmissionsByTestId(

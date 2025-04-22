@@ -23,8 +23,6 @@ export const paginate = (schema) => {
                 : 0;
         const skip = page ? (page - 1) * limit : 0;
 
-        console.log({ skip });
-
         const countPromise = this.countDocuments(filter).exec();
 
         let docsPromise = this.find(filter);

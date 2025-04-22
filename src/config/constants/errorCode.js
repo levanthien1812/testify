@@ -1,11 +1,14 @@
 export const ERROR_CODE = {
-    ERR001: "ERR001",
-    ERR002: "ERR002",
-    ERR003: "ERR003",
+    TEST_ACCESS_DENIED: "TEST_ACCESS_DENIED",
+    TEST_NOT_AVAILABLE: "TEST_NOT_AVAILABLE",
+    TEST_CLOSED: "TEST_CLOSED",
+    PASSCODE_REQUIRED: "PASSCODE_REQUIRED",
 };
 
 export const ERROR_MESSAGE = {
-    [ERROR_CODE.ERR001]: "You dont have access to this test!",
-    [ERROR_CODE.ERR002]: "The test you want to access is not available yet!",
-    [ERROR_CODE.ERR003]: "The test you want to access is already closed!",
+    [ERROR_CODE.TEST_ACCESS_DENIED]: "You dont have access to this test!",
+    [ERROR_CODE.TEST_NOT_AVAILABLE]:
+        "The test you want to access is not available yet!",
+    [ERROR_CODE.TEST_CLOSED]: "The test you want to access is already closed!",
+    [ERROR_CODE.PASSCODE_REQUIRED]: "Passcode is required for this test!",
 };
