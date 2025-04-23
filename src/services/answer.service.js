@@ -7,6 +7,7 @@ import {
     questionTypeToQuestionModel,
 } from "../utils/mapping.js";
 import { isEqual } from "../utils/isEqual.js";
+import submissionService from "./submission.service.js";
 
 const createAnswers = async (submissionId, answersBody) => {
     const answers = [];
@@ -60,7 +61,7 @@ const updateAnswer = async (answerId, answerBody) => {
         }
     );
 
-    updatedAnswer = await scoreAnswerByAnswerId(updatedAnswer.id);
+    await submissionService.scoreSubmission(answer.submission_id);
 
     return updatedAnswer;
 };

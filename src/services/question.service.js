@@ -190,8 +190,19 @@ const updateQuestion = async (questionId, questionBody) => {
 const checkAnswersProvided = async (testId) => {
     const questions = await Question.find({ test_id: testId });
 
-    const areAnswersProvided = questions.every((question) => {
-        return AUTO_SCORE_TYPE.includes(question.type) && !!question.answer;
+    const areAnswersProvided = questions.every(async (question) => {
+        const questionContentModel = questionTypeToQuestionModel.get(
+            question.type
+        );
+        const questionContent = await questionContentModel
+            .find({
+                question_id: question.id,
+            })
+            .select("answer");
+
+        return (
+            AUTO_SCORE_TYPE.includes(question.type) && !!questionContent.answer
+        );
     });
 
     return areAnswersProvided;
@@ -214,11 +225,11 @@ const addAnswer = async (questionId, answerBody) => {
 
     if (await checkAnswersProvided(question.test_id)) {
         await testService.updateTest(question.test_id, {
-            $set: { are_answers_provided: true },
+            are_answers_provided: true,
         });
     } else {
         await testService.updateTest(question.test_id, {
-            $set: { are_answers_provided: false },
+            are_answers_provided: false,
         });
     }
 
@@ -231,7 +242,7 @@ const getQuestionsByTestId = async (testId) => {
     return questions;
 };
 
-const getQuestionContent = async (questionId, withCorrectAnswer) => {
+const getQuestionContent = async (questionId, includeCorrectAnswer) => {
     const question = await Question.findById(questionId);
 
     if (!question) {
@@ -241,23 +252,17 @@ const getQuestionContent = async (questionId, withCorrectAnswer) => {
     const model = questionTypeToQuestionModel.get(question.type);
     let content = await model
         .findOne({ question_id: questionId })
-        .select(withCorrectAnswer && "+answer");
+        .select(includeCorrectAnswer && "+answer");
 
     return content;
 };
 
-const getQuestionsContent = async (
-    questions,
-    user,
-    includeCorrectAnswers,
-    takerId = null
-) => {
+const getQuestionsContent = async (questions, includeCorrectAnswers) => {
     const questionsWithContent = await Promise.all(
         questions.map(async (question) => {
             const content = await getQuestionContent(
                 question.id,
-                user.role === ROLES.MAKER ||
-                    (user.role === ROLES.TAKER && includeCorrectAnswers)
+                includeCorrectAnswers
             );
 
             return { ...question.toObject(), content };

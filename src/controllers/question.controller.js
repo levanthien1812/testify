@@ -19,6 +19,9 @@ const createQuestion = catchAsync(async (req, res, next) => {
             },
         }
     );
+
+    await testService.updateIncludingManuallyQuestions(test.id);
+
     return res.status(httpStatus.ACCEPTED).send({ question, content });
 });
 

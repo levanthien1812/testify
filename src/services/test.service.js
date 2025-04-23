@@ -12,6 +12,7 @@ import submissionService from "./submission.service.js";
 import { Submission } from "../models/submission.model.js";
 import { ROLES } from "../config/constants/roles.js";
 import { ERROR_CODE, ERROR_MESSAGE } from "../config/constants/errorCode.js";
+import { MANUAL_SCORE_TYPE } from "../config/constants/constants.js";
 
 const createTest = async (testBody) => {
     const { datetime, enable_close_time, close_time } = testBody;
@@ -77,138 +78,14 @@ const getTests = async (user, reqQuery) => {
     return { tests: testsWithAddittionalData, ...rest };
 };
 
-const getTest = async (
-    testId,
-    user,
-    includeTakerAnswers = false,
-    takerId = null
-) => {
+const getTest = async (testId, user, takerId = null) => {
     const test = await Test.findById(testId);
 
     if (!test) {
         throw new ApiError(httpStatus.NOT_FOUND, "No test found with this ID");
     }
 
-    // Determine if correct answers are returned or not
-    let includeCorrectAnswers = false;
-
-    if (user.role === ROLES.TAKER) {
-        if (
-            test.share_option === SHARE_OPTION.RESTRICTED &&
-            !test.taker_ids.map((taker) => taker.id).includes(user.id)
-        ) {
-            throw new ApiError(
-                httpStatus.FORBIDDEN,
-                ERROR_MESSAGE.ERR001,
-                ERROR_CODE.ERR001
-            );
-        }
-
-        if (
-            test.status === TEST_STATUS.PUBLISHABLE ||
-            test.status === TEST_STATUS.DRAFT
-        ) {
-            throw new ApiError(
-                httpStatus.BAD_REQUEST,
-                ERROR_MESSAGE.ERR002,
-                ERROR_CODE.ERR002
-            );
-        }
-
-        if (test.status === TEST_STATUS.CLOSED) {
-            throw new ApiError(
-                httpStatus.BAD_REQUEST,
-                ERROR_MESSAGE.ERR003,
-                ERROR_CODE.ERR003
-            );
-        }
-
-        if (test.status === TEST_STATUS.PUBLISHED) {
-            return {
-                ...test.toObject(),
-                parts: [],
-                questions: [],
-            };
-        }
-
-        const submissions = await submissionService.getSubmissionsByTakerId(
-            user._id,
-            testId
-        );
-
-        if (submissions.length === 0 && includeTakerAnswers) {
-            return new ApiError(httpStatus.BAD_REQUEST, "No submission found");
-        }
-
-        if (test.options.allow_show_maker_answers_after_test.enable) {
-            if (
-                test.options.allow_show_maker_answers_after_test
-                    .public_answers_option ===
-                PUBLIC_ANSWER_OPTION.AFTER_TAKER_SUBMISSION
-            ) {
-                includeCorrectAnswers = submissions.length > 0;
-            }
-
-            if (
-                (test.options.allow_show_maker_answers_after_test
-                    .public_answers_option ===
-                    PUBLIC_ANSWER_OPTION.AFTER_CLOSE_TIME &&
-                    test.options.allow_close_time.enable &&
-                    test.options.allow_close_time.close_time) ||
-                test.options.allow_show_maker_answers_after_test
-                    .public_answers_option ===
-                    PUBLIC_ANSWER_OPTION.SPECIFIC_DATE
-            ) {
-                includeCorrectAnswers =
-                    new Date(test.public_answers_date).getTime() < Date.now();
-            }
-        }
-    }
-
-    if (user.role === ROLES.MAKER && takerId) {
-        includeCorrectAnswers = true;
-        includeTakerAnswers = true;
-    }
-
-    let parts = await Part.find({ test_id: test.id });
-    let questions;
-
-    if (parts.length > 0) {
-        parts = await Promise.all(
-            parts.map(async (part) => {
-                let questionsByPart = await questionService.getQuestionsByPart(
-                    part.id
-                );
-                questionsByPart = await questionService.getQuestionsContent(
-                    questionsByPart,
-                    user,
-                    includeCorrectAnswers,
-                    takerId
-                );
-
-                return { ...part.toObject(), questions: questionsByPart };
-            })
-        );
-
-        return {
-            ...test.toObject(),
-            parts: parts,
-        };
-    } else {
-        questions = await questionService.getQuestionsByTestId(testId);
-        questions = await questionService.getQuestionsContent(
-            questions,
-            user,
-            includeCorrectAnswers,
-            takerId
-        );
-
-        return {
-            ...test.toObject(),
-            parts: [],
-            questions: questions,
-        };
-    }
+    return test;
 };
 
 const assignTakers = async (testId, takerIds) => {
@@ -337,6 +214,18 @@ const findById = async (testId) => {
     return test;
 };
 
+const updateIncludingManuallyQuestions = async (testId) => {
+    const questions = await Question.find({ test_id: testId });
+
+    const includesManuallyScoredQuestions = questions.some((question) =>
+        MANUAL_SCORE_TYPE.includes(question.type)
+    );
+
+    await Test.findByIdAndUpdate(testId, {
+        inincludes_manually_scored_questions: includesManuallyScoredQuestions,
+    });
+};
+
 export default {
     createTest,
     getTests,
@@ -347,4 +236,5 @@ export default {
     findById,
     getAvailableTakers,
     updateTestsStatus,
+    updateIncludingManuallyQuestions,
 };

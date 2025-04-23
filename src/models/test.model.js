@@ -168,6 +168,9 @@ const TestSchema = mongoose.Schema(
             type: Boolean,
             default: false,
         },
+        includes_manually_scored_questions: {
+            type: Boolean,
+        },
         passcode: {
             type: mongoose.SchemaTypes.ObjectId,
             ref: "PassCode",
