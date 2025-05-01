@@ -12,6 +12,7 @@ import partService from "../services/part.service.js";
 import submissionService from "../services/submission.service.js";
 import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
 import { ApiError } from "../utils/apiError.js";
+import passcodeService from "../services/passcode.service.js";
 
 const createTest = catchAsync(async (req, res, next) => {
     const body = {
@@ -50,21 +51,34 @@ const getTests = catchAsync(async (req, res, next) => {
 
 const getTest = catchAsync(async (req, res, next) => {
     const { testId, takerId } = req.params;
+    const { passcode, started } = req.query;
 
     const test = await testService.getTest(testId, req.user, takerId);
 
-    // Determine if correct answers are returned or not
-    let includeCorrectAnswers = false;
+    let options = {};
     let parts = [];
     let questions = [];
+    let submissionsCount = 0;
 
     if (req.user.role === ROLES.TAKER) {
         if (test.share_option === SHARE_OPTION.PASSCODE) {
-            if (!req.query.passcode) {
+            if (!passcode) {
                 throw new ApiError(
                     httpStatus.BAD_REQUEST,
                     ERROR_MESSAGE[ERROR_CODE.PASSCODE_REQUIRED],
                     ERROR_CODE.PASSCODE_REQUIRED
+                );
+            }
+
+            const isCorrectPasscode = await passcodeService.checkPasscode(
+                passcode,
+                testId
+            );
+            if (!isCorrectPasscode) {
+                throw new ApiError(
+                    httpStatus.BAD_REQUEST,
+                    ERROR_MESSAGE[ERROR_CODE.INCORRECT_PASSCODE],
+                    ERROR_CODE.INCORRECT_PASSCODE
                 );
             }
         }
@@ -99,9 +113,11 @@ const getTest = catchAsync(async (req, res, next) => {
             );
         }
 
-        if (test.status === TEST_STATUS.PUBLISHED) {
-            return test;
-        }
+        const submissions = await submissionService.getSubmissionsByTakerId(
+            req.user._id,
+            testId
+        );
+        submissionsCount = submissions.length;
 
         if (test.options.allow_show_maker_answers_after_test.enable) {
             if (
@@ -109,12 +125,7 @@ const getTest = catchAsync(async (req, res, next) => {
                     .public_answers_option ===
                 PUBLIC_ANSWER_OPTION.AFTER_TAKER_SUBMISSION
             ) {
-                const submissions =
-                    await submissionService.getSubmissionsByTakerId(
-                        req.req.user._id,
-                        testId
-                    );
-                includeCorrectAnswers = submissions.length > 0;
+                options.includeCorrectAnswers = submissions.length > 0;
             }
 
             if (
@@ -127,40 +138,64 @@ const getTest = catchAsync(async (req, res, next) => {
                     .public_answers_option ===
                     PUBLIC_ANSWER_OPTION.SPECIFIC_DATE
             ) {
-                includeCorrectAnswers =
+                options.includeCorrectAnswers =
                     new Date(test.public_answers_date).getTime() < Date.now();
             }
         }
     }
 
     if (req.user.role === ROLES.MAKER && takerId) {
-        includeCorrectAnswers = true;
+        options.includeCorrectAnswers = true;
     }
 
-    if (test.num_parts > 0) {
-        parts = await partService.getPartsByTestId(testId);
-        parts = await Promise.all(
-            parts.map(async (part) => {
-                let questionsByPart = await questionService.getQuestionsByPart(
-                    part.id
-                );
-                questionsByPart = await questionService.getQuestionsContent(
-                    questionsByPart,
-                    includeCorrectAnswers
-                );
-
-                return { ...part.toObject(), questions: questionsByPart };
-            })
-        );
+    if (
+        req.user.role === ROLES.TAKER &&
+        (test.status === TEST_STATUS.PUBLISHED ||
+            test.status === TEST_STATUS.OPENED) &&
+        !started
+    ) {
     } else {
-        questions = await questionService.getQuestionsByTestId(testId);
-        questions = await questionService.getQuestionsContent(
-            questions,
-            includeCorrectAnswers
-        );
+        if (req.user.role === ROLES.TAKER) {
+            if (test.options.allow_shuffle_questions.enable) {
+                options.shuffleQuestions = true;
+            }
+            if (test.options.allow_shuffle_answers.enable) {
+                options.shuffleAnswers = true;
+            }
+        }
+
+        if (test.num_parts > 0) {
+            parts = await partService.getPartsByTestId(testId);
+            parts = await Promise.all(
+                parts.map(async (part) => {
+                    let questionsByPart =
+                        await questionService.getQuestionsByPart(
+                            part.id,
+                            options
+                        );
+                    questionsByPart = await questionService.getQuestionsContent(
+                        questionsByPart,
+                        options
+                    );
+
+                    return { ...part.toObject(), questions: questionsByPart };
+                })
+            );
+        } else {
+            questions = await questionService.getQuestionsByTestId(
+                testId,
+                options
+            );
+            questions = await questionService.getQuestionsContent(
+                questions,
+                options
+            );
+        }
     }
 
-    return res.status(httpStatus.OK).send({ test, parts, questions });
+    return res
+        .status(httpStatus.OK)
+        .send({ test, parts, questions, submissionsCount });
 });
 
 const assignTakers = catchAsync(async (req, res, next) => {

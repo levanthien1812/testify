@@ -53,13 +53,20 @@ const createSubmission = catchAsync(async (req, res, next) => {
         start_time: new Date(req.body.startTime),
     });
 
-    const newAnswers = await answerService.createAnswers(
+    let newAnswers = await answerService.createAnswers(
         submission.id,
         req.body.answers
     );
 
     if (test.are_answers_provided) {
         await submissionService.scoreSubmission(submission);
+    }
+
+    if (
+        !test.options.allow_view_submission_after_test.enable ||
+        !test.options.allow_show_maker_answers_after_test.enable
+    ) {
+        newAnswers = null;
     }
 
     return res

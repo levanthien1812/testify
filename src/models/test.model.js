@@ -9,6 +9,7 @@ import { TEST_STATUS } from "../config/constants/testStatus.js";
 import { SHARE_OPTION } from "../config/constants/shareOptions.js";
 import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
 import { PassCode } from "./passcode.model.js";
+import { PAGINATION_MODE } from "../config/constants/test.js";
 
 const TestOption = new mongoose.Schema({
     allow_close_time: {
@@ -96,6 +97,25 @@ const TestOption = new mongoose.Schema({
             enable: { type: Boolean, required: true },
             let_taker_know: { type: Boolean, required: true },
             duration: { type: Number, required: false }, // Time limit in minutes
+        },
+        required: true,
+    },
+    pagination_mode: {
+        type: {
+            enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
+            mode: {
+                type: String,
+                enum: Object.values(PAGINATION_MODE),
+                default: PAGINATION_MODE.ALL,
+            },
+            lockForward: { type: Boolean, required: false, default: false },
+            lockBackward: { type: Boolean, required: false, default: false },
+            requireAnswerBeforeNext: {
+                type: Boolean,
+                required: false,
+                default: false,
+            },
         },
         required: true,
     },

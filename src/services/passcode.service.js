@@ -16,9 +16,14 @@ const findPasscodeByTestId = async (testId) => {
     return await PassCode.findOne({ test_id: testId });
 };
 
+const checkPasscode = async (code, testId) => {
+    return await PassCode.exists({ test_id: testId, code: code });
+};
+
 export default {
     createPasscode,
     deletePasscodeByTestId,
     findPasscodeByCode,
     findPasscodeByTestId,
+    checkPasscode,
 };
