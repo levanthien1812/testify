@@ -2,6 +2,7 @@ import Joi from "joi";
 import { datetime } from "./custom.validation.js";
 import { TEST_LEVEL } from "../config/constants/levels.js";
 import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
+import { PAGINATION_MODE } from "../config/constants/test.js";
 
 const createTest = {
     body: Joi.object().keys({
@@ -65,6 +66,13 @@ const createTest = {
                     enable: Joi.boolean().required(),
                     let_taker_know: Joi.boolean().optional(),
                     duration: Joi.number().min(0).optional(),
+                }),
+                pagination_mode: Joi.object().keys({
+                    enable: Joi.boolean().required(),
+                    let_taker_know: Joi.boolean().optional(),
+                    mode: Joi.string().valid(...Object.values(PAGINATION_MODE)),
+                    allow_back_navigation: Joi.boolean().optional(),
+                    require_completion_before_next: Joi.boolean().optional(),
                 }),
             }),
     }),

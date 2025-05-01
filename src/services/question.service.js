@@ -14,6 +14,7 @@ import path from "path";
 import { ROLES } from "../config/constants/roles.js";
 import { Part } from "../models/part.model.js";
 import mongoose from "mongoose";
+import { shuffleQuestions } from "../utils/shuffleQuestions.js";
 
 const createQuestionContent = async (questionType, questionContent) => {
     const model = questionTypeToQuestionModel.get(questionType);
@@ -236,13 +237,16 @@ const addAnswer = async (questionId, answerBody) => {
     return updated;
 };
 
-const getQuestionsByTestId = async (testId) => {
-    const questions = await Question.find({ test_id: testId });
+const getQuestionsByTestId = async (testId, options = {}) => {
+    let questions = await Question.find({ test_id: testId });
 
+    if (options.shuffleQuestions) {
+        questions = shuffleQuestions(questions);
+    }
     return questions;
 };
 
-const getQuestionContent = async (questionId, includeCorrectAnswer) => {
+const getQuestionContent = async (questionId, options = {}) => {
     const question = await Question.findById(questionId);
 
     if (!question) {
@@ -252,18 +256,15 @@ const getQuestionContent = async (questionId, includeCorrectAnswer) => {
     const model = questionTypeToQuestionModel.get(question.type);
     let content = await model
         .findOne({ question_id: questionId })
-        .select(includeCorrectAnswer && "+answer");
+        .select(options.includeCorrectAnswer && "+answer");
 
     return content;
 };
 
-const getQuestionsContent = async (questions, includeCorrectAnswers) => {
+const getQuestionsContent = async (questions, options = {}) => {
     const questionsWithContent = await Promise.all(
         questions.map(async (question) => {
-            const content = await getQuestionContent(
-                question.id,
-                includeCorrectAnswers
-            );
+            const content = await getQuestionContent(question.id, options);
 
             return { ...question.toObject(), content };
         })
@@ -317,8 +318,13 @@ const validateQuestions = async (testId) => {
     return validated;
 };
 
-const getQuestionsByPart = async (partId) => {
-    return await Question.find({ part_id: partId });
+const getQuestionsByPart = async (partId, options = {}) => {
+    let questions = await Question.find({ part_id: partId });
+    if (options.shuffleQuestions) {
+        questions = shuffleQuestions(questions);
+    }
+
+    return questions;
 };
 
 const deleteQuestion = async (questionId, testId, questionBody) => {
