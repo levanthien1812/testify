@@ -19,6 +19,7 @@ const TestOption = new mongoose.Schema({
             close_time: { type: Date, required: false },
         },
         required: true,
+        _id: false,
     },
     allow_view_submission_after_test: {
         type: {
@@ -26,6 +27,7 @@ const TestOption = new mongoose.Schema({
             let_taker_know: { type: Boolean, required: true },
         },
         required: true,
+        _id: false,
     },
     allow_multiple_submissions: {
         type: {
@@ -34,6 +36,7 @@ const TestOption = new mongoose.Schema({
             maximum_submissions: { type: Number, required: false },
         },
         required: true,
+        _id: false,
     },
     allow_save_progress: {
         type: {
@@ -41,6 +44,7 @@ const TestOption = new mongoose.Schema({
             let_taker_know: { type: Boolean, required: true },
         },
         required: true,
+        _id: false,
     },
     allow_show_taker_answers_after_test: {
         type: {
@@ -49,6 +53,7 @@ const TestOption = new mongoose.Schema({
             delay_time: { type: Number, required: false },
         },
         required: true,
+        _id: false,
     },
     allow_show_maker_answers_after_test: {
         type: {
@@ -70,6 +75,7 @@ const TestOption = new mongoose.Schema({
             },
         },
         required: true,
+        _id: false,
     },
     allow_shuffle_questions: {
         type: {
@@ -77,6 +83,7 @@ const TestOption = new mongoose.Schema({
             let_taker_know: { type: Boolean, required: true },
         },
         required: true,
+        _id: false,
     },
     allow_shuffle_answers: {
         type: {
@@ -84,6 +91,7 @@ const TestOption = new mongoose.Schema({
             let_taker_know: { type: Boolean, required: true },
         },
         required: true,
+        _id: false,
     },
     allow_review_before_submission: {
         type: {
@@ -91,6 +99,7 @@ const TestOption = new mongoose.Schema({
             let_taker_know: { type: Boolean, required: true },
         },
         required: true,
+        _id: false,
     },
     disallow_time_limit: {
         type: {
@@ -99,6 +108,7 @@ const TestOption = new mongoose.Schema({
             duration: { type: Number, required: false }, // Time limit in minutes
         },
         required: true,
+        _id: false,
     },
     pagination_mode: {
         type: {
@@ -109,15 +119,24 @@ const TestOption = new mongoose.Schema({
                 enum: Object.values(PAGINATION_MODE),
                 default: PAGINATION_MODE.ALL,
             },
-            lockForward: { type: Boolean, required: false, default: false },
-            lockBackward: { type: Boolean, required: false, default: false },
-            requireAnswerBeforeNext: {
+            allow_back_navigation: {
                 type: Boolean,
                 required: false,
                 default: false,
             },
+            require_completion_before_next: {
+                type: Boolean,
+                required: false,
+                default: false,
+            },
+            questions_per_page: {
+                type: Number,
+                required: false,
+                default: 10,
+            },
         },
         required: true,
+        _id: false,
     },
 });
 
