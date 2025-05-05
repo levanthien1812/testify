@@ -367,43 +367,76 @@ const deleteQuestion = async (questionId, testId, questionBody) => {
 };
 
 const reorderQuestions = async (testId, questionBody) => {
-    const { startOrder, endOrder, partId } = questionBody;
+    const { startOrder, endOrder, partFromId, partToId } = questionBody;
     const questionAtStartOrder = await Question.findOne({
         test_id: testId,
         order: startOrder,
-        ...(partId ? { part_id: partId } : {}),
+        ...(partFromId ? { part_id: partFromId } : {}),
     });
 
-    if (startOrder < endOrder) {
-        for (let i = startOrder + 1; i <= endOrder; i++) {
-            await Question.findOneAndUpdate(
-                {
-                    test_id: testId,
-                    order: i,
-                    ...(partId ? { part_id: partId } : {}),
-                },
-                {
-                    $inc: { order: -1 },
-                }
-            );
+    if (partFromId === partToId) {
+        if (startOrder < endOrder) {
+            for (let i = startOrder + 1; i <= endOrder; i++) {
+                await Question.findOneAndUpdate(
+                    {
+                        test_id: testId,
+                        order: i,
+                        ...(partFromId ? { part_id: partFromId } : {}),
+                    },
+                    {
+                        $inc: { order: -1 },
+                    }
+                );
+            }
+        } else {
+            for (let i = startOrder - 1; i >= endOrder; i--) {
+                await Question.findOneAndUpdate(
+                    {
+                        test_id: testId,
+                        order: i,
+                        ...(partFromId ? { part_id: partFromId } : {}),
+                    },
+                    {
+                        $inc: { order: 1 },
+                    }
+                );
+            }
         }
+        await Question.findByIdAndUpdate(questionAtStartOrder._id, {
+            order: endOrder,
+        });
     } else {
-        for (let i = startOrder - 1; i >= endOrder; i--) {
-            await Question.findOneAndUpdate(
-                {
-                    test_id: testId,
-                    order: i,
-                    ...(partId ? { part_id: partId } : {}),
-                },
-                {
-                    $inc: { order: 1 },
-                }
-            );
-        }
+        await Question.updateMany(
+            {
+                test_id: testId,
+                order: { $gte: endOrder },
+                ...(partToId ? { part_id: partToId } : {}),
+            },
+            { $inc: { order: 1 } }
+        );
+
+        await Question.findByIdAndUpdate(questionAtStartOrder._id, {
+            order: endOrder,
+            part_id: partToId,
+        });
+
+        await Question.updateMany(
+            {
+                test_id: testId,
+                order: { $gte: startOrder },
+                ...(partFromId ? { part_id: partFromId } : {}),
+            },
+            { $inc: { order: -1 } }
+        );
+
+        await Part.findByIdAndUpdate(partFromId, {
+            $inc: { num_questions: -1 },
+        });
+
+        await Part.findByIdAndUpdate(partToId, {
+            $inc: { num_questions: 1 },
+        });
     }
-    await Question.findByIdAndUpdate(questionAtStartOrder._id, {
-        order: endOrder,
-    });
 
     return true;
 };
