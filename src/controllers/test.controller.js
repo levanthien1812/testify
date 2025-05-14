@@ -164,7 +164,7 @@ const getTest = catchAsync(async (req, res, next) => {
             }
         }
 
-        if (test.num_parts > 0) {
+        if (test.num_parts > 1) {
             parts = await partService.getPartsByTestId(testId);
             parts = await Promise.all(
                 parts.map(async (part) => {

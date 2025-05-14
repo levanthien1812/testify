@@ -73,6 +73,7 @@ const createTest = {
                     mode: Joi.string().valid(...Object.values(PAGINATION_MODE)),
                     allow_back_navigation: Joi.boolean().optional(),
                     require_completion_before_next: Joi.boolean().optional(),
+                    questions_per_page: Joi.number().min(1).optional(),
                 }),
             }),
     }),
