@@ -8,3 +8,9 @@ export const PASSCODE_FORMAT = {
     YYYYYY: "YYYYYY",
     XXXX: "XXXX",
 };
+
+export const PASSCODE_VALID_UNIT = {
+    MINUTES: "MINUTES",
+    HOURS: "HOURS",
+    DAYS: "DAYS",
+};

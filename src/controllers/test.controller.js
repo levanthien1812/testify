@@ -144,7 +144,7 @@ const getTest = catchAsync(async (req, res, next) => {
         }
     }
 
-    if (req.user.role === ROLES.MAKER && takerId) {
+    if (req.user.role === ROLES.MAKER) {
         options.includeCorrectAnswers = true;
     }
 

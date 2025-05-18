@@ -256,7 +256,7 @@ const getQuestionContent = async (questionId, options = {}) => {
     const model = questionTypeToQuestionModel.get(question.type);
     let content = await model
         .findOne({ question_id: questionId })
-        .select(options.includeCorrectAnswer && "+answer");
+        .select(options.includeCorrectAnswers && "+answer");
 
     return content;
 };
