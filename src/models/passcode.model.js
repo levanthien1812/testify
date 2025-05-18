@@ -1,11 +1,19 @@
 import mongoose from "mongoose";
-import { PASSCODE_METHOD } from "../config/constants/passCode.js";
+import {
+    PASSCODE_METHOD,
+    PASSCODE_VALID_UNIT,
+} from "../config/constants/passCode.js";
 import { toJSON } from "./plugins/toJSON.js";
 
 const PassCodeSchema = new mongoose.Schema({
     code: { type: String, required: true },
-    valid_till: { type: Date, required: false },
-    valid_in: { type: Number, required: false },
+    valid_till: { type: Date, required: true },
+    valid_unit: {
+        type: String,
+        required: true,
+        enum: Object.values(PASSCODE_VALID_UNIT),
+    },
+    valid_in: { type: Number, required: true },
     method: {
         type: String,
         enum: Object.values(PASSCODE_METHOD),

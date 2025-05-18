@@ -136,7 +136,12 @@ router
 
 router
     .route("/:testId/passcode")
-    .get(auth(RIGHTS.GET_PASSCODE), passcodeController.getPasscodeByTestId);
+    .get(auth(RIGHTS.GET_PASSCODE), passcodeController.getPasscodeByTestId)
+    .post(
+        auth(RIGHTS.CREATE_PASSCODE),
+        validate(passcodeValidation.createPasscode),
+        passcodeController.createPasscode
+    );
 
 router
     .route("/:testId/passcode/generate")

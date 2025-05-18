@@ -8,19 +8,21 @@ import { ApiError } from "../utils/apiError.js";
 const generatePasscode = catchAsync(async (req, res, next) => {
     const { passcode: passcodeBody } = req.body;
 
-    // Delete previous passcodes if any
-    await passcodeService.deletePasscodeByTestId(passcodeBody.test_id);
+    const passcode = generatePasscodeByFormat(passcodeBody.format);
 
-    let passcodeString;
+    return res.status(httpStatus.CREATED).send({ passcode });
+});
+
+const createPasscode = catchAsync(async (req, res, next) => {
+    const { passcode: passcodeBody } = req.body;
+
+    // Delete previous passcodes if any
     do {
-        passcodeString = generatePasscodeByFormat(passcodeBody.format);
-    } while (!!(await passcodeService.findPasscodeByCode(passcodeString)));
+        await passcodeService.deletePasscodeByTestId(req.params.testId);
+    } while (await passcodeService.findPasscodeByCode(passcodeBody.code));
 
     const passcode = await passcodeService.createPasscode({
-        code: passcodeString,
-        valid_in: null,
-        valid_till: null,
-        method: PASSCODE_METHOD.AUTO_GENERATED,
+        ...passcodeBody,
         test_id: req.params.testId,
     });
 
@@ -51,6 +53,7 @@ const getPasscodeByTestId = catchAsync(async (req, res, next) => {
 
 export default {
     generatePasscode,
+    createPasscode,
     checkPasscode,
     getPasscodeByTestId,
 };
