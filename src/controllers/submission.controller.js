@@ -22,13 +22,13 @@ const createSubmission = catchAsync(async (req, res, next) => {
             existingSubmissions.length >=
             test.options.allow_multiple_submissions.maximum_submissions
         )
-            return new ApiError(
+            throw new ApiError(
                 httpStatus.BAD_REQUEST,
                 "Maximum submissions reached"
             );
     } else {
         if (existingSubmissions.length > 0) {
-            return new ApiError(
+            throw new ApiError(
                 httpStatus.BAD_REQUEST,
                 "Test already submitted"
             );
@@ -40,7 +40,7 @@ const createSubmission = catchAsync(async (req, res, next) => {
         new Date(test.close_time).getTime() + test.duration * 60 * 1000 <
             Date.now()
     ) {
-        return new ApiError(
+        throw new ApiError(
             httpStatus.BAD_REQUEST,
             "Test closed for submissions"
         );
