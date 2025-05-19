@@ -10,12 +10,11 @@ import { isEqual } from "../utils/isEqual.js";
 import submissionService from "./submission.service.js";
 
 const createAnswers = async (submissionId, answersBody) => {
-    const answers = [];
-
-    for (const answerBody of answersBody) {
-        const newAnswer = await createAnswer(submissionId, answerBody);
-        answers.push(newAnswer);
-    }
+    const answers = await Promise.all(
+        answersBody.map(
+            async (answerBody) => await createAnswer(submissionId, answerBody)
+        )
+    );
 
     return answers;
 };
