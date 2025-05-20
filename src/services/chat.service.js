@@ -1,4 +1,5 @@
 import { Chat } from "../models/chat.model.js";
+import { ChatAI } from "../models/chatAI.model.js";
 import messageService from "./message.service.js";
 
 const createChat = async (chatBody) => {
@@ -16,6 +17,12 @@ const createChat = async (chatBody) => {
         "members.member",
         "-password"
     );
+};
+
+const createChatAI = async (chatBody) => {
+    const newChat = await ChatAI.create(chatBody);
+
+    return newChat;
 };
 
 const updateChat = async (chatId, chatBody) => {
@@ -65,4 +72,10 @@ const updateNickname = async (chatId, { memberId, nickname }) => {
     return updatedChat;
 };
 
-export default { createChat, getChats, updateChat, updateNickname };
+export default {
+    createChat,
+    getChats,
+    updateChat,
+    updateNickname,
+    createChatAI,
+};
