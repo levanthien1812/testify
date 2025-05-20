@@ -44,4 +44,20 @@ route
     .patch(auth(RIGHTS.UPDATE_MESSAGE), messageController.updateMessage)
     .delete(auth(RIGHTS.DELETE_MESSAGE), messageController.deleteMessage);
 
+route
+    .route("/ai")
+    .post(
+        auth(RIGHTS.CREATE_CHAT_AI),
+        validate(chatValidation.createChatAI),
+        chatController.createChatAI
+    );
+
+route
+    .route("/ai/:id/messages")
+    .post(
+        auth(RIGHTS.CREATE_MESSAGE_AI),
+        validate(chatValidation.createMessageAI),
+        messageController.createMessageAI
+    );
+
 export default route;

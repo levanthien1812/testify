@@ -1,4 +1,6 @@
+import openai from "../config/openai.js";
 import { Message } from "../models/message.model.js";
+import { MessageAI } from "../models/messageAI.model.js";
 import { generateLinkPreviews } from "../utils/linkImage.js";
 
 const createMessage = async (messageBody) => {
@@ -90,6 +92,39 @@ const pushRemoveFor = async (messageId, valueToPush) => {
     return message;
 };
 
+const getMessagesAIByChatId = async (chatId) => {
+    const messages = await MessageAI.find({ chat_id: chatId });
+    return messages;
+};
+
+const createMessageAI = async (chatId, messageBody) => {
+    const userMessage = await MessageAI.create({
+        chat_id: chatId,
+        content: messageBody.text,
+        role: "user",
+    });
+
+    const prevMessages = await getMessagesAIByChatId(chatId);
+    const completion = await openai.chat.completions.create({
+        model: process.env.OPENAI_MODEL,
+        messages: prevMessages,
+    });
+
+    let assistantMessage = null;
+    if (completion.choices && completion.choices.length > 0) {
+        assistantMessage = await MessageAI.create({
+            chat_id: chatId,
+            content: completion.choices[0].message.content,
+            role: "assistant",
+        });
+    }
+
+    return {
+        userMessage,
+        assistantMessage,
+    };
+};
+
 export default {
     createMessage,
     updateMessage,
@@ -99,4 +134,5 @@ export default {
     deleteMessage,
     getMessageById,
     pushRemoveFor,
+    createMessageAI,
 };

@@ -55,10 +55,22 @@ const deleteMessage = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ deleted: true });
 });
 
+const createMessageAI = catchAsync(async (req, res, next) => {
+    const messageBody = req.body;
+
+    const messages = await messageService.createMessageAI(
+        req.params.id,
+        messageBody
+    );
+
+    return res.status(httpStatus.CREATED).send({ messages });
+});
+
 export default {
     createMessage,
     updateMessage,
     getMessages,
     updateMessagesReadByByChatId,
     deleteMessage,
+    createMessageAI,
 };

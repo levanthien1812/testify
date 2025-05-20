@@ -150,9 +150,21 @@ const updateNickname = catchAsync(async (req, res, next) => {
         .send({ chat: updatedChat, message: notiMessage });
 });
 
+const createChatAI = catchAsync(async (req, res, next) => {
+    const chatAIBody = {
+        user_id: req.user.id,
+        ...req.body,
+    };
+
+    const newChat = await chatService.createChatAI(chatAIBody);
+
+    return res.status(httpStatus.CREATED).send(newChat);
+});
+
 export default {
     createChat,
     getChats,
     updateChat,
     updateNickname,
+    createChatAI,
 };

@@ -9,6 +9,20 @@ const createChat = {
     }),
 };
 
+const createChatAI = {
+    body: Joi.object().keys({
+        chat_name: Joi.string().required(),
+    }),
+};
+
+const createMessageAI = {
+    body: Joi.object().keys({
+        text: Joi.string().required(),
+    }),
+};
+
 export default {
     createChat,
+    createMessageAI,
+    createChatAI,
 };
