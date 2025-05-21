@@ -161,10 +161,17 @@ const createChatAI = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.CREATED).send(newChat);
 });
 
+const getChatsAI = catchAsync(async (req, res, next) => {
+    const chats = await chatService.getChatsAIByUserId(req.user.id);
+
+    return res.status(httpStatus.OK).send({ chats });
+});
+
 export default {
     createChat,
     getChats,
     updateChat,
     updateNickname,
     createChatAI,
+    getChatsAI,
 };
