@@ -46,6 +46,7 @@ route
 
 route
     .route("/ai")
+    .get(auth(RIGHTS.GET_CHATS_AI), chatController.getChatsAI)
     .post(
         auth(RIGHTS.CREATE_CHAT_AI),
         validate(chatValidation.createChatAI),
@@ -54,6 +55,7 @@ route
 
 route
     .route("/ai/:id/messages")
+    .get(auth(RIGHTS.GET_MESSAGES_AI), messageController.getMessagesAI)
     .post(
         auth(RIGHTS.CREATE_MESSAGE_AI),
         validate(chatValidation.createMessageAI),

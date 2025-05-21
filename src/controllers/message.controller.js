@@ -66,6 +66,12 @@ const createMessageAI = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.CREATED).send({ messages });
 });
 
+const getMessagesAI = catchAsync(async (req, res, next) => {
+    const messages = await messageService.getMessagesAIByChatId(req.params.id);
+
+    return res.status(httpStatus.OK).send({ messages });
+});
+
 export default {
     createMessage,
     updateMessage,
@@ -73,4 +79,5 @@ export default {
     updateMessagesReadByByChatId,
     deleteMessage,
     createMessageAI,
+    getMessagesAI,
 };

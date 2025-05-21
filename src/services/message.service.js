@@ -135,4 +135,5 @@ export default {
     getMessageById,
     pushRemoveFor,
     createMessageAI,
+    getMessagesAIByChatId,
 };

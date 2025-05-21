@@ -1,4 +1,5 @@
 import mongoose, { Schema, SchemaTypes } from "mongoose";
+import { toJSON } from "./plugins/toJSON.js";
 
 const ChatAISchema = new Schema(
     {
@@ -16,5 +17,7 @@ const ChatAISchema = new Schema(
         timestamps: true,
     }
 );
+
+ChatAISchema.plugin(toJSON);
 
 export const ChatAI = mongoose.model("ChatAI", ChatAISchema);

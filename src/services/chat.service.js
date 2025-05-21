@@ -72,10 +72,17 @@ const updateNickname = async (chatId, { memberId, nickname }) => {
     return updatedChat;
 };
 
+const getChatsAIByUserId = async (userId) => {
+    const chats = await ChatAI.find({ user_id: userId });
+
+    return chats;
+};
+
 export default {
     createChat,
     getChats,
     updateChat,
     updateNickname,
     createChatAI,
+    getChatsAIByUserId,
 };
