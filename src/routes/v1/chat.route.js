@@ -30,7 +30,11 @@ route
         upload.array("files[]", 10),
         messageController.createMessage
     )
-    .get(auth(RIGHTS.GET_MESSAGES), messageController.getMessages);
+    .get(
+        auth(RIGHTS.GET_MESSAGES),
+        validate(chatValidation.getMessages),
+        messageController.getMessages
+    );
 
 route
     .route("/:id/messages/update-readby")
@@ -52,6 +56,10 @@ route
         validate(chatValidation.createChatAI),
         chatController.createChatAI
     );
+
+route
+    .route("/ai/models")
+    .get(auth(RIGHTS.GET_MODELS_AI), chatController.getModelsAI);
 
 route
     .route("/ai/:id/messages")

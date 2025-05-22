@@ -17,7 +17,17 @@ const createChatAI = {
 
 const createMessageAI = {
     body: Joi.object().keys({
-        text: Joi.string().required(),
+        model: Joi.string().required(),
+        content: Joi.object().keys({
+            text: Joi.string().required(),
+        }),
+    }),
+};
+
+const getMessages = {
+    query: Joi.object().keys({
+        oldestMessageId: Joi.string().optional(),
+        limit: Joi.number().required(),
     }),
 };
 
@@ -25,4 +35,5 @@ export default {
     createChat,
     createMessageAI,
     createChatAI,
+    getMessages,
 };

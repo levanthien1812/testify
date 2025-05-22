@@ -24,16 +24,17 @@ const updateMessage = async (messageId, messageBody) => {
     return (await generateLinkPreviews([message]))[0];
 };
 
-const getMessages = async (chatId, reqQuery = {}) => {
-    const filter = { chat_id: chatId };
-    const query = { sortBy: "created_at:desc" };
-    if (reqQuery.page) query.page = reqQuery.page;
-    if (reqQuery.limit) query.limit = reqQuery.limit;
+const getMessages = async (chatId, options = {}) => {
+    const { oldestMessageId, limit } = options;
 
-    const { results: messages, ...rest } = await Message.paginate(
-        filter,
-        query
-    );
+    const filter = {
+        chat_id: chatId,
+        ...(oldestMessageId ? { _id: { $lt: oldestMessageId } } : {}),
+    };
+
+    console.log(filter);
+
+    const messages = await Message.find(filter).sort({ _id: -1 }).limit(limit);
 
     return await generateLinkPreviews(messages.reverse());
 };
@@ -97,16 +98,16 @@ const getMessagesAIByChatId = async (chatId) => {
     return messages;
 };
 
-const createMessageAI = async (chatId, messageBody) => {
+const createMessageAI = async (chatId, model, messageContent) => {
     const userMessage = await MessageAI.create({
         chat_id: chatId,
-        content: messageBody.text,
+        content: messageContent.text,
         role: "user",
     });
 
     const prevMessages = await getMessagesAIByChatId(chatId);
     const completion = await openai.chat.completions.create({
-        model: process.env.OPENAI_MODEL,
+        model: model,
         messages: prevMessages,
     });
 

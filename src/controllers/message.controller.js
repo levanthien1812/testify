@@ -24,7 +24,6 @@ const updateMessage = catchAsync(async (req, res, next) => {
 });
 
 const getMessages = catchAsync(async (req, res, next) => {
-    // console.log({ query: req.query });
     const messages = await messageService.getMessages(req.params.id, req.query);
 
     return res.status(httpStatus.OK).send({ messages });
@@ -56,11 +55,12 @@ const deleteMessage = catchAsync(async (req, res, next) => {
 });
 
 const createMessageAI = catchAsync(async (req, res, next) => {
-    const messageBody = req.body;
+    const { model, content } = req.body;
 
     const messages = await messageService.createMessageAI(
         req.params.id,
-        messageBody
+        model,
+        content
     );
 
     return res.status(httpStatus.CREATED).send({ messages });
