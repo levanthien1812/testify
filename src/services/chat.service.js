@@ -1,3 +1,4 @@
+import openai from "../config/openai.js";
 import { Chat } from "../models/chat.model.js";
 import { ChatAI } from "../models/chatAI.model.js";
 import messageService from "./message.service.js";
@@ -78,6 +79,19 @@ const getChatsAIByUserId = async (userId) => {
     return chats;
 };
 
+const getModelsAI = async (userId = null) => {
+    const response = await openai.models.list();
+    const models = response.data;
+
+    const allowedModels = models.filter((model) => {
+        if (model.owned_by === "openai") {
+            return true;
+        }
+        return false;
+    });
+    return allowedModels;
+};
+
 export default {
     createChat,
     getChats,
@@ -85,4 +99,5 @@ export default {
     updateNickname,
     createChatAI,
     getChatsAIByUserId,
+    getModelsAI,
 };

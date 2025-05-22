@@ -167,6 +167,12 @@ const getChatsAI = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ chats });
 });
 
+const getModelsAI = catchAsync(async (req, res, next) => {
+    const models = await chatService.getModelsAI();
+
+    return res.status(httpStatus.OK).send({ models });
+});
+
 export default {
     createChat,
     getChats,
@@ -174,4 +180,5 @@ export default {
     updateNickname,
     createChatAI,
     getChatsAI,
+    getModelsAI,
 };

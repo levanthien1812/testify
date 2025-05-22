@@ -118,6 +118,5 @@ MessageSchema.pre("save", async function (next) {
 });
 
 MessageSchema.plugin(toJSON, { timestamps: true });
-MessageSchema.plugin(paginate);
 
 export const Message = model("Message", MessageSchema);
