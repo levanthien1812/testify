@@ -151,9 +151,16 @@ const updateNickname = catchAsync(async (req, res, next) => {
 });
 
 const createChatAI = catchAsync(async (req, res, next) => {
+    const { first_message, model } = req.body;
+
+    const chatName = await chatService.generateAIChatName(
+        [first_message],
+        model
+    );
+
     const chatAIBody = {
         user_id: req.user.id,
-        ...req.body,
+        chat_name: chatName,
     };
 
     const newChat = await chatService.createChatAI(chatAIBody);

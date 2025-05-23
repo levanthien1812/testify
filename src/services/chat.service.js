@@ -92,6 +92,41 @@ const getModelsAI = async (userId = null) => {
     return allowedModels;
 };
 
+const generateAIChatName = async (messages, model) => {
+    let chatName = "AI Chat";
+    const systemMessage = {
+        role: "system",
+        content:
+            "You are a helpful assistant that can summarize the topic of a conversation into a short, descriptive name (max 6 words).",
+    };
+
+    const userMessages = messages.map((message) => ({
+        role: "user",
+        content: message,
+    }));
+
+    const completion = await openai.chat.completions.create({
+        model: model,
+        messages: [systemMessage, ...userMessages],
+        max_completion_tokens: 100,
+    });
+
+    chatName = completion.choices[0].message.content.replace(/"/g, "");
+    return chatName;
+};
+
+const updateAIChat = async (chatId, chatBody) => {
+    const updatedChat = await ChatAI.findOneAndUpdate(
+        { _id: chatId },
+        chatBody,
+        {
+            new: true,
+        }
+    );
+
+    return updatedChat;
+};
+
 export default {
     createChat,
     getChats,
@@ -100,4 +135,6 @@ export default {
     createChatAI,
     getChatsAIByUserId,
     getModelsAI,
+    generateAIChatName,
+    updateAIChat,
 };

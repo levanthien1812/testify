@@ -11,7 +11,8 @@ const createChat = {
 
 const createChatAI = {
     body: Joi.object().keys({
-        chat_name: Joi.string().required(),
+        first_message: Joi.string().required(),
+        model: Joi.string().required(),
     }),
 };
 
