@@ -98,6 +98,19 @@ const getMessagesAIByChatId = async (chatId) => {
     return messages;
 };
 
+const generateMessageAI = async (model, prevMessages) => {
+    const completion = await openai.chat.completions.create({
+        model: model,
+        messages: prevMessages,
+    });
+
+    if (completion.choices && completion.choices.length > 0) {
+        return completion.choices[0].message.content;
+    } else {
+        return null;
+    }
+};
+
 const createMessageAI = async (chatId, model, messageContent) => {
     const userMessage = await MessageAI.create({
         chat_id: chatId,
@@ -106,19 +119,73 @@ const createMessageAI = async (chatId, model, messageContent) => {
     });
 
     const prevMessages = await getMessagesAIByChatId(chatId);
-    const completion = await openai.chat.completions.create({
-        model: model,
-        messages: prevMessages,
+
+    const assistantMessage = await MessageAI.create({
+        chat_id: chatId,
+        content: await generateMessageAI(model, prevMessages),
+        role: "assistant",
+        reply_to: userMessage.id,
     });
 
-    let assistantMessage = null;
-    if (completion.choices && completion.choices.length > 0) {
-        assistantMessage = await MessageAI.create({
+    return {
+        userMessage,
+        assistantMessage,
+    };
+};
+
+const createMockMessageAI = async (chatId, messageContent, delay = 1000) => {
+    const fixedResponseMessage = "This is a mock AI response.";
+
+    const userMessage = {
+        chat_id: chatId,
+        content: messageContent.text,
+        role: "user",
+        id: Math.random().toString(36).substring(4),
+    };
+
+    const assistantMessage = {
+        chat_id: chatId,
+        content: fixedResponseMessage,
+        role: "assistant",
+        id: Math.random().toString(36).substring(4),
+        reply_to: userMessage.id,
+    };
+
+    return new Promise((resolve) => {
+        setTimeout(() => {
+            resolve({
+                userMessage,
+                assistantMessage,
+            });
+        }, delay);
+    });
+};
+
+const updateMessageAI = async (chatId, model, messageId, messageContent) => {
+    const userMessage = await MessageAI.findByIdAndUpdate(
+        messageId,
+        {
+            content: messageContent.text,
+        },
+        {
+            new: true,
+        }
+    );
+
+    const prevMessages = await getMessagesAIByChatId(chatId);
+
+    const assistantMessage = await MessageAI.findOneAndUpdate(
+        {
             chat_id: chatId,
-            content: completion.choices[0].message.content,
-            role: "assistant",
-        });
-    }
+            reply_to: messageId,
+        },
+        {
+            content: await generateMessageAI(model, prevMessages),
+        },
+        {
+            new: true,
+        }
+    );
 
     return {
         userMessage,
@@ -137,4 +204,6 @@ export default {
     pushRemoveFor,
     createMessageAI,
     getMessagesAIByChatId,
+    createMockMessageAI,
+    updateMessageAI,
 };

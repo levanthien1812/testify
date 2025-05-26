@@ -25,6 +25,24 @@ const createMessageAI = {
     }),
 };
 
+const updateMessageAI = {
+    body: Joi.object().keys({
+        model: Joi.string().required(),
+        content: Joi.object().keys({
+            text: Joi.string().required(),
+        }),
+    }),
+};
+
+const createMockMessageAI = {
+    body: Joi.object().keys({
+        content: Joi.object().keys({
+            text: Joi.string().required(),
+        }),
+        delay: Joi.number().required().min(1000).max(10000),
+    }),
+};
+
 const getMessages = {
     query: Joi.object().keys({
         oldestMessageId: Joi.string().optional(),
@@ -37,4 +55,6 @@ export default {
     createMessageAI,
     createChatAI,
     getMessages,
+    createMockMessageAI,
+    updateMessageAI,
 };
