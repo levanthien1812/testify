@@ -70,4 +70,20 @@ route
         messageController.createMessageAI
     );
 
+route
+    .route("/ai/:id/messages/:messageId")
+    .patch(
+        auth(RIGHTS.UPDATE_MESSAGE_AI),
+        validate(chatValidation.updateMessageAI),
+        messageController.updateMessageAI
+    );
+
+route
+    .route("/ai/:id/messages/mock")
+    .post(
+        auth(RIGHTS.CREATE_MESSAGE_AI),
+        validate(chatValidation.createMockMessageAI),
+        messageController.createMockMessageAI
+    );
+
 export default route;

@@ -16,6 +16,10 @@ const MessageAISchema = new Schema(
             type: String,
             required: true,
         },
+        reply_to: {
+            type: Schema.Types.ObjectId,
+            ref: "MessageAI",
+        },
     },
     {
         timestamps: true,

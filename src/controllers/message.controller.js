@@ -72,6 +72,30 @@ const getMessagesAI = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ messages });
 });
 
+const createMockMessageAI = catchAsync(async (req, res, next) => {
+    const { content, delay } = req.body;
+
+    const messages = await messageService.createMockMessageAI(
+        req.params.id,
+        content,
+        delay
+    );
+
+    return res.status(httpStatus.CREATED).send({ messages });
+});
+
+const updateMessageAI = catchAsync(async (req, res, next) => {
+    const { model, content } = req.body;
+    const messages = await messageService.updateMessageAI(
+        req.params.id,
+        model,
+        req.params.messageId,
+        content
+    );
+
+    return res.status(httpStatus.CREATED).send({ messages });
+});
+
 export default {
     createMessage,
     updateMessage,
@@ -80,4 +104,6 @@ export default {
     deleteMessage,
     createMessageAI,
     getMessagesAI,
+    createMockMessageAI,
+    updateMessageAI,
 };
