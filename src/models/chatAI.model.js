@@ -12,6 +12,14 @@ const ChatAISchema = new Schema(
             ref: "User",
             trim: true,
         },
+        is_pinned: {
+            type: Boolean,
+            default: false,
+        },
+        is_archived: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: true,
