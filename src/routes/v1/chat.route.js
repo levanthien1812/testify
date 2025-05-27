@@ -58,6 +58,14 @@ route
     );
 
 route
+    .route("/ai/:id")
+    .patch(
+        auth(RIGHTS.UPDATE_CHAT_AI),
+        validate(chatValidation.updateChatAI),
+        chatController.updateChatAI
+    );
+
+route
     .route("/ai/models")
     .get(auth(RIGHTS.GET_MODELS_AI), chatController.getModelsAI);
 
@@ -76,6 +84,13 @@ route
         auth(RIGHTS.UPDATE_MESSAGE_AI),
         validate(chatValidation.updateMessageAI),
         messageController.updateMessageAI
+    );
+
+route
+    .route("/ai/:id/messages/:messageId/regenerate")
+    .patch(
+        auth(RIGHTS.REGENERATE_MESSAGE_AI),
+        messageController.regenerateMessageAI
     );
 
 route

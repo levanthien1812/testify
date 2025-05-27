@@ -180,6 +180,12 @@ const getModelsAI = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ models });
 });
 
+const updateChatAI = catchAsync(async (req, res, next) => {
+    const updatedChat = await chatService.updateAIChat(req.params.id, req.body);
+
+    return res.status(httpStatus.OK).send(updatedChat);
+});
+
 export default {
     createChat,
     getChats,
@@ -188,4 +194,5 @@ export default {
     createChatAI,
     getChatsAI,
     getModelsAI,
+    updateChatAI,
 };

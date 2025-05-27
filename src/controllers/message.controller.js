@@ -96,6 +96,16 @@ const updateMessageAI = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.CREATED).send({ messages });
 });
 
+const regenerateMessageAI = catchAsync(async (req, res, next) => {
+    const messages = await messageService.regenerateMessageAI(
+        req.params.id,
+        req.body.model,
+        req.params.messageId
+    );
+
+    return res.status(httpStatus.CREATED).send({ messages });
+});
+
 export default {
     createMessage,
     updateMessage,
@@ -106,4 +116,5 @@ export default {
     getMessagesAI,
     createMockMessageAI,
     updateMessageAI,
+    regenerateMessageAI,
 };

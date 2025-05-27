@@ -193,6 +193,26 @@ const updateMessageAI = async (chatId, model, messageId, messageContent) => {
     };
 };
 
+const regenerateMessageAI = async (chatId, model, messageId) => {
+    await MessageAI.deleteOne({
+        chat_id: chatId,
+        reply_to: messageId,
+    });
+
+    const prevMessages = await getMessagesAIByChatId(chatId);
+
+    const assistantMessage = await MessageAI.create({
+        chat_id: chatId,
+        content: await generateMessageAI(model, prevMessages),
+        role: "assistant",
+        reply_to: messageId,
+    });
+
+    return {
+        assistantMessage,
+    };
+};
+
 export default {
     createMessage,
     updateMessage,
@@ -206,4 +226,5 @@ export default {
     getMessagesAIByChatId,
     createMockMessageAI,
     updateMessageAI,
+    regenerateMessageAI,
 };

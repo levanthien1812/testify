@@ -50,6 +50,13 @@ const getMessages = {
     }),
 };
 
+const updateChatAI = {
+    body: Joi.object().keys({
+        chat_name: Joi.string().optional(),
+        is_pinned: Joi.boolean().optional(),
+    }),
+};
+
 export default {
     createChat,
     createMessageAI,
@@ -57,4 +64,5 @@ export default {
     getMessages,
     createMockMessageAI,
     updateMessageAI,
+    updateChatAI,
 };
