@@ -63,7 +63,8 @@ route
         auth(RIGHTS.UPDATE_CHAT_AI),
         validate(chatValidation.updateChatAI),
         chatController.updateChatAI
-    );
+    )
+    .delete(auth(RIGHTS.DELETE_CHAT_AI), chatController.deleteChatAI);
 
 route
     .route("/ai/models")

@@ -213,6 +213,11 @@ const regenerateMessageAI = async (chatId, model, messageId) => {
     };
 };
 
+const deleteAIMessagesByChatId = async (chatId) => {
+    const messages = await MessageAI.deleteMany({ chat_id: chatId });
+    return messages;
+};
+
 export default {
     createMessage,
     updateMessage,
@@ -227,4 +232,5 @@ export default {
     createMockMessageAI,
     updateMessageAI,
     regenerateMessageAI,
+    deleteAIMessagesByChatId,
 };

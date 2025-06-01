@@ -1,6 +1,7 @@
 import httpStatus from "http-status";
 import messageService from "../services/message.service.js";
 import catchAsync from "../utils/catchAsync.js";
+import chatService from "../services/chat.service.js";
 
 const createMessage = catchAsync(async (req, res, next) => {
     const messageBody = {
@@ -63,6 +64,8 @@ const createMessageAI = catchAsync(async (req, res, next) => {
         content
     );
 
+    await chatService.updateAIChat(req.params.id, { updated_at: new Date() });
+
     return res.status(httpStatus.CREATED).send({ messages });
 });
 
@@ -102,6 +105,8 @@ const regenerateMessageAI = catchAsync(async (req, res, next) => {
         req.body.model,
         req.params.messageId
     );
+
+    await chatService.updateAIChat(req.params.id, { updated_at: new Date() });
 
     return res.status(httpStatus.CREATED).send({ messages });
 });

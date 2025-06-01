@@ -127,6 +127,12 @@ const updateAIChat = async (chatId, chatBody) => {
     return updatedChat;
 };
 
+const deleteAIChat = async (chatId) => {
+    const deletedChat = await ChatAI.findOneAndDelete({ _id: chatId });
+
+    return deletedChat;
+};
+
 export default {
     createChat,
     getChats,
@@ -137,4 +143,5 @@ export default {
     getModelsAI,
     generateAIChatName,
     updateAIChat,
+    deleteAIChat,
 };
