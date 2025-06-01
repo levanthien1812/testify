@@ -20,12 +20,19 @@ const ChatAISchema = new Schema(
             type: Boolean,
             default: false,
         },
+        pinned_at: {
+            type: Date,
+            default: null,
+        },
     },
     {
-        timestamps: true,
+        timestamps: {
+            createdAt: "created_at",
+            updatedAt: "updated_at",
+        },
     }
 );
 
-ChatAISchema.plugin(toJSON);
+ChatAISchema.plugin(toJSON, { timestamps: true });
 
 export const ChatAI = mongoose.model("ChatAI", ChatAISchema);

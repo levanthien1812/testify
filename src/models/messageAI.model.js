@@ -22,10 +22,13 @@ const MessageAISchema = new Schema(
         },
     },
     {
-        timestamps: true,
+        timestamps: {
+            createdAt: "created_at",
+            updatedAt: "updated_at",
+        },
     }
 );
 
-MessageAISchema.plugin(toJSON);
+MessageAISchema.plugin(toJSON, { timestamps: true });
 
 export const MessageAI = mongoose.model("MessageAI", MessageAISchema);

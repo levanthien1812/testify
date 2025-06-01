@@ -169,8 +169,16 @@ const createChatAI = catchAsync(async (req, res, next) => {
 });
 
 const getChatsAI = catchAsync(async (req, res, next) => {
-    const chats = await chatService.getChatsAIByUserId(req.user.id);
+    let chats = await chatService.getChatsAIByUserId(req.user.id);
+    chats = chats.sort((a, b) => b.updated_at - a.updated_at);
 
+    if (chats.some((chat) => chat.is_pinned)) {
+        let pinnedChats = chats.filter((chat) => chat.is_pinned);
+        pinnedChats = pinnedChats.sort((a, b) => b.pinned_at - a.pinned_at);
+
+        let unpinnedChats = chats.filter((chat) => !chat.is_pinned);
+        chats = [...pinnedChats, ...unpinnedChats];
+    }
     return res.status(httpStatus.OK).send({ chats });
 });
 
@@ -181,9 +189,22 @@ const getModelsAI = catchAsync(async (req, res, next) => {
 });
 
 const updateChatAI = catchAsync(async (req, res, next) => {
-    const updatedChat = await chatService.updateAIChat(req.params.id, req.body);
+    let body = req.body;
+
+    if (body.is_pinned === true) {
+        body = { ...body, pinned_at: new Date() };
+    }
+
+    const updatedChat = await chatService.updateAIChat(req.params.id, body);
 
     return res.status(httpStatus.OK).send(updatedChat);
+});
+
+const deleteChatAI = catchAsync(async (req, res, next) => {
+    await messageService.deleteAIMessagesByChatId(req.params.id);
+    await chatService.deleteAIChat(req.params.id);
+
+    return res.status(httpStatus.OK).send({ deleted: true });
 });
 
 export default {
@@ -195,4 +216,5 @@ export default {
     getChatsAI,
     getModelsAI,
     updateChatAI,
+    deleteChatAI,
 };
