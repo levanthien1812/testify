@@ -29,7 +29,6 @@ const fillGapsQuestionSchema = mongoose.Schema({
                 _id: false,
             },
         },
-        required: true,
         select: false,
         _id: false,
     },
