@@ -304,6 +304,8 @@ const validateQuestions = async (testId) => {
                 0
             );
 
+            console.log(totalQuestionsScores, parts[i].score);
+
             if (totalQuestionsScores !== parts[i].score) {
                 throw new ApiError(
                     httpStatus.BAD_REQUEST,
