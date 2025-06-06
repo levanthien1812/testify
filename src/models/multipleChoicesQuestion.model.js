@@ -32,13 +32,13 @@ const multipleChoiceQuestionSchema = mongoose.Schema({
                 type: [mongoose.SchemaTypes.ObjectId],
                 _id: false,
             },
+            explaination: {
+                type: String,
+            },
         },
         // required: true,
         select: false,
         _id: false,
-    },
-    explaination: {
-        type: String,
     },
     __v: { type: Number, select: false },
 });

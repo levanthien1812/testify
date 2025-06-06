@@ -193,6 +193,8 @@ const getTest = catchAsync(async (req, res, next) => {
         }
     }
 
+    await testService.addAccessedBy(testId, req.user._id);
+
     return res
         .status(httpStatus.OK)
         .send({ test, parts, questions, submissionsCount });

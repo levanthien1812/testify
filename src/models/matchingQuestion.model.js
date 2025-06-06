@@ -39,13 +39,13 @@ const matchingQuestionSchema = mongoose.Schema({
                 ],
                 _id: false,
             },
+            explaination: {
+                type: String,
+            },
         },
 
         _id: false,
         select: false,
-    },
-    explaination: {
-        type: String,
     },
     __v: { type: Number, select: false },
 });

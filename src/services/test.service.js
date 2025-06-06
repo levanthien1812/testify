@@ -36,7 +36,7 @@ const getTests = async (user, reqQuery) => {
     const filter =
         user.role === ROLES.MAKER
             ? { maker_id: user.id }
-            : { taker_ids: user.id };
+            : { $or: [{ taker_ids: user.id }, { accessed_by: user.id }] };
     const query = {};
 
     if (user.role === ROLES.TAKER) {
@@ -226,6 +226,15 @@ const updateIncludingManuallyQuestions = async (testId) => {
     });
 };
 
+const addAccessedBy = async (testId, userId) => {
+    const test = await Test.findById(testId);
+    if (test.accessed_by.includes(userId)) return;
+
+    await Test.findByIdAndUpdate(testId, {
+        $push: { accessed_by: userId },
+    });
+};
+
 export default {
     createTest,
     getTests,
@@ -237,4 +246,5 @@ export default {
     getAvailableTakers,
     updateTestsStatus,
     updateIncludingManuallyQuestions,
+    addAccessedBy,
 };
