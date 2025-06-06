@@ -18,11 +18,11 @@ const TrueFalseQuestionSchema = new mongoose.Schema({
                 type: Boolean,
                 required: true,
             },
+            explaination: {
+                type: String,
+            },
         },
         _id: false,
-    },
-    explaination: {
-        type: String,
     },
     __v: { type: Number, select: false },
 });

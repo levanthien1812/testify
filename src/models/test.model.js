@@ -220,6 +220,7 @@ const TestSchema = mongoose.Schema(
             required: true,
         },
         __v: { type: Number, select: false },
+        accessed_by: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
     },
     {
         timestamps: {
