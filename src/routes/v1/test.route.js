@@ -15,6 +15,7 @@ import { RIGHTS } from "../../config/constants/roles.js";
 import userValidation from "../../validations/user.validation.js";
 import passcodeController from "../../controllers/passcode.controller.js";
 import passcodeValidation from "../../validations/passcode.validation.js";
+import questionValidation from "../../validations/question.validation.js";
 
 const router = express.Router();
 
@@ -64,7 +65,7 @@ router
     .route("/:testId/questions")
     .post(
         auth(RIGHTS.CREATE_QUESTION),
-        upload.array("files[]", 10),
+        validate(questionValidation.createTestQuestion),
         questionController.createQuestion
     );
 
@@ -78,11 +79,7 @@ router
 
 router
     .route("/:testId/questions/:questionId")
-    .patch(
-        auth(RIGHTS.UPDATE_QUESTION),
-        upload.array("files[]", 10),
-        questionController.updateQuestion
-    )
+    .patch(auth(RIGHTS.UPDATE_QUESTION), questionController.updateQuestion)
     .delete(auth(RIGHTS.DELETE_QUESTION), questionController.deleteQuestion);
 
 router

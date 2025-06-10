@@ -4,6 +4,7 @@ import userService from "../services/user.service.js";
 import { logger } from "../config/logger.js";
 import { ROLES } from "../config/constants/roles.js";
 import catchAsync from "../utils/catchAsync.js";
+import testService from "../services/test.service.js";
 
 const getUsers = async (req, res, next) => {
     const users = await User.find();
@@ -40,7 +41,7 @@ const getTakersWithStatistics = async (req, res, next) => {
 
     let takersWithStatistics = await Promise.all(
         takers.map(async (taker) => {
-            const takerWithStatistics = await userService.getTakerStatistics(
+            const takerWithStatistics = await testService.getTakerStatistics(
                 taker.id
             );
             return takerWithStatistics;

@@ -3,11 +3,6 @@ import { toJSON } from "./plugins/toJSON.js";
 
 const PartSchema = mongoose.Schema(
     {
-        order: {
-            type: Number,
-            min: 1,
-            required: true,
-        },
         name: {
             type: String,
             required: true,

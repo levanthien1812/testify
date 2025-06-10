@@ -8,11 +8,11 @@ const questionSchema = mongoose.Schema(
         order: {
             type: Number,
             min: 0,
-            required: true,
+            required: false,
         },
         test_id: {
             type: mongoose.SchemaTypes.ObjectId,
-            required: true,
+            required: false,
             ref: "Test",
         },
         level: {
