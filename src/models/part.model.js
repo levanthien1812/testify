@@ -22,6 +22,11 @@ const PartSchema = mongoose.Schema(
             ref: "Test",
             required: true,
         },
+        order: {
+            type: Number,
+            min: 1,
+            required: true,
+        },
     },
     {
         timestamps: {

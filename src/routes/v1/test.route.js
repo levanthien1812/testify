@@ -53,8 +53,16 @@ router
     .route("/:testId/parts/:partId")
     .patch(
         auth(RIGHTS.UPDATE_PART),
-        validate(partValidation.addPart),
+        validate(partValidation.updatePart),
         partController.updatePart
+    );
+
+router
+    .route("/:testId/parts/:partId/move")
+    .patch(
+        auth(RIGHTS.MOVE_PART),
+        validate(partValidation.movePart),
+        partController.movePart
     );
 
 router

@@ -14,6 +14,10 @@ const createTestQuestion = {
             .optional()
             .valid(...Object.values(QUESTION_LEVEL)),
         content: Joi.object().required(),
+        part_id: Joi.string().optional(),
+    }),
+    params: Joi.object().keys({
+        testId: Joi.string().required(),
     }),
 };
 
