@@ -2,8 +2,8 @@ import httpStatus from "http-status";
 import { User } from "../models/user.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { Test } from "../models/test.model.js";
-import { Submission } from "../models/submission.model.js";
 import { ROLES } from "../config/constants/roles.js";
+import submissionService from "./submission.service.js";
 
 const createUser = async (body) => {
     const existingUser = await User.findOne({
@@ -39,33 +39,6 @@ const getTakersByMaker = async (makerId) => {
     });
 
     return takers;
-};
-
-const getTakerStatistics = async (takerId) => {
-    const taker = await User.findById(takerId);
-
-    const submissions = await Submission.find({
-        taker_id: takerId,
-    });
-
-    const totalTestsAssigned = await Test.countDocuments({
-        taker_ids: takerId,
-    });
-
-    const totalSubmissions = submissions.length;
-    const avarageScore =
-        submissions.length > 0
-            ? submissions.reduce((acc, sub) => {
-                  return acc + sub.score;
-              }, 0) / submissions.length
-            : 0;
-
-    return {
-        taker,
-        total_tests_assigned: totalTestsAssigned,
-        total_submissions: totalSubmissions,
-        average_score: avarageScore.toFixed(2),
-    };
 };
 
 const blockUser = async (userId, blockedUserId) => {
@@ -150,7 +123,6 @@ export default {
     getUserByEmail,
     getUserById,
     getTakersByMaker,
-    getTakerStatistics,
     blockUser,
     unblockUser,
     getBlockedUsers,

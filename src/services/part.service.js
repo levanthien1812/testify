@@ -73,4 +73,74 @@ const updatePart = async (partId, partBody) => {
     return updatedPart;
 };
 
-export default { addPart, validateParts, getPartsByTestId, updatePart };
+const movePart = async (partId, { direction }) => {
+    const part = await Part.findById(partId);
+    const test = await Test.findById(part.test_id);
+    let currentPart, otherPart;
+
+    if (direction === "up") {
+        if (part.order === 1) {
+            throw new ApiError(
+                httpStatus.BAD_REQUEST,
+                "Part is already at the top of the list"
+            );
+        }
+
+        const previousPart = await Part.findOne({
+            test_id: part.test_id,
+            order: part.order - 1,
+        });
+
+        if (previousPart) {
+            otherPart = await Part.findOneAndUpdate(
+                { _id: previousPart._id },
+                { $inc: { order: 1 } },
+                { new: true }
+            );
+        }
+
+        currentPart = await Part.findOneAndUpdate(
+            { _id: partId },
+            { $inc: { order: -1 } },
+            { new: true }
+        );
+    } else if (direction === "down") {
+        if (part.order === test.num_parts) {
+            throw new ApiError(
+                httpStatus.BAD_REQUEST,
+                "Part is already at the bottom of the list"
+            );
+        }
+
+        const nextPart = await Part.findOne({
+            test_id: part.test_id,
+            order: part.order + 1,
+        });
+
+        if (nextPart) {
+            otherPart = await Part.findOneAndUpdate(
+                { _id: nextPart._id },
+                { $inc: { order: -1 } },
+                { new: true }
+            );
+        }
+
+        currentPart = await Part.findOneAndUpdate(
+            { _id: partId },
+            { $inc: { order: 1 } },
+            { new: true }
+        );
+    } else {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid direction");
+    }
+
+    return [currentPart, otherPart];
+};
+
+export default {
+    addPart,
+    validateParts,
+    getPartsByTestId,
+    updatePart,
+    movePart,
+};

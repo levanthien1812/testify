@@ -13,10 +13,6 @@ const createQuestion = catchAsync(async (req, res, next) => {
         test._id,
         {
             ...req.body,
-            content: {
-                ...JSON.parse(req.body.content),
-                images: req.files.map((f) => f.path),
-            },
         }
     );
 
@@ -30,10 +26,6 @@ const updateQuestion = catchAsync(async (req, res, next) => {
         req.params.questionId,
         {
             ...req.body,
-            content: {
-                ...JSON.parse(req.body.content),
-                images: req.files.map((f) => f.path),
-            },
         }
     );
 

@@ -107,6 +107,11 @@ const findById = async (submissionId) => {
     return submission;
 };
 
+const findByTakerId = async (takerId) => {
+    const submissions = await Submission.find({ taker_id: takerId });
+    return submissions;
+};
+
 export default {
     createSubmission,
     updateSubmission,
@@ -114,4 +119,5 @@ export default {
     getSubmissionsByTestId,
     scoreSubmission,
     findById,
+    findByTakerId,
 };

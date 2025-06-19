@@ -19,7 +19,6 @@ const ResponseQuestionSchema = Schema({
         required: false,
         default: 100000,
     },
-    images: [String],
     __v: { type: Number, select: false },
 });
 

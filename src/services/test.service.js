@@ -13,6 +13,7 @@ import { Submission } from "../models/submission.model.js";
 import { ROLES } from "../config/constants/roles.js";
 import { ERROR_CODE, ERROR_MESSAGE } from "../config/constants/errorCode.js";
 import { MANUAL_SCORE_TYPE } from "../config/constants/constants.js";
+import userService from "./user.service.js";
 
 const createTest = async (testBody) => {
     const { datetime, enable_close_time, close_time } = testBody;
@@ -235,6 +236,66 @@ const addAccessedBy = async (testId, userId) => {
     });
 };
 
+function calculateAverageScoreOnScale10FromDocuments(tests) {
+    let totalNormalizedScore = 0;
+    let validTestsCount = 0;
+
+    for (const test of tests) {
+        if (typeof test.maxScore === "number" && test.maxScore > 0) {
+            const normalizedScore = (test.score / test.maxScore) * 10;
+            totalNormalizedScore += normalizedScore;
+            validTestsCount++;
+        }
+    }
+
+    if (validTestsCount > 0) {
+        const averageScore = totalNormalizedScore / validTestsCount;
+        return averageScore;
+    } else {
+        return 0;
+    }
+}
+
+const getTakerStatistics = async (takerId) => {
+    const taker = await userService.getUserById(takerId);
+
+    const submissions = await submissionService.findByTakerId(takerId);
+
+    const totalTestsAssigned = await Test.countDocuments({
+        taker_ids: takerId,
+    });
+
+    const scoresArray = await Promise.all(
+        submissions.map(async (submission) => {
+            const test = await Test.findById(submission.test_id);
+            if (
+                !test ||
+                submission.score === null ||
+                submission.score === undefined
+            )
+                return {
+                    score: 0,
+                    maxScore: 0,
+                };
+            return {
+                score: submission.score,
+                maxScore: test.max_score,
+            };
+        })
+    );
+
+    const totalSubmissions = submissions.length;
+    const avarageScore =
+        calculateAverageScoreOnScale10FromDocuments(scoresArray);
+
+    return {
+        taker,
+        total_tests_assigned: totalTestsAssigned,
+        total_submissions: totalSubmissions,
+        average_score: avarageScore.toFixed(2),
+    };
+};
+
 export default {
     createTest,
     getTests,
@@ -247,4 +308,5 @@ export default {
     updateTestsStatus,
     updateIncludingManuallyQuestions,
     addAccessedBy,
+    getTakerStatistics,
 };

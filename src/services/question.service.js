@@ -56,16 +56,6 @@ const updateQuestionContent = async (
         }
     }
 
-    if (questionContent.images && questionContent.images.length > 0) {
-        const questionContentDoc = await model.findOne({
-            question_id: questionId,
-        });
-
-        if (questionContentDoc.images) {
-            unlinkImages(questionContentDoc.images);
-        }
-    }
-
     let updatedQuestionContentDoc;
 
     const existingQuestionContentDoc = await model.findOne({
@@ -91,10 +81,6 @@ const updateQuestionContent = async (
 const deleteQuestionContent = async (questionId, questionType) => {
     let model = questionTypeToQuestionModel.get(questionType);
     const content = await model.findOne({ question_id: questionId });
-
-    if (content && content.images) {
-        unlinkImages(content.images);
-    }
 
     const deleted = await model.deleteOne({ question_id: questionId });
     return deleted;
