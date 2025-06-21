@@ -21,7 +21,7 @@ const questionSchema = mongoose.Schema(
         },
         score: {
             type: Number,
-            required: true,
+            required: false,
             min: 0,
         },
         part_id: {

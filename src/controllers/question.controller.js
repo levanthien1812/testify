@@ -9,12 +9,10 @@ const createQuestion = catchAsync(async (req, res, next) => {
         throw new ApiError(httpStatus.NOT_FOUND, "Test ID not found");
     }
 
-    const { question, content } = await questionService.createQuestion(
-        test._id,
-        {
-            ...req.body,
-        }
-    );
+    const { question, content } = await questionService.createQuestion({
+        ...req.body,
+        test_id: req.params.testId,
+    });
 
     await testService.updateIncludingManuallyQuestions(test.id);
 

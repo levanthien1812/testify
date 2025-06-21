@@ -100,10 +100,9 @@ const unlinkImages = (images) => {
     });
 };
 
-const createQuestion = async (testId, questionBody) => {
+const createQuestion = async (questionBody) => {
     const newQuestion = await Question.create({
-        ...questionBody,
-        test_id: testId,
+        questionBody,
     });
 
     const questionContent = {
