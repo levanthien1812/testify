@@ -9,12 +9,12 @@ const createTestQuestion = {
             .optional()
             .valid(...Object.values(QUESTION_TYPE)),
         score: Joi.number().required(),
-        question: Joi.string().required(),
         level: Joi.string()
             .optional()
             .valid(...Object.values(QUESTION_LEVEL)),
         content: Joi.object().required(),
         part_id: Joi.string().optional(),
+        test_id: Joi.string().optional(),
     }),
     params: Joi.object().keys({
         testId: Joi.string().required(),
