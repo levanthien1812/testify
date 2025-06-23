@@ -4,14 +4,10 @@ import { ApiError } from "../utils/apiError.js";
 import { Question } from "../models/question.model.js";
 import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import partService from "./part.service.js";
-import answerService from "./answer.service.js";
 import { questionTypeToQuestionModel } from "../utils/mapping.js";
-import { Submission } from "../models/submission.model.js";
 import testService from "./test.service.js";
 import { AUTO_SCORE_TYPE } from "../config/constants/constants.js";
 import fse from "fs-extra";
-import path from "path";
-import { ROLES } from "../config/constants/roles.js";
 import { Part } from "../models/part.model.js";
 import mongoose from "mongoose";
 import { shuffleQuestions } from "../utils/shuffleQuestions.js";
@@ -102,7 +98,7 @@ const unlinkImages = (images) => {
 
 const createQuestion = async (questionBody) => {
     const newQuestion = await Question.create({
-        questionBody,
+        ...questionBody,
     });
 
     const questionContent = {

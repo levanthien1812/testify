@@ -24,10 +24,14 @@ router
     .patch(
         auth(RIGHTS.UPDATE_QUESTION_BANK),
         questionBankController.updateQuestionBank
+    )
+    .get(
+        auth(RIGHTS.GET_QUESTION_BANK),
+        questionBankController.getQuestionBank
     );
 
 router
-    .route("/questions")
+    .route("/:id/questions")
     .post(
         auth(RIGHTS.CREATE_QUESTION_IN_BANK),
         validate(questionBankValidation.createQuestion),

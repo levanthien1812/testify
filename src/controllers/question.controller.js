@@ -20,6 +20,7 @@ const createQuestion = catchAsync(async (req, res, next) => {
 });
 
 const updateQuestion = catchAsync(async (req, res, next) => {
+    console.log(req.body);
     const { question, content } = await questionService.updateQuestion(
         req.params.questionId,
         {

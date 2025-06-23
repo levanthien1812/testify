@@ -12,9 +12,10 @@ const getQuestionBanksByUserId = async (userId) => {
 };
 
 const addQuestionToBank = async (bankId, questionId) => {
+    console.log(questionId);
     const updatedBank = await QuestionBank.findByIdAndUpdate(
         bankId,
-        { $push: { questions: questionId }, updated_at: Date.now() },
+        { $push: { questions: questionId }, $set: { updated_at: Date.now() } },
         { new: true }
     );
 
@@ -22,13 +23,43 @@ const addQuestionToBank = async (bankId, questionId) => {
 };
 
 const getQuestionBankById = async (bankId) => {
-    const questionBank = await QuestionBank.findById(bankId).populate(
-        "questions"
-    );
+    const questionBank = await QuestionBank.findById(bankId);
+
     return questionBank;
 };
 
-const createQuestionInBank = async (bankId, questionBody) => {
+const getQuestionsByBankId = async (bankId) => {
+    const questionBank = await QuestionBank.findById(bankId).populate(
+        "questions"
+    );
+
+    const questions = await Promise.all(
+        questionBank.questions.map(async (question) => {
+            const content = await questionService.getQuestionContent(
+                question.id
+            );
+
+            return {
+                ...question.toObject(),
+                content: content,
+            };
+        })
+    );
+
+    return questions;
+};
+
+const getQuestionBankByIdWithQuestions = async (bankId) => {
+    const questionBank = await QuestionBank.findById(bankId);
+    const questions = await getQuestionsByBankId(bankId);
+
+    return {
+        ...questionBank.toObject(),
+        questions: questions,
+    };
+};
+
+const createQuestionInBank = async (questionBody) => {
     const question = await questionService.createQuestion(questionBody);
     return question;
 };
@@ -46,4 +77,7 @@ export default {
     addQuestionToBank,
     createQuestionInBank,
     updateQuestionBank,
+    getQuestionBankById,
+    getQuestionsByBankId,
+    getQuestionBankByIdWithQuestions,
 };
