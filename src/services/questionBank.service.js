@@ -11,11 +11,13 @@ const getQuestionBanksByUserId = async (userId) => {
     return questionBanks;
 };
 
-const addQuestionToBank = async (bankId, questionId) => {
-    console.log(questionId);
+const addQuestionsToBank = async (bankId, questionIds) => {
     const updatedBank = await QuestionBank.findByIdAndUpdate(
         bankId,
-        { $push: { questions: questionId }, $set: { updated_at: Date.now() } },
+        {
+            $addToSet: { questions: { $each: questionIds } },
+            $set: { updated_at: Date.now() },
+        },
         { new: true }
     );
 
@@ -74,7 +76,7 @@ const updateQuestionBank = async (bankId, bankBody) => {
 export default {
     createQuestionBank,
     getQuestionBanksByUserId,
-    addQuestionToBank,
+    addQuestionsToBank,
     createQuestionInBank,
     updateQuestionBank,
     getQuestionBankById,

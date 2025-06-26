@@ -20,10 +20,9 @@ const createQuestionInBank = catchAsync(async (req, res, next) => {
     const body = req.body;
     const question = await questionBankService.createQuestionInBank(body);
     if (question) {
-        await questionBankService.addQuestionToBank(
-            questionBankId,
-            question.question.id
-        );
+        await questionBankService.addQuestionsToBank(questionBankId, [
+            question.question.id,
+        ]);
     }
     return res.status(httpStatus.CREATED).send(question);
 });
@@ -47,10 +46,21 @@ const getQuestionBank = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ questionBank });
 });
 
+const importQuestionToBank = catchAsync(async (req, res, next) => {
+    const questionBankId = req.params.id;
+    const questions = req.body.questions;
+    const updatedBank = await questionBankService.addQuestionsToBank(
+        questionBankId,
+        questions
+    );
+    return res.status(httpStatus.OK).send({ questionBank: updatedBank });
+});
+
 export default {
     createQuestionBank,
     getQuestionBanks,
     createQuestionInBank,
     updateQuestionBank,
     getQuestionBank,
+    importQuestionToBank,
 };
