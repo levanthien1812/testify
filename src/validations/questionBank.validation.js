@@ -20,4 +20,8 @@ const createQuestion = Joi.object().keys({
     content: Joi.object().required(),
 });
 
-export default { createQuestionBank, createQuestion };
+const importQuestionsToBank = Joi.object().keys({
+    questions: Joi.array().items(Joi.string()).required(),
+});
+
+export default { createQuestionBank, createQuestion, importQuestionsToBank };

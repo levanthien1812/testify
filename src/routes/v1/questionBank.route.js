@@ -38,4 +38,12 @@ router
         questionBankController.createQuestionInBank
     );
 
+router
+    .route("/:id/questions/import")
+    .patch(
+        auth(RIGHTS.IMPORT_QUESTIONS_TO_BANK),
+        validate(questionBankValidation.importQuestionsToBank),
+        questionBankController.importQuestionToBank
+    );
+
 export default router;
