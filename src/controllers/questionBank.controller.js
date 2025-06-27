@@ -1,6 +1,7 @@
 import httpStatus from "http-status";
 import questionBankService from "../services/questionBank.service.js";
 import catchAsync from "../utils/catchAsync.js";
+import questionService from "../services/question.service.js";
 
 const createQuestionBank = catchAsync(async (req, res, next) => {
     const body = { ...req.body, user_id: req.user.id, created_at: new Date() };
@@ -25,6 +26,15 @@ const createQuestionInBank = catchAsync(async (req, res, next) => {
         ]);
     }
     return res.status(httpStatus.CREATED).send(question);
+});
+
+const updateQuestionInBank = catchAsync(async (req, res, next) => {
+    const questionBankId = req.params.id;
+    const questionId = req.params.questionId;
+    const body = req.body;
+    const question = await questionService.updateQuestion(questionId, body);
+
+    return res.status(httpStatus.OK).send({ question });
 });
 
 const updateQuestionBank = catchAsync(async (req, res, next) => {
@@ -56,6 +66,24 @@ const importQuestionToBank = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ questionBank: updatedBank });
 });
 
+const deleteQuestionBank = catchAsync(async (req, res, next) => {
+    const questionBankId = req.params.id;
+    const questionBank = await questionBankService.getQuestionBankById(
+        questionBankId
+    );
+    if (questionBank && questionBank.questions.length > 0) {
+        await Promise.all(
+            questionBank.questions.map(async (questionId) => {
+                await questionService.deleteQuestionById(questionId);
+            })
+        );
+    }
+    const deleted = await questionBankService.deleteQuestionBank(
+        questionBankId
+    );
+    return res.status(httpStatus.OK).send({ deleted });
+});
+
 export default {
     createQuestionBank,
     getQuestionBanks,
@@ -63,4 +91,6 @@ export default {
     updateQuestionBank,
     getQuestionBank,
     importQuestionToBank,
+    updateQuestionInBank,
+    deleteQuestionBank,
 };

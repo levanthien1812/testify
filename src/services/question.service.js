@@ -424,6 +424,11 @@ const reorderQuestions = async (testId, questionBody) => {
     return true;
 };
 
+export const deleteQuestionById = async (questionId) => {
+    const deleted = await Question.findByIdAndDelete(questionId);
+    return deleted;
+};
+
 export default {
     createQuestion,
     updateQuestion,
@@ -435,4 +440,5 @@ export default {
     validateQuestions,
     deleteQuestion,
     reorderQuestions,
+    deleteQuestionById,
 };
