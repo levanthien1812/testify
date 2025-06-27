@@ -24,4 +24,20 @@ const importQuestionsToBank = Joi.object().keys({
     questions: Joi.array().items(Joi.string()).required(),
 });
 
-export default { createQuestionBank, createQuestion, importQuestionsToBank };
+const updateQuestion = Joi.object().keys({
+    type: Joi.string()
+        .optional()
+        .valid(...Object.values(QUESTION_TYPE)),
+    level: Joi.string()
+        .optional()
+        .valid(...Object.values(QUESTION_LEVEL)),
+    score: Joi.number().optional(),
+    content: Joi.object().optional(),
+});
+
+export default {
+    createQuestionBank,
+    createQuestion,
+    importQuestionsToBank,
+    updateQuestion,
+};

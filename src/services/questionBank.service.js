@@ -73,6 +73,11 @@ const updateQuestionBank = async (bankId, bankBody) => {
     return bank;
 };
 
+const deleteQuestionBank = async (bankId) => {
+    const bank = await QuestionBank.findByIdAndDelete(bankId);
+    return bank;
+};
+
 export default {
     createQuestionBank,
     getQuestionBanksByUserId,
@@ -82,4 +87,5 @@ export default {
     getQuestionBankById,
     getQuestionsByBankId,
     getQuestionBankByIdWithQuestions,
+    deleteQuestionBank,
 };
