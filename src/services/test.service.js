@@ -1,22 +1,25 @@
 import httpStatus from "http-status";
 import { Test } from "../models/test.model.js";
 import { ApiError } from "../utils/apiError.js";
-import questionService from "./question.service.js";
 import { Question } from "../models/question.model.js";
 import { User } from "../models/user.model.js";
-import { Part } from "../models/part.model.js";
 import { SHARE_OPTION } from "../config/constants/shareOptions.js";
 import { TEST_STATUS } from "../config/constants/testStatus.js";
-import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
 import submissionService from "./submission.service.js";
 import { Submission } from "../models/submission.model.js";
 import { ROLES } from "../config/constants/roles.js";
-import { ERROR_CODE, ERROR_MESSAGE } from "../config/constants/errorCode.js";
 import { MANUAL_SCORE_TYPE } from "../config/constants/constants.js";
 import userService from "./user.service.js";
 
 const createTest = async (testBody) => {
     const { datetime, enable_close_time, close_time } = testBody;
+
+    if (new Date(datetime).getTime() < Date.now()) {
+        throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            "Start time must be in the future"
+        );
+    }
 
     if (
         enable_close_time &&
