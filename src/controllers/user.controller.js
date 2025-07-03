@@ -5,37 +5,40 @@ import { logger } from "../config/logger.js";
 import { ROLES } from "../config/constants/roles.js";
 import catchAsync from "../utils/catchAsync.js";
 import testService from "../services/test.service.js";
+import { ApiError } from "../utils/apiError.js";
 
-const getUsers = async (req, res, next) => {
+const getUsers = catchAsync(async (req, res, next) => {
     const users = await User.find();
     return res.status(httpStatus.ACCEPTED).send({ users });
-};
+});
 
-const createTakers = async (req, res, next) => {
-    const takersBody = req.body.takers.map((taker) => {
-        return {
-            ...taker,
-            maker_id: req.user.id,
-            role: ROLES.TAKER,
-        };
-    });
+const createTaker = catchAsync(async (req, res, next) => {
+    const takerBody = {
+        ...req.body,
+        maker_ids: [req.user.id],
+        role: ROLES.TAKER,
+        photo: req.file?.path,
+    };
 
-    const newTakers = await Promise.all(
-        takersBody.map(async (takerBody) => {
-            return await userService.createUser(takerBody);
-        })
-    );
+    if (await userService.getUserByEmail(takerBody.email)) {
+        throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            "User with this email already exists"
+        );
+    }
 
-    return res.status(httpStatus.CREATED).send({ takers: newTakers });
-};
+    const newTaker = await userService.createUser(takerBody);
 
-const getTakersByMaker = async (req, res, next) => {
+    return res.status(httpStatus.CREATED).send({ taker: newTaker });
+});
+
+const getTakersByMaker = catchAsync(async (req, res, next) => {
     const takers = await userService.getTakersByMaker(req.user.id);
 
     return res.status(httpStatus.ACCEPTED).send({ takers });
-};
+});
 
-const getTakersWithStatistics = async (req, res, next) => {
+const getTakersWithStatistics = catchAsync(async (req, res, next) => {
     const takers = await userService.getTakersByMaker(req.user.id);
     let { sort } = req.query;
 
@@ -59,7 +62,7 @@ const getTakersWithStatistics = async (req, res, next) => {
     return res
         .status(httpStatus.ACCEPTED)
         .send({ takers: takersWithStatistics });
-};
+});
 
 const blockUser = catchAsync(async (req, res, next) => {
     const userId = req.user.id;
@@ -112,10 +115,10 @@ const getBlockedInfo = catchAsync(async (req, res) => {
 
 export default {
     getUsers,
-    createTakers,
     getTakersByMaker,
     getTakersWithStatistics,
     blockUser,
     unblockUser,
     getBlockedInfo,
+    createTaker,
 };

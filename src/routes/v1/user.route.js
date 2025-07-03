@@ -2,6 +2,7 @@ import express from "express";
 import { auth } from "../../middlewares/auth.js";
 import userController from "../../controllers/user.controller.js";
 import { RIGHTS } from "../../config/constants/roles.js";
+import { upload } from "../../config/multer.js";
 
 const router = express.Router();
 
@@ -9,7 +10,11 @@ router.route("/").get(auth("getUsers"), userController.getUsers);
 
 router
     .route("/takers")
-    .post(auth(RIGHTS.CREATE_TAKERS_FOR_TEST), userController.createTakers)
+    .post(
+        auth(RIGHTS.CREATE_TAKER),
+        upload.single("file"),
+        userController.createTaker
+    )
     .get(auth(RIGHTS.GET_TAKERS), userController.getTakersByMaker);
 
 router

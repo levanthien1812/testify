@@ -69,6 +69,16 @@ const userSchema = mongoose.Schema(
                 ref: "User",
             },
         ],
+        gender: {
+            type: String,
+            enum: ["male", "female", "other"],
+        },
+        birthday: {
+            type: Date,
+        },
+        phone_number: {
+            type: String,
+        },
     },
     {
         timestamp: true,

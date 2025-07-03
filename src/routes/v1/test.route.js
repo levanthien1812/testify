@@ -97,7 +97,7 @@ router
 router
     .route("/:testId/takers")
     .patch(auth(RIGHTS.ASSIGN_TAKERS), testController.assignTakers)
-    .post(auth(RIGHTS.CREATE_TAKER), testController.createTakers);
+    .post(auth(RIGHTS.CREATE_TAKERS_FOR_TEST), testController.createTakers);
 
 router
     .route("/:testId/takers/details")
