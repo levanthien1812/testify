@@ -1,11 +1,13 @@
 import httpStatus from "http-status";
 import { User } from "../models/user.model.js";
 import userService from "../services/user.service.js";
-import { logger } from "../config/logger.js";
 import { ROLES } from "../config/constants/roles.js";
 import catchAsync from "../utils/catchAsync.js";
 import testService from "../services/test.service.js";
-import { ApiError } from "../utils/apiError.js";
+import takerService from "../services/taker.service.js";
+import makerService from "../services/maker.service.js";
+import { unlinkImages } from "../utils/linkImage.js";
+import takerGroupService from "../services/takerGroup.service.js";
 
 const getUsers = catchAsync(async (req, res, next) => {
     const users = await User.find();
@@ -13,33 +15,84 @@ const getUsers = catchAsync(async (req, res, next) => {
 });
 
 const createTaker = catchAsync(async (req, res, next) => {
-    const takerBody = {
-        ...req.body,
-        maker_ids: [req.user.id],
-        role: ROLES.TAKER,
-        photo: req.file?.path,
-    };
+    let userTaker = await userService.getUserByEmail(req.body.email);
+    if (!userTaker) {
+        userTaker = await userService.createUser({
+            ...req.body,
+            role: ROLES.TAKER,
+            photo: req.file?.path,
+        });
+    }
+    const maker = await makerService.getMakerByUserId(req.user.id);
+    const taker = await takerService.getTakerByUserIdAndMakerId(
+        userTaker.id,
+        maker.id
+    );
 
-    if (await userService.getUserByEmail(takerBody.email)) {
-        throw new ApiError(
-            httpStatus.BAD_REQUEST,
-            "User with this email already exists"
-        );
+    if (taker) {
+        return res.status(httpStatus.BAD_REQUEST).send("Taker already exists!");
     }
 
-    const newTaker = await userService.createUser(takerBody);
+    const takerBody = {
+        user_id: userTaker.id,
+        maker_id: maker.id,
+        name: req.body.name,
+        group_id: req.body.group_id,
+    };
+
+    const newTaker = await takerService.createTaker(takerBody);
+
+    if (takerBody.group_id) {
+        await takerGroupService.addTakerToGroup(
+            takerBody.group_id,
+            newTaker.id
+        );
+    }
 
     return res.status(httpStatus.CREATED).send({ taker: newTaker });
 });
 
+const updateTaker = catchAsync(async (req, res, next) => {
+    console.log(req.body);
+    let taker = await takerService.getById(req.params.id);
+    let userTaker = await userService.getUserById(taker.user_id);
+    if (req.file) {
+        unlinkImages([userTaker.photo]);
+    }
+    const updatedUser = await userService.updateUser(userTaker.id, {
+        ...req.body,
+        photo: req.file?.path,
+    });
+    const updatedTaker = await takerService.updateTaker(req.params.id, {
+        ...req.body,
+    });
+
+    if (req.body.group_id) {
+        if (taker.group_id) {
+            await takerGroupService.removeTakerFromGroup(
+                taker.group_id,
+                taker.id
+            );
+        }
+        await takerGroupService.addTakerToGroup(req.body.group_id, taker.id);
+    }
+
+    return res.status(httpStatus.ACCEPTED).send({
+        user: updatedUser,
+        taker: updatedTaker,
+    });
+});
+
 const getTakersByMaker = catchAsync(async (req, res, next) => {
-    const takers = await userService.getTakersByMaker(req.user.id);
+    const maker = await makerService.getMakerByUserId(req.user.id);
+    const takers = await takerService.getTakersByMaker(maker.id);
 
     return res.status(httpStatus.ACCEPTED).send({ takers });
 });
 
 const getTakersWithStatistics = catchAsync(async (req, res, next) => {
-    const takers = await userService.getTakersByMaker(req.user.id);
+    const maker = await makerService.getMakerByUserId(req.user.id);
+    const takers = await takerService.getTakersByMaker(maker.id);
     let { sort } = req.query;
 
     let takersWithStatistics = await Promise.all(
@@ -121,4 +174,5 @@ export default {
     unblockUser,
     getBlockedInfo,
     createTaker,
+    updateTaker,
 };

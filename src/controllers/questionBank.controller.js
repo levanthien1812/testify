@@ -2,16 +2,19 @@ import httpStatus from "http-status";
 import questionBankService from "../services/questionBank.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import questionService from "../services/question.service.js";
+import makerService from "../services/maker.service.js";
 
 const createQuestionBank = catchAsync(async (req, res, next) => {
-    const body = { ...req.body, user_id: req.user.id, created_at: new Date() };
+    const maker = await makerService.getMakerByUserId(req.user.id);
+    const body = { ...req.body, maker_id: maker.id, created_at: new Date() };
     const questionBank = await questionBankService.createQuestionBank(body);
     return res.status(httpStatus.CREATED).send(questionBank);
 });
 
 const getQuestionBanks = catchAsync(async (req, res, next) => {
-    const questionBanks = await questionBankService.getQuestionBanksByUserId(
-        req.user.id
+    const maker = await makerService.getMakerByUserId(req.user.id);
+    const questionBanks = await questionBankService.getQuestionBanksByMakerId(
+        maker.id
     );
     return res.status(httpStatus.OK).send({ questionBanks });
 });

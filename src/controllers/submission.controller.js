@@ -7,15 +7,20 @@ import submissionService from "../services/submission.service.js";
 import { Test } from "../models/test.model.js";
 import answerService from "../services/answer.service.js";
 import { ROLES } from "../config/constants/roles.js";
+import takerService from "../services/taker.service.js";
 
 const createSubmission = catchAsync(async (req, res, next) => {
-    const existingSubmissions = await submissionService.getSubmissionsByTakerId(
+    const test = await testService.findById(req.params.testId);
+    const taker = await takerService.getTakerByUserIdAndMakerId(
         req.user.id,
-        req.params.testId,
-        req.user.role
+        test.maker_id
     );
 
-    const test = await testService.findById(req.params.testId);
+    const existingSubmissions = await submissionService.getSubmissionsByTakerId(
+        taker.id,
+        test.id,
+        req.user.role
+    );
 
     if (test.options.allow_multiple_submissions.enable) {
         if (
@@ -47,7 +52,7 @@ const createSubmission = catchAsync(async (req, res, next) => {
     }
 
     let submission = await submissionService.createSubmission({
-        taker_id: req.user._id,
+        taker_id: taker.id,
         test_id: req.params.testId,
         submit_time: new Date(),
         start_time: new Date(req.body.startTime),
@@ -76,7 +81,7 @@ const createSubmission = catchAsync(async (req, res, next) => {
 
 const getSubmission = catchAsync(async (req, res, next) => {
     const submission = await submissionService.getSubmissionByTakerId(
-        req.user._id,
+        req.user.id,
         req.params.testId
     );
 

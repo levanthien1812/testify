@@ -140,7 +140,7 @@ const TestOption = new mongoose.Schema({
     },
 });
 
-const TestSchema = mongoose.Schema(
+const TestSchema = new mongoose.Schema(
     {
         title: {
             type: String,
@@ -173,7 +173,7 @@ const TestSchema = mongoose.Schema(
         maker_id: {
             type: mongoose.SchemaTypes.ObjectId,
             required: true,
-            ref: "User",
+            ref: "Maker",
         },
         level: {
             type: String,
@@ -199,9 +199,9 @@ const TestSchema = mongoose.Schema(
             enum: Object.values(SHARE_OPTION),
         },
         // assigned by maker
-        taker_ids: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
+        taker_ids: [String],
         joined_taker_ids: [
-            { type: mongoose.SchemaTypes.ObjectId, ref: "User" },
+            { type: mongoose.SchemaTypes.ObjectId, ref: "Taker" },
         ],
         are_answers_provided: {
             type: Boolean,
@@ -229,6 +229,18 @@ const TestSchema = mongoose.Schema(
         },
     }
 );
+
+TestSchema.virtual("takers", {
+    ref: "Taker",
+    localField: "taker_ids",
+    foreignField: "_id",
+    justOne: false,
+});
+
+TestSchema.pre(/^find/, function (next) {
+    this.populate("takers");
+    next();
+});
 
 TestSchema.plugin(toJSON);
 TestOption.plugin(toJSON);

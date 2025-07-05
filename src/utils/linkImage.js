@@ -37,3 +37,17 @@ export const generateLinkPreviews = async (messages) => {
     );
     return linkifiedMessages;
 };
+
+export const unlinkImages = (images) => {
+    images.forEach((image) => {
+        fse.unlinkSync(image, (err) => {
+            if (err) {
+                if (err.code === "ENOENT") {
+                    console.log("The file does not exist");
+                } else {
+                    console.error(err);
+                }
+            }
+        });
+    });
+};

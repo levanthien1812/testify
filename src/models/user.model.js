@@ -47,12 +47,6 @@ const userSchema = mongoose.Schema(
             enum: ROLES,
             default: ROLES.MAKER,
         },
-        maker_ids: [
-            {
-                type: mongoose.SchemaTypes.ObjectId,
-                ref: "User",
-            },
-        ],
         photo: {
             type: String,
             default: "",

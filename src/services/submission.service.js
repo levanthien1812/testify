@@ -66,9 +66,7 @@ const getSubmissionsByTakerId = async (takerId, testId, userRole) => {
 };
 
 const getSubmissionsByTestId = async (testId) => {
-    const submissions = await Submission.find({ test_id: testId }).populate({
-        path: "taker_id",
-    });
+    const submissions = await Submission.find({ test_id: testId });
     return submissions;
 };
 

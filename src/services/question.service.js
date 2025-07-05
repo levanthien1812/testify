@@ -82,20 +82,6 @@ const deleteQuestionContent = async (questionId, questionType) => {
     return deleted;
 };
 
-const unlinkImages = (images) => {
-    images.forEach((image) => {
-        fse.unlinkSync(image, (err) => {
-            if (err) {
-                if (err.code === "ENOENT") {
-                    console.log("The file does not exist");
-                } else {
-                    console.error(err);
-                }
-            }
-        });
-    });
-};
-
 const createQuestion = async (questionBody) => {
     const newQuestion = await Question.create({
         ...questionBody,
