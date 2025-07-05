@@ -6,8 +6,8 @@ const createQuestionBank = async (bankBody) => {
     return questionBank;
 };
 
-const getQuestionBanksByUserId = async (userId) => {
-    const questionBanks = await QuestionBank.find({ user_id: userId });
+const getQuestionBanksByMakerId = async (makerId) => {
+    const questionBanks = await QuestionBank.find({ maker_id: makerId });
     return questionBanks;
 };
 
@@ -15,7 +15,7 @@ const addQuestionsToBank = async (bankId, questionIds) => {
     const updatedBank = await QuestionBank.findByIdAndUpdate(
         bankId,
         {
-            $addToSet: { questions: { $each: questionIds } },
+            $addToSet: { question_ids: { $each: questionIds } },
             $set: { updated_at: Date.now() },
         },
         { new: true }
@@ -31,9 +31,7 @@ const getQuestionBankById = async (bankId) => {
 };
 
 const getQuestionsByBankId = async (bankId) => {
-    const questionBank = await QuestionBank.findById(bankId).populate(
-        "questions"
-    );
+    const questionBank = await QuestionBank.findById(bankId);
 
     const questions = await Promise.all(
         questionBank.questions.map(async (question) => {
@@ -80,7 +78,7 @@ const deleteQuestionBank = async (bankId) => {
 
 export default {
     createQuestionBank,
-    getQuestionBanksByUserId,
+    getQuestionBanksByMakerId,
     addQuestionsToBank,
     createQuestionInBank,
     updateQuestionBank,

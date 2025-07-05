@@ -1,23 +1,25 @@
 import httpStatus from "http-status";
 import testService from "../services/test.service.js";
 import catchAsync from "../utils/catchAsync.js";
-import userService from "../services/user.service.js";
 import { TEST_STATUS } from "../config/constants/testStatus.js";
 import { ROLES } from "../config/constants/roles.js";
 import { SHARE_OPTION } from "../config/constants/shareOptions.js";
 import { ERROR_CODE, ERROR_MESSAGE } from "../config/constants/errorCode.js";
-import { Part } from "../models/part.model.js";
 import questionService from "../services/question.service.js";
 import partService from "../services/part.service.js";
 import submissionService from "../services/submission.service.js";
 import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
 import { ApiError } from "../utils/apiError.js";
 import passcodeService from "../services/passcode.service.js";
+import takerService from "../services/taker.service.js";
+import makerService from "../services/maker.service.js";
 
 const createTest = catchAsync(async (req, res, next) => {
+    const maker = await makerService.getMakerByUserId(req.user.id);
+
     const body = {
         ...req.body,
-        maker_id: req.user.id,
+        maker_id: maker.id,
         status: TEST_STATUS.DRAFT,
     };
     const test = await testService.createTest(body);
@@ -61,6 +63,11 @@ const getTest = catchAsync(async (req, res, next) => {
     let submissionsCount = 0;
 
     if (req.user.role === ROLES.TAKER) {
+        const taker = await takerService.getTakerByUserIdAndMakerId(
+            req.user.id,
+            test.maker_id
+        );
+
         if (test.share_option === SHARE_OPTION.PASSCODE) {
             if (!passcode) {
                 throw new ApiError(
@@ -85,7 +92,7 @@ const getTest = catchAsync(async (req, res, next) => {
 
         if (
             test.share_option === SHARE_OPTION.RESTRICTED &&
-            !test.taker_ids.map((taker) => taker.id).includes(user.id)
+            !test.taker_ids.map((taker) => taker.id).includes(taker.id)
         ) {
             throw new ApiError(
                 httpStatus.FORBIDDEN,
@@ -114,7 +121,7 @@ const getTest = catchAsync(async (req, res, next) => {
         }
 
         const submissions = await submissionService.getSubmissionsByTakerId(
-            req.user._id,
+            taker.id,
             testId
         );
         submissionsCount = submissions.length;
@@ -142,6 +149,8 @@ const getTest = catchAsync(async (req, res, next) => {
                     new Date(test.public_answers_date).getTime() < Date.now();
             }
         }
+
+        await testService.addAccessedBy(testId, taker.id);
     }
 
     if (req.user.role === ROLES.MAKER) {
@@ -193,8 +202,6 @@ const getTest = catchAsync(async (req, res, next) => {
         }
     }
 
-    await testService.addAccessedBy(testId, req.user._id);
-
     return res
         .status(httpStatus.OK)
         .send({ test, parts, questions, submissionsCount });
@@ -211,15 +218,14 @@ const assignTakers = catchAsync(async (req, res, next) => {
 
 const createTakers = catchAsync(async (req, res, next) => {
     const { testId } = req.params;
-    const user = req.user;
+    const maker = await makerService.getMakerByUserId(req.user.id);
     const takersBody = req.body.takersBody.takers;
 
     const newTakers = await Promise.all(
         takersBody.map(async (takerBody) => {
-            const newTaker = await userService.createUser({
+            const newTaker = await takerService.createTaker({
                 ...takerBody,
-                maker_id: user._id,
-                role: ROLES.TAKER,
+                maker_id: maker.id,
             });
 
             return newTaker;
@@ -238,7 +244,7 @@ const getTakersDetails = catchAsync(async (req, res, next) => {
     const { taker_ids } = req.body;
     const takers = await Promise.all(
         taker_ids.map(async (id) => {
-            const taker = await userService.getUserById(id);
+            const taker = await takerService.getById(id);
             return taker;
         })
     );
@@ -247,9 +253,10 @@ const getTakersDetails = catchAsync(async (req, res, next) => {
 });
 
 const getAvailableTakers = catchAsync(async (req, res, next) => {
+    const maker = await makerService.getMakerByUserId(req.user.id);
     const takers = await testService.getAvailableTakers(
         req.params.testId,
-        req.user._id
+        maker.id
     );
 
     return res.status(httpStatus.OK).send({ takers: takers });

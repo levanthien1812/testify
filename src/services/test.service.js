@@ -2,14 +2,15 @@ import httpStatus from "http-status";
 import { Test } from "../models/test.model.js";
 import { ApiError } from "../utils/apiError.js";
 import { Question } from "../models/question.model.js";
-import { User } from "../models/user.model.js";
 import { SHARE_OPTION } from "../config/constants/shareOptions.js";
 import { TEST_STATUS } from "../config/constants/testStatus.js";
 import submissionService from "./submission.service.js";
 import { Submission } from "../models/submission.model.js";
 import { ROLES } from "../config/constants/roles.js";
 import { MANUAL_SCORE_TYPE } from "../config/constants/constants.js";
-import userService from "./user.service.js";
+import { Taker } from "../models/taker.model.js";
+import takerService from "./taker.service.js";
+import makerService from "./maker.service.js";
 
 const createTest = async (testBody) => {
     const { datetime, enable_close_time, close_time } = testBody;
@@ -37,10 +38,21 @@ const createTest = async (testBody) => {
 };
 
 const getTests = async (user, reqQuery) => {
-    const filter =
-        user.role === ROLES.MAKER
-            ? { maker_id: user.id }
-            : { $or: [{ taker_ids: user.id }, { accessed_by: user.id }] };
+    let filter;
+    if (user.role === ROLES.MAKER) {
+        const maker = await makerService.getMakerByUserId(user.id);
+        filter = { maker_id: maker.id };
+    } else {
+        const takers = await takerService.getByUserId(user.id);
+        const takerIds = takers.map((taker) => taker.id);
+        filter = {
+            $or: [
+                { taker_ids: { $in: takerIds } },
+                { accessed_by: { $in: takerIds } },
+            ],
+        };
+    }
+
     const query = {};
 
     if (user.role === ROLES.TAKER) {
@@ -100,7 +112,7 @@ const assignTakers = async (testId, takerIds) => {
 
     let notFoundTakerIds = [];
     takerIds.forEach(async (takerId) => {
-        if (!(await User.find({ _id: takerId, role: ROLES.TAKER }))) {
+        if (!(await takerService.getById(takerId))) {
             notFoundTakerIds.push(takerId);
         }
     });
@@ -130,12 +142,11 @@ const assignTakers = async (testId, takerIds) => {
     return updateTest;
 };
 
-const getAvailableTakers = async (testId, userId) => {
+const getAvailableTakers = async (testId, makerId) => {
     const test = await Test.findById(testId);
     const addedTakerIds = test.taker_ids;
-    const takers = await User.find({
-        maker_ids: userId,
-        role: ROLES.TAKER,
+    const takers = await Taker.find({
+        maker_id: makerId,
         _id: { $nin: addedTakerIds },
     });
 
@@ -151,7 +162,8 @@ const updateTest = async (testId, testBody) => {
 
     if (
         testBody.share_option &&
-        testBody.share_option === SHARE_OPTION.ANYONE
+        (testBody.share_option === SHARE_OPTION.ANYONE ||
+            testBody.share_option === SHARE_OPTION.PASSCODE)
     ) {
         testBody = {
             ...testBody,
@@ -230,12 +242,12 @@ const updateIncludingManuallyQuestions = async (testId) => {
     });
 };
 
-const addAccessedBy = async (testId, userId) => {
+const addAccessedBy = async (testId, takerId) => {
     const test = await Test.findById(testId);
-    if (test.accessed_by.includes(userId)) return;
+    if (test.accessed_by.includes(takerId)) return;
 
     await Test.findByIdAndUpdate(testId, {
-        $push: { accessed_by: userId },
+        $push: { accessed_by: takerId },
     });
 };
 
@@ -260,7 +272,7 @@ function calculateAverageScoreOnScale10FromDocuments(tests) {
 }
 
 const getTakerStatistics = async (takerId) => {
-    const taker = await userService.getUserById(takerId);
+    const taker = await takerService.getById(takerId);
 
     const submissions = await submissionService.findByTakerId(takerId);
 

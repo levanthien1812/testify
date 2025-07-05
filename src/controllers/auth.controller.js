@@ -4,9 +4,14 @@ import tokenService from "../services/token.service.js";
 import userService from "../services/user.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import { auth } from "google-auth-library";
+import makerService from "../services/maker.service.js";
+import { ROLES } from "../config/constants/roles.js";
 
 const register = catchAsync(async (req, res) => {
     const user = await userService.createUser(req.body);
+    if (user.role === ROLES.MAKER) {
+        await makerService.createMaker({ user_id: user.id, name: user.name });
+    }
     const tokens = await tokenService.generateAuthToken(user);
 
     return res.status(httpStatus.CREATED).json({ user, tokens });

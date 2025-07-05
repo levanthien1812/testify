@@ -4,8 +4,7 @@ import { toJSON } from "./plugins/toJSON.js";
 const SubmissionSchema = new mongoose.Schema(
     {
         taker_id: {
-            type: mongoose.SchemaTypes.ObjectId,
-            ref: "User",
+            type: String,
             required: true,
         },
         test_id: {
@@ -46,6 +45,13 @@ const SubmissionSchema = new mongoose.Schema(
         },
     }
 );
+
+SubmissionSchema.virtual("taker", {
+    ref: "Taker",
+    localField: "taker_id",
+    foreignField: "_id",
+    justOne: true,
+});
 
 SubmissionSchema.plugin(toJSON);
 

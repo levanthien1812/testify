@@ -63,7 +63,7 @@ const loginGoogle = async (token) => {
         }
 
         const updatedUser = await User.findByIdAndUpdate(
-            user._id,
+            user.id,
             {
                 name: name.normalize("NFD").replace(/[\u0300-\u036f]/g, ""),
                 photo: picture,

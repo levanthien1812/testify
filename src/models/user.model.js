@@ -47,12 +47,6 @@ const userSchema = mongoose.Schema(
             enum: ROLES,
             default: ROLES.MAKER,
         },
-        maker_ids: [
-            {
-                type: mongoose.SchemaTypes.ObjectId,
-                ref: "User",
-            },
-        ],
         photo: {
             type: String,
             default: "",
@@ -69,6 +63,16 @@ const userSchema = mongoose.Schema(
                 ref: "User",
             },
         ],
+        gender: {
+            type: String,
+            enum: ["male", "female", "other"],
+        },
+        birthday: {
+            type: Date,
+        },
+        phone_number: {
+            type: String,
+        },
     },
     {
         timestamp: true,

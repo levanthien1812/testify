@@ -6,18 +6,17 @@ const QuestionBankSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
-    user_id: {
+    maker_id: {
         type: String,
         required: true,
-        ref: "User",
+        ref: "Maker",
     },
     description: {
         type: String,
     },
-    questions: [
+    question_ids: [
         {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: "Question",
+            type: String,
         },
     ],
     tags: [
@@ -37,6 +36,18 @@ const QuestionBankSchema = new mongoose.Schema({
         type: Date,
         default: Date.now,
     },
+});
+
+QuestionBankSchema.virtual("questions", {
+    ref: "Question",
+    localField: "question_ids",
+    foreignField: "_id",
+    justOne: false,
+});
+
+QuestionBankSchema.pre(/^find/, function (next) {
+    this.populate("questions");
+    next();
 });
 
 QuestionBankSchema.plugin(toJSON, { timestamps: true });
