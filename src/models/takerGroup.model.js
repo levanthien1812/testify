@@ -11,13 +11,13 @@ const TakerGroupSchema = new mongoose.Schema({
     },
     maker_id: {
         type: mongoose.SchemaTypes.ObjectId,
-        ref: "User",
+        ref: "Maker",
         required: true,
     },
     takers: [
         {
             type: mongoose.SchemaTypes.ObjectId,
-            ref: "User",
+            ref: "Taker",
             required: true,
         },
     ],

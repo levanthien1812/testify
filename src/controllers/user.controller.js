@@ -53,7 +53,6 @@ const createTaker = catchAsync(async (req, res, next) => {
 });
 
 const updateTaker = catchAsync(async (req, res, next) => {
-    console.log(req.body);
     let taker = await takerService.getById(req.params.id);
     let userTaker = await userService.getUserById(taker.user_id);
     if (req.file) {

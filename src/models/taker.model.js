@@ -29,8 +29,16 @@ TakerSchema.virtual("user", {
     justOne: true,
 });
 
+TakerSchema.virtual("group", {
+    ref: "TakerGroup",
+    localField: "group_id",
+    foreignField: "_id",
+    justOne: true,
+});
+
 TakerSchema.pre(/^find/, function (next) {
     this.populate("user");
+    this.populate("group");
     next();
 });
 

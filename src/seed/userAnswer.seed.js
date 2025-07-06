@@ -3,7 +3,7 @@ import {
     questionTypeToAnswerModel,
     questionTypeToQuestionModel,
 } from "../utils/mapping.js";
-import { sameItems } from "../utils/isEqual.js";
+import { isEqual } from "../utils/isEqual.js";
 import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import { Answer } from "../models/answer.model.js";
 import {
@@ -27,25 +27,31 @@ export const createRandomAnswer = async (question, submission) => {
         score: 0,
     };
 
-    let answer;
+    let randomAnswer;
+    let correctAnswer = questionContentDoc.answer;
+    let correctRate = faker.number.int({
+        min: 0,
+        max: 100,
+    });
+
     switch (question.type) {
-        case QUESTION_TYPE.MULITPLE_CHOICES:
-            answer = [];
+        case QUESTION_TYPE.MULTIPLE_CHOICES:
             if (questionContentDoc.options.length > 0) {
                 const randomOption = faker.helpers.arrayElement(
                     questionContentDoc.options
                 );
-                answer = [randomOption._id];
+                randomAnswer = { options: [randomOption._id] };
             }
             break;
-        case QUESTION_TYPE.FILL_GAPS:
-            answer = [];
+        case QUESTION_TYPE.FILL_IN_THE_GAPS:
+            let gaps = [];
             for (let i = 0; i < questionContentDoc.num_gaps; i++) {
-                answer.push(faker.lorem.word());
+                gaps.push(faker.lorem.word());
             }
+            randomAnswer = { gaps: gaps };
             break;
         case QUESTION_TYPE.MATCHING:
-            answer = [];
+            let matchings = [];
             const shuffledLeftItems = faker.helpers.shuffle(
                 questionContentDoc.left_items
             );
@@ -53,31 +59,37 @@ export const createRandomAnswer = async (question, submission) => {
                 questionContentDoc.right_items
             );
             for (let i = 0; i < questionContentDoc.left_items.length; i++) {
-                answer.push({
+                matchings.push({
                     left: shuffledLeftItems[i]._id,
                     right: shuffledRightItems[i]._id,
                 });
             }
+            randomAnswer = { matchings: matchings };
             break;
         case QUESTION_TYPE.RESPONSE:
-            answer = faker.string.alpha({
+            correctAnswer = null;
+            let response = faker.string.alpha({
                 length: {
                     min: questionContentDoc.min_length,
                     max: questionContentDoc.max_length,
                 },
             });
+            randomAnswer = { response: response };
+            break;
+        case QUESTION_TYPE.TRUE_FALSE:
+            randomAnswer = faker.helpers.arrayElement([true, false]);
             break;
         default:
             break;
     }
 
+    if (correctRate > 50) {
+        randomAnswer = correctAnswer;
+    }
+
     if (
         AUTO_SCORE_TYPE.includes(question.type) &&
-        sameItems(
-            answer,
-            questionContentDoc.answer,
-            question.type === QUESTION_TYPE.FILL_GAPS
-        )
+        isEqual(correctAnswer, randomAnswer)
     ) {
         userAnswer.is_correct = true;
         userAnswer.score = question.score;
@@ -97,6 +109,6 @@ export const createRandomAnswer = async (question, submission) => {
     const answerModel = questionTypeToAnswerModel.get(question.type);
     await answerModel.create({
         answer_id: answerDoc._id,
-        answer: answer,
+        answer: randomAnswer,
     });
 };

@@ -13,6 +13,8 @@ import { ApiError } from "../utils/apiError.js";
 import passcodeService from "../services/passcode.service.js";
 import takerService from "../services/taker.service.js";
 import makerService from "../services/maker.service.js";
+import { mockSubmissions } from "../seed/test.seed.js";
+import { Test } from "../models/test.model.js";
 
 const createTest = catchAsync(async (req, res, next) => {
     const maker = await makerService.getMakerByUserId(req.user.id);
@@ -262,6 +264,18 @@ const getAvailableTakers = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ takers: takers });
 });
 
+const mockTest = catchAsync(async (req, res, next) => {
+    const test = await Test.findById(req.params.testId);
+
+    if (!test) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Test not found");
+    }
+
+    await mockSubmissions(test.id);
+
+    return res.status(httpStatus.CREATED).send("Mock test successfully!");
+});
+
 export default {
     createTest,
     getTests,
@@ -272,4 +286,5 @@ export default {
     createTakers,
     getAvailableTakers,
     getTakersDetails,
+    mockTest,
 };

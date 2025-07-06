@@ -32,8 +32,6 @@ const getMessages = async (chatId, options = {}) => {
         ...(oldestMessageId ? { _id: { $lt: oldestMessageId } } : {}),
     };
 
-    console.log(filter);
-
     const messages = await Message.find(filter).sort({ _id: -1 }).limit(limit);
 
     return await generateLinkPreviews(messages.reverse());
