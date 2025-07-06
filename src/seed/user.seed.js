@@ -4,6 +4,20 @@ import bcrypt from "bcryptjs";
 import { logger } from "../config/logger.js";
 import { ROLES } from "../config/constants/roles.js";
 
+export const generateRandomUser = (role) => {
+    return {
+        name: faker.person.fullName(),
+        email: faker.internet.email(),
+        username: faker.internet.userName(),
+        password: "18122002abc",
+        photo: faker.image.avatar(),
+        role: role,
+        birthday: faker.date.birthdate(),
+        phone_number: faker.phone.number(),
+        gender: faker.helpers.arrayElement(["male", "female"]),
+    };
+};
+
 const createRandomUser = async ({ role }) => {
     if (role === ROLES.MAKER) {
         const defaultMaker = await User.findOne({
@@ -60,7 +74,7 @@ const createRandomUser = async ({ role }) => {
             email: faker.internet.email(),
             username: faker.internet.userName(),
             password: "18122002abc",
-            photo: faker.image.avatar(),
+            photo: "public\\uploads\\1751689763705_0.5862771430216698_508608034_122133448508769325_9167468019467240634_n.jpg",
             maker_ids: [maker[0]._id],
             role: role,
         };

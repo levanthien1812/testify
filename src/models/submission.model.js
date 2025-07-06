@@ -53,6 +53,11 @@ SubmissionSchema.virtual("taker", {
     justOne: true,
 });
 
+SubmissionSchema.pre(/^find/, function (next) {
+    this.populate("taker");
+    next();
+});
+
 SubmissionSchema.plugin(toJSON);
 
 export const Submission = mongoose.model("Submission", SubmissionSchema);

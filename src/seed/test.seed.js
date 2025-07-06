@@ -7,6 +7,11 @@ import { Test } from "../models/test.model.js";
 import { User } from "../models/user.model.js";
 import { faker } from "@faker-js/faker";
 import { ROLES } from "../config/constants/roles.js";
+import { seedTakersForMaker } from "./taker.seed.js";
+import testService from "../services/test.service.js";
+import takerService from "../services/taker.service.js";
+import { createRandomSubmission } from "./submission.seed.js";
+import submissionService from "../services/submission.service.js";
 
 const createRandomTest = async () => {
     const randomMaker = await User.aggregate([
@@ -109,4 +114,29 @@ export const seedTests = async () => {
     );
 
     logger.info("Seed tests done");
+};
+
+// PRE-CONDITIONS
+// Test is provided
+// Questions are provided
+// Answers for questions are provided
+export const mockSubmissions = async (testId) => {
+    const test = await testService.findById(testId);
+    const MIN_TAKERS = 30;
+
+    if (!test.taker_ids || test.taker_ids.length < MIN_TAKERS) {
+        const newTakers = await seedTakersForMaker(test.maker_id, MIN_TAKERS);
+        await testService.assignTakers(
+            test.id,
+            newTakers.map((taker) => taker.id)
+        );
+    }
+
+    await submissionService.deleteSubmissionsByTestId(test.id);
+    const takers = await takerService.getTakersByMaker(test.maker_id);
+    await Promise.all(
+        takers.map(async (taker) => {
+            await createRandomSubmission(test, taker.id);
+        })
+    );
 };

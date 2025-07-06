@@ -164,4 +164,8 @@ router
         passcodeController.checkPasscode
     );
 
+router
+    .route("/:testId/mock-submissions")
+    .post(auth(RIGHTS.MOCK_TEST), testController.mockTest);
+
 export default router;

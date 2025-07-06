@@ -110,6 +110,11 @@ const findByTakerId = async (takerId) => {
     return submissions;
 };
 
+const deleteSubmissionsByTestId = async (testId) => {
+    const deleted = await Submission.deleteMany({ test_id: testId });
+    return deleted;
+};
+
 export default {
     createSubmission,
     updateSubmission,
@@ -118,4 +123,5 @@ export default {
     scoreSubmission,
     findById,
     findByTakerId,
+    deleteSubmissionsByTestId,
 };
