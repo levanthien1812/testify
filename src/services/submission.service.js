@@ -18,7 +18,7 @@ const updateSubmission = async (submissionId, submissionBody) => {
     return submission;
 };
 
-const getSubmissionsByTakerId = async (takerId, testId, userRole) => {
+const getSubmissionsByTakerIdAndTestId = async (takerId, testId, userRole) => {
     const test = await Test.findOne({ _id: testId });
 
     let fieldsToSelect = [];
@@ -115,13 +115,19 @@ const deleteSubmissionsByTestId = async (testId) => {
     return deleted;
 };
 
+const findByTestId = async (testId) => {
+    const submisstions = await Submission.find({ test_id: testId });
+    return submisstions;
+};
+
 export default {
     createSubmission,
     updateSubmission,
-    getSubmissionsByTakerId,
+    getSubmissionsByTakerIdAndTestId,
     getSubmissionsByTestId,
     scoreSubmission,
     findById,
     findByTakerId,
     deleteSubmissionsByTestId,
+    findByTestId,
 };

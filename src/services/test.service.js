@@ -11,6 +11,8 @@ import { MANUAL_SCORE_TYPE } from "../config/constants/constants.js";
 import { Taker } from "../models/taker.model.js";
 import takerService from "./taker.service.js";
 import makerService from "./maker.service.js";
+import questionService from "./question.service.js";
+import answerService from "./answer.service.js";
 
 const createTest = async (testBody) => {
     const { datetime, enable_close_time, close_time } = testBody;
@@ -311,6 +313,47 @@ const getTakerStatistics = async (takerId) => {
     };
 };
 
+const getQuestionsResultForTest = async (testId) => {
+    const test = await Test.findById(testId);
+    const questions = await questionService.getQuestionsByTestId(testId);
+    const submissions = await submissionService.findByTestId(testId);
+
+    const questionsResult = await Promise.all(
+        questions.map(async (question) => {
+            let noOfCorrectAnswers = 0;
+            let noOfWrongAnswers = 0;
+            let noOfSkippedAnswers = 0;
+
+            await Promise.all(
+                submissions.map(async (submission) => {
+                    const answer =
+                        await answerService.findByQuestionIdAndSubmissionId(
+                            question.id,
+                            submission.id,
+                            true
+                        );
+                    if (answer && answer.is_correct) {
+                        noOfCorrectAnswers++;
+                    } else if (answer && !answer.is_correct) {
+                        noOfWrongAnswers++;
+                    } else {
+                        noOfSkippedAnswers++;
+                    }
+                })
+            );
+
+            return {
+                question: question.toObject(),
+                correct: noOfCorrectAnswers,
+                wrong: noOfWrongAnswers,
+                skipped: noOfSkippedAnswers,
+            };
+        })
+    );
+
+    return questionsResult;
+};
+
 export default {
     createTest,
     getTests,
@@ -324,4 +367,5 @@ export default {
     updateIncludingManuallyQuestions,
     addAccessedBy,
     getTakerStatistics,
+    getQuestionsResultForTest,
 };

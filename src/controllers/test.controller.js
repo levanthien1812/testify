@@ -94,7 +94,7 @@ const getTest = catchAsync(async (req, res, next) => {
 
         if (
             test.share_option === SHARE_OPTION.RESTRICTED &&
-            !test.taker_ids.map((taker) => taker.id).includes(taker.id)
+            !test.taker_ids.includes(taker.id)
         ) {
             throw new ApiError(
                 httpStatus.FORBIDDEN,
@@ -122,10 +122,11 @@ const getTest = catchAsync(async (req, res, next) => {
             );
         }
 
-        const submissions = await submissionService.getSubmissionsByTakerId(
-            taker.id,
-            testId
-        );
+        const submissions =
+            await submissionService.getSubmissionsByTakerIdAndTestId(
+                taker.id,
+                testId
+            );
         submissionsCount = submissions.length;
 
         if (test.options.allow_show_maker_answers_after_test.enable) {
@@ -161,9 +162,13 @@ const getTest = catchAsync(async (req, res, next) => {
 
     if (
         req.user.role === ROLES.TAKER &&
-        (test.status === TEST_STATUS.PUBLISHED ||
-            test.status === TEST_STATUS.OPENED) &&
-        !started
+        !(test.status === TEST_STATUS.OPENED && started) &&
+        !(
+            (test.status === TEST_STATUS.OPENED ||
+                test.status === TEST_STATUS.CLOSED) &&
+            test.options.allow_view_submission_after_test.enable &&
+            submissionsCount > 0
+        )
     ) {
     } else {
         if (req.user.role === ROLES.TAKER) {
@@ -276,6 +281,16 @@ const mockTest = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.CREATED).send("Mock test successfully!");
 });
 
+const getQuestionsResultForTest = catchAsync(async (req, res, next) => {
+    const questionsResult = await testService.getQuestionsResultForTest(
+        req.params.testId
+    );
+
+    return res
+        .status(httpStatus.OK)
+        .send({ questions_result: questionsResult });
+});
+
 export default {
     createTest,
     getTests,
@@ -287,4 +302,5 @@ export default {
     getAvailableTakers,
     getTakersDetails,
     mockTest,
+    getQuestionsResultForTest,
 };

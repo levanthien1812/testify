@@ -16,11 +16,12 @@ const createSubmission = catchAsync(async (req, res, next) => {
         test.maker_id
     );
 
-    const existingSubmissions = await submissionService.getSubmissionsByTakerId(
-        taker.id,
-        test.id,
-        req.user.role
-    );
+    const existingSubmissions =
+        await submissionService.getSubmissionsByTakerIdAndTestId(
+            taker.id,
+            test.id,
+            req.user.role
+        );
 
     if (test.options.allow_multiple_submissions.enable) {
         if (
@@ -109,9 +110,22 @@ const getSubmissions = catchAsync(async (req, res, next) => {
         }
     }
 
-    const submissions = await submissionService.getSubmissionsByTestId(
-        req.params.testId
-    );
+    let submissions;
+    if (req.user.role === ROLES.MAKER) {
+        submissions = await submissionService.getSubmissionsByTestId(
+            req.params.testId
+        );
+    } else {
+        const taker = await takerService.getTakerByUserIdAndMakerId(
+            req.user.id,
+            test.maker_id
+        );
+        submissions = await submissionService.getSubmissionsByTakerIdAndTestId(
+            taker.id,
+            req.params.testId,
+            taker.role
+        );
+    }
 
     return res.status(httpStatus.OK).send({ submissions });
 });
