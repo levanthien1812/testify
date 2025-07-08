@@ -168,4 +168,11 @@ router
     .route("/:testId/mock-submissions")
     .post(auth(RIGHTS.MOCK_TEST), testController.mockTest);
 
+router
+    .route("/:testId/questions-result")
+    .get(
+        auth(RIGHTS.GET_QUESTIONS_RESULT_FOR_TEST),
+        testController.getQuestionsResultForTest
+    );
+
 export default router;
