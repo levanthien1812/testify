@@ -77,7 +77,9 @@ export const createRandomAnswer = async (question, submission) => {
             randomAnswer = { response: response };
             break;
         case QUESTION_TYPE.TRUE_FALSE:
-            randomAnswer = faker.helpers.arrayElement([true, false]);
+            randomAnswer = {
+                is_true: faker.helpers.arrayElement([true, false]),
+            };
             break;
         default:
             break;

@@ -11,6 +11,19 @@ const register = {
     }),
 };
 
+const sendEmailVerification = {
+    body: Joi.object().keys({
+        email: Joi.string().required().email(),
+    }),
+};
+
+const verifyEmail = {
+    body: Joi.object().keys({
+        email: Joi.string().required().email(),
+        code: Joi.string().required(),
+    }),
+};
+
 const login = {
     body: Joi.object().keys({
         email: Joi.string().required().email(),
@@ -24,8 +37,27 @@ const loginGoogle = {
     }),
 };
 
+const sendResetPasswordEmail = {
+    body: Joi.object().keys({
+        email: Joi.string().required().email(),
+    }),
+};
+
+const resetPassword = {
+    body: Joi.object().keys({
+        token: Joi.string().required(),
+        email: Joi.string().required().email(),
+        password: Joi.string().required(),
+        password_confirm: Joi.string().required(),
+    }),
+};
+
 export default {
     register,
+    sendEmailVerification,
     login,
     loginGoogle,
+    verifyEmail,
+    sendResetPasswordEmail,
+    resetPassword,
 };

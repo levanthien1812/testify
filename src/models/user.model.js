@@ -73,6 +73,16 @@ const userSchema = mongoose.Schema(
         phone_number: {
             type: String,
         },
+        is_verified: {
+            type: Boolean,
+            default: false,
+        },
+        verification_code: {
+            type: String,
+        },
+        verification_code_expires: {
+            type: Date,
+        },
     },
     {
         timestamp: true,
@@ -95,6 +105,17 @@ userSchema.pre("save", async function (next) {
     const user = this;
     if (user.isModified("password")) {
         user.password = await bcrypt.hash(user.password, 8);
+    }
+    next();
+});
+
+userSchema.pre("findOneAndUpdate", async function (next) {
+    const user = this;
+    if (user.getUpdate().password) {
+        user.getUpdate().password = await bcrypt.hash(
+            user.getUpdate().password,
+            8
+        );
     }
     next();
 });
