@@ -240,7 +240,7 @@ const updateIncludingManuallyQuestions = async (testId) => {
     );
 
     await Test.findByIdAndUpdate(testId, {
-        inincludes_manually_scored_questions: includesManuallyScoredQuestions,
+        includes_manually_scored_questions: includesManuallyScoredQuestions,
     });
 };
 

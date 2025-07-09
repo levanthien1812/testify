@@ -6,6 +6,9 @@ import tokenService from "./token.service.js";
 import TOKEN_TYPE from "../config/constants/tokens.js";
 import { OAuth2Client } from "google-auth-library";
 import { Token } from "../models/token.model.js";
+import { generateVerificationCode } from "../utils/generateCode.js";
+import { verificationEmailTemplate } from "../templates/verificationEmail.js";
+import sendEmail from "../utils/sendEmail.js";
 
 const login = async (body) => {
     const user = await userService.getUserByEmail(body.email);
@@ -90,9 +93,61 @@ const logout = async (refreshToken) => {
     return;
 };
 
+const sendVerificationEmail = async (email) => {
+    const user = await userService.getUserByEmail(email);
+    if (!user) {
+        throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+    }
+
+    if (user.is_verified) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "User already verified");
+    }
+
+    const verificationCode = generateVerificationCode(6);
+    const html = verificationEmailTemplate
+        .replace("{{VERIFICATION_CODE}}", verificationCode)
+        .replace(
+            "{{VERIFICATION_EXPIRES_IN_MINUTES}}",
+            process.env.VERFICATION_EXPIRES_IN_MINUTES
+        );
+
+    await sendEmail(email, "Verify your email", html);
+
+    await userService.updateUser(user.id, {
+        verification_code: verificationCode,
+        verification_code_expires: new Date(
+            Date.now() + process.env.VERFICATION_EXPIRES_IN_MINUTES * 60 * 1000
+        ),
+    });
+};
+
+const verifyEmail = async (email, code) => {
+    const user = await userService.getUserByEmail(email);
+    if (!user) {
+        throw new ApiError(httpStatus.NOT_FOUND, "User not found");
+    }
+    if (user.is_verified) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "User already verified");
+    }
+
+    if (user.verification_code !== code) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid verification code");
+    }
+    if (user.verification_code_expires < new Date()) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Verification code expired");
+    }
+    await userService.updateUser(user.id, {
+        is_verified: true,
+        verification_code: null,
+        verification_code_expires: null,
+    });
+};
+
 export default {
     login,
     refreshAuth,
     loginGoogle,
     logout,
+    sendVerificationEmail,
+    verifyEmail,
 };
