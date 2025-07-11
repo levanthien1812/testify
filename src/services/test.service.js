@@ -354,6 +354,13 @@ const getQuestionsResultForTest = async (testId) => {
     return questionsResult;
 };
 
+const isTestBelongToUser = async (testId, userId) => {
+    const test = await Test.findById(testId);
+    const maker = await makerService.getMakerByUserId(userId);
+
+    return test.maker_id === maker.id;
+};
+
 export default {
     createTest,
     getTests,
@@ -368,4 +375,5 @@ export default {
     addAccessedBy,
     getTakerStatistics,
     getQuestionsResultForTest,
+    isTestBelongToUser,
 };
