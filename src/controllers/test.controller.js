@@ -157,6 +157,14 @@ const getTest = catchAsync(async (req, res, next) => {
     }
 
     if (req.user.role === ROLES.MAKER) {
+        if (!testService.isTestBelongToUser(testId, req.user.id)) {
+            throw new ApiError(
+                httpStatus.FORBIDDEN,
+                ERROR_MESSAGE[ERROR_CODE.TEST_ACCESS_DENIED],
+                ERROR_CODE.TEST_ACCESS_DENIED
+            );
+        }
+
         options.includeCorrectAnswers = true;
     }
 
