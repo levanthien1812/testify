@@ -40,6 +40,11 @@ const getByUserId = async (userId) => {
     return taker;
 };
 
+const getTakersByUserId = async (userId) => {
+    const takers = await Taker.find({ user_id: userId });
+    return takers;
+};
+
 export default {
     createTaker,
     getTakersByMaker,
@@ -48,4 +53,5 @@ export default {
     getTakerByUserIdAndMakerId,
     getById,
     getByUserId,
+    getTakersByUserId,
 };

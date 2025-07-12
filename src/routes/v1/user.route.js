@@ -6,10 +6,18 @@ import { upload } from "../../config/multer.js";
 import { validate } from "../../middlewares/validate.js";
 import takerGroupController from "../../controllers/takerGroup.controller.js";
 import takerGroupValidation from "../../validations/takerGroup.validation.js";
+import userValidation from "../../validations/user.validation.js";
 
 const router = express.Router();
 
-router.route("/").get(auth("getUsers"), userController.getUsers);
+router
+    .route("/")
+    .get(auth(RIGHTS.GET_USERS), userController.getUsers)
+    .patch(
+        auth(RIGHTS.UPDATE_USER),
+        validate(userValidation.updateUser),
+        userController.updateUser
+    );
 
 router
     .route("/takers")
@@ -66,6 +74,21 @@ router
     .delete(
         auth(RIGHTS.DELETE_TAKER_GROUP),
         takerGroupController.deleteTakerGroup
+    );
+
+router
+    .route("/search")
+    .get(
+        auth(RIGHTS.GET_USERS_BY_EMAIL_SEARCH),
+        validate(userValidation.searchUsers),
+        userController.getTakerUsersByEmailSearch
+    );
+
+router
+    .route("/makers-group")
+    .get(
+        auth(RIGHTS.GET_MAKERS_WITH_GROUP),
+        takerGroupController.getMakersWithGroup
     );
 
 export default router;

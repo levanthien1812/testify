@@ -165,6 +165,25 @@ const getBlockedInfo = catchAsync(async (req, res) => {
     return res.status(httpStatus.OK).send({ blockedUsers, blockedBy });
 });
 
+const getTakerUsersByEmailSearch = catchAsync(async (req, res) => {
+    const { email } = req.query;
+    const users = await userService.getTakerUsersByEmailSearch(email);
+    const existingTakers = await takerService.getTakersByMaker(req.user.id);
+    const existingTakerUserIds = existingTakers.map((taker) => taker.user_id);
+
+    const filteredUsers = users
+        .filter((user) => !existingTakerUserIds.includes(user.id))
+        .slice(0, 5);
+
+    return res.status(httpStatus.OK).send({ users: filteredUsers });
+});
+
+const updateUser = catchAsync(async (req, res) => {
+    const updatedUser = await userService.updateUser(req.params.id, req.body);
+
+    return res.status(httpStatus.OK).send({ user: updatedUser });
+});
+
 export default {
     getUsers,
     getTakersByMaker,
@@ -174,4 +193,6 @@ export default {
     getBlockedInfo,
     createTaker,
     updateTaker,
+    getTakerUsersByEmailSearch,
+    updateUser,
 };

@@ -33,10 +33,19 @@ const removeTakerFromGroup = async (takerGroupId, takerId) => {
     return updatedGroup;
 };
 
+const getGroupByMakerIdAndTakerId = async (makerId, takerId) => {
+    const takerGroup = await TakerGroup.findOne({
+        maker_id: makerId,
+        takers: takerId,
+    });
+    return takerGroup;
+};
+
 export default {
     createTakerGroup,
     getTakerGroups,
     getTakersInGroup,
     addTakerToGroup,
     removeTakerFromGroup,
+    getGroupByMakerIdAndTakerId,
 };
