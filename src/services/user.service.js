@@ -1,3 +1,4 @@
+import { ROLES } from "../config/constants/roles.js";
 import { User } from "../models/user.model.js";
 
 const createUser = async (body) => {
@@ -77,6 +78,13 @@ const getUserByEmail = async (email) => {
     return await User.findOne({ email });
 };
 
+const getTakerUsersByEmailSearch = async (email) => {
+    return await User.find({
+        email: { $regex: new RegExp(email, "i") },
+        role: ROLES.TAKER,
+    });
+};
+
 const getUserById = async (id) => {
     return await User.findById(id);
 };
@@ -101,4 +109,5 @@ export default {
     getBlockedBy,
     updateUser,
     checkUserEmailExist,
+    getTakerUsersByEmailSearch,
 };

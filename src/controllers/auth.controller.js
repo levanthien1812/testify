@@ -16,7 +16,7 @@ const register = catchAsync(async (req, res) => {
         await makerService.createMaker({ user_id: user.id, name: user.name });
     }
 
-    await authService.sendVerificationEmail(user.email);
+    // await authService.sendVerificationEmail(user.email);
 
     return res.status(httpStatus.CREATED).json({ user });
 });

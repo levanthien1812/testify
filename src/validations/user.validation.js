@@ -15,6 +15,27 @@ const getTakersDetails = {
     }),
 };
 
+const searchUsers = {
+    query: Joi.object().keys({
+        email: Joi.string().required(),
+    }),
+};
+
+const updateUser = {
+    body: Joi.object().keys({
+        name: Joi.string(),
+        email: Joi.string().email(),
+        photo: Joi.string(),
+        gender: Joi.string().valid("male", "female"),
+        birthday: Joi.date(),
+        phone_number: Joi.string(),
+        password: Joi.string(),
+        password_confirm: Joi.string(),
+    }),
+};
+
 export default {
     getTakersDetails,
+    searchUsers,
+    updateUser,
 };
