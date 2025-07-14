@@ -4,7 +4,6 @@ import { ApiError } from "../utils/apiError.js";
 import catchAsync from "../utils/catchAsync.js";
 import { TEST_STATUS } from "../config/constants/testStatus.js";
 import submissionService from "../services/submission.service.js";
-import { Test } from "../models/test.model.js";
 import answerService from "../services/answer.service.js";
 import { ROLES } from "../config/constants/roles.js";
 import takerService from "../services/taker.service.js";

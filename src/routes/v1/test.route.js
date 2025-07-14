@@ -197,11 +197,6 @@ router
 
 router
     .route("/:testId/passcode")
-    .get(
-        auth(RIGHTS.GET_PASSCODE),
-        checkAccess(),
-        passcodeController.getPasscodeByTestId
-    )
     .post(
         auth(RIGHTS.CREATE_PASSCODE),
         checkAccess(),

@@ -26,11 +26,20 @@ const createAnswer = async (submissionId, answerBody) => {
         throw new ApiError(httpStatus.NOT_FOUND, "Question not found!");
     }
 
+    const skipped = answerBody.content ? false : true;
+
     let newAnswer = await Answer.create({
         question_id: answerBody.question_id,
         submission_id: submissionId,
         date: new Date(),
+        is_correct: false,
+        score: 0,
+        skipped: skipped,
     });
+
+    if (skipped) {
+        return newAnswer;
+    }
 
     let answerContent = {
         answer_id: newAnswer.id,
@@ -60,6 +69,11 @@ const updateAnswer = async (answerId, answerBody) => {
         }
     );
 
+    if (answerBody.score !== undefined) {
+        updatedAnswer.evaluated = true;
+        await updatedAnswer.save();
+    }
+
     await submissionService.scoreSubmission(answer.submission_id);
 
     return updatedAnswer;
@@ -68,8 +82,8 @@ const updateAnswer = async (answerId, answerBody) => {
 const scoreAnswerByAnswerId = async (answerId) => {
     const answer = await Answer.findById(answerId);
 
-    if (!answer) {
-        throw new ApiError(httpStatus.NOT_FOUND, "Answer not found!");
+    if (!answer || answer.skipped) {
+        return answer;
     }
 
     const question = await Question.findById(answer.question_id);
@@ -79,6 +93,7 @@ const scoreAnswerByAnswerId = async (answerId) => {
         answerId,
         question.type
     );
+
     let questionContent = await questionModel
         .findOne({
             question_id: question.id,
@@ -88,8 +103,8 @@ const scoreAnswerByAnswerId = async (answerId) => {
     if (questionContent.answer) {
         if (
             isEqual(
-                answerContent.answer?.toObject(),
-                questionContent.answer?.toObject()
+                answerContent.answer.toObject(),
+                questionContent.answer.toObject()
             )
         ) {
             answer.is_correct = true;
@@ -98,6 +113,7 @@ const scoreAnswerByAnswerId = async (answerId) => {
             answer.is_correct = false;
             answer.score = 0;
         }
+        answer.evaluated = true;
         await answer.save();
     }
 
@@ -145,7 +161,10 @@ const getAnswersBySubmissionId = async (submissionId, options) => {
     const answersWithContent = await Promise.all(
         answers.map(async (answer) => {
             const answerContent = await getAnswerContentByAnswerId(answer.id);
-            return { ...answer.toObject(), content: answerContent.answer };
+            return {
+                ...answer.toObject(),
+                content: answerContent ? answerContent.answer : null,
+            };
         })
     );
 

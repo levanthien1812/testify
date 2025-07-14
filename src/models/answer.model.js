@@ -23,6 +23,14 @@ const answerSchema = mongoose.Schema(
         score: {
             type: Number,
         },
+        skipped: {
+            type: Boolean,
+            default: false,
+        },
+        evaluated: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamps: {

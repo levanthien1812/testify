@@ -2,10 +2,7 @@ import mongoose from "mongoose";
 import config from "../config/config.js";
 import { seedUsers } from "./user.seed.js";
 import { seedTests } from "./test.seed.js";
-import { seedParts } from "./part.seed.js";
-import { seedQuestions } from "./question.seed.js";
 import { logger } from "../config/logger.js";
-import { seedSubmissions } from "./submission.seed.js";
 
 const seedData = async () => {
     try {
@@ -26,9 +23,6 @@ const seedData = async () => {
 
         await seedUsers();
         await seedTests();
-        await seedParts();
-        await seedQuestions();
-        await seedSubmissions();
 
         logger.info("Database seeded");
 

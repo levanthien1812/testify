@@ -13,8 +13,8 @@ import { ApiError } from "../utils/apiError.js";
 import passcodeService from "../services/passcode.service.js";
 import takerService from "../services/taker.service.js";
 import makerService from "../services/maker.service.js";
-import { mockSubmissions } from "../seed/test.seed.js";
 import { Test } from "../models/test.model.js";
+import { mockSubmissions } from "../seed/submission.seed.js";
 
 const createTest = catchAsync(async (req, res, next) => {
     const maker = await makerService.getMakerByUserId(req.user.id);
@@ -79,9 +79,17 @@ const getTest = catchAsync(async (req, res, next) => {
                 );
             }
 
+            if (!test.passcode_id) {
+                throw new ApiError(
+                    httpStatus.BAD_REQUEST,
+                    ERROR_MESSAGE[ERROR_CODE.PASSCODE_NOT_SUPPORTED],
+                    ERROR_CODE.PASSCODE_NOT_SUPPORTED
+                );
+            }
+
             const isCorrectPasscode = await passcodeService.checkPasscode(
-                passcode,
-                testId
+                test.passcode_id,
+                passcode
             );
             if (!isCorrectPasscode) {
                 throw new ApiError(
@@ -157,14 +165,6 @@ const getTest = catchAsync(async (req, res, next) => {
     }
 
     if (req.user.role === ROLES.MAKER) {
-        if (!testService.isTestBelongToUser(testId, req.user.id)) {
-            throw new ApiError(
-                httpStatus.FORBIDDEN,
-                ERROR_MESSAGE[ERROR_CODE.TEST_ACCESS_DENIED],
-                ERROR_CODE.TEST_ACCESS_DENIED
-            );
-        }
-
         options.includeCorrectAnswers = true;
     }
 

@@ -20,11 +20,6 @@ const PassCodeSchema = new mongoose.Schema({
         required: true,
     },
     format: { type: String, required: false },
-    test_id: {
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: "Test",
-    },
 });
 
 PassCodeSchema.plugin(toJSON);

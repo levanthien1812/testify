@@ -51,21 +51,17 @@ const createRandomParts = async (test) => {
     return parts;
 };
 
-export const seedParts = async () => {
-    logger.info("Seeding parts...");
+export const seedParts = async (testId) => {
+    logger.info("Seeding parts for " + testId + "...");
 
-    const tests = await Test.find();
+    const test = await Test.findById(testId);
 
-    await Promise.all(
-        tests.map(async (test) => {
-            if (test.num_parts <= 1) {
-                return;
-            }
-            const parts = await createRandomParts(test);
+    if (test.num_parts <= 1) {
+        return;
+    }
+    const parts = await createRandomParts(test);
 
-            await Part.insertMany(parts);
-        })
-    );
+    await Part.insertMany(parts);
 
     logger.info("Seed parts done");
 };

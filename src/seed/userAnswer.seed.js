@@ -25,8 +25,22 @@ export const createRandomAnswer = async (question, submission) => {
         date: submission.submit_time,
         is_correct: false,
         score: 0,
+        skipped: false,
+        evaluated: false,
     };
 
+    let skipRate = faker.number.int({
+        min: 0,
+        max: 100,
+    });
+    let skipRateThreshold = 80;
+
+    if (skipRate > skipRateThreshold) {
+        userAnswer.skipped = true;
+        userAnswer.evaluated = true;
+        await Answer.create(userAnswer);
+        return;
+    }
     let randomAnswer;
     let correctAnswer = questionContentDoc.answer;
     let correctRate = faker.number.int({
@@ -85,7 +99,7 @@ export const createRandomAnswer = async (question, submission) => {
             break;
     }
 
-    if (correctRate > 50) {
+    if (correctRate > 50 && AUTO_SCORE_TYPE.includes(question.type)) {
         randomAnswer = correctAnswer;
     }
 
@@ -95,6 +109,7 @@ export const createRandomAnswer = async (question, submission) => {
     ) {
         userAnswer.is_correct = true;
         userAnswer.score = question.score;
+        userAnswer.evaluated = true;
     }
 
     if (MANUAL_SCORE_TYPE.includes(question.type)) {
@@ -103,7 +118,7 @@ export const createRandomAnswer = async (question, submission) => {
             min: 0,
             max: question.score,
         });
-        userAnswer.is_correct = userAnswer.score > 0;
+        userAnswer.evaluated = true;
     }
 
     const answerDoc = await Answer.create(userAnswer);

@@ -210,8 +210,8 @@ const TestSchema = new mongoose.Schema(
         includes_manually_scored_questions: {
             type: Boolean,
         },
-        passcode: {
-            type: mongoose.SchemaTypes.ObjectId,
+        passcode_id: {
+            type: String,
             ref: "PassCode",
             required: false,
         },
@@ -237,8 +237,16 @@ TestSchema.virtual("takers", {
     justOne: false,
 });
 
+TestSchema.virtual("passcode", {
+    ref: "PassCode",
+    localField: "passcode_id",
+    foreignField: "_id",
+    justOne: true,
+});
+
 TestSchema.pre(/^find/, function (next) {
     this.populate("takers");
+    this.populate("passcode");
     next();
 });
 
