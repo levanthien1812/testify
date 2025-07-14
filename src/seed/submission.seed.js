@@ -1,13 +1,13 @@
 import { faker } from "@faker-js/faker";
-import { Test } from "../models/test.model.js";
-import { User } from "../models/user.model.js";
 import { Submission } from "../models/submission.model.js";
-import { logger } from "../config/logger.js";
 import { createRandomAnswer } from "./userAnswer.seed.js";
 import { Question } from "../models/question.model.js";
 import submissionService from "../services/submission.service.js";
-import { TEST_STATUS } from "../config/constants/testStatus.js";
-import { Taker } from "../models/taker.model.js";
+import { seedTakersForMaker } from "./taker.seed.js";
+import testService from "../services/test.service.js";
+import takerService from "../services/taker.service.js";
+import { logger } from "../config/logger.js";
+import { SHARE_OPTION } from "../config/constants/shareOptions.js";
 
 export const createRandomSubmission = async (test, takerId) => {
     const startTime = new Date();
@@ -28,13 +28,9 @@ export const createRandomSubmission = async (test, takerId) => {
     });
 
     const questions = await Question.find({ test_id: test.id });
-    const randomQuestions = faker.helpers.arrayElements(questions, {
-        min: questions.length / 2,
-        max: questions.length,
-    });
 
     await Promise.all(
-        randomQuestions.map(async (question) => {
+        questions.map(async (question) => {
             await createRandomAnswer(question, submission);
         })
     );
@@ -42,42 +38,39 @@ export const createRandomSubmission = async (test, takerId) => {
     await submissionService.scoreSubmission(submission.id);
 };
 
-export const seedSubmissions = async () => {
-    logger.info("Seeding submissions...");
+// PRE-CONDITIONS
+// Test is provided
+// Questions are provided
+// Answers for questions are provided
+export const mockSubmissions = async (testId) => {
+    logger.info("Seeding submissions for " + testId + "...");
+    const test = await testService.findById(testId);
+    const MIN_TAKERS = 5;
 
-    const tests = await Test.find();
+    if (
+        test.share_option === SHARE_OPTION.RESTRICTED &&
+        (!test.taker_ids || test.taker_ids.length < MIN_TAKERS)
+    ) {
+        const newTakers = await seedTakersForMaker(test.maker_id, MIN_TAKERS);
+        await testService.assignTakers(
+            test.id,
+            newTakers.map((taker) => taker.id)
+        );
+    }
 
-    await Promise.all(tests.map(async (test) => {}));
-
-    logger.info("Seed submissions done.");
-};
-
-export const seedSubmissionsByTest = async (testId) => {
-    const test = await Test.findById(testId);
-
-    const takers = await Taker.find({
-        _id: { $in: test.taker_ids },
-    });
-
+    await submissionService.deleteSubmissionsByTestId(test.id);
+    const takers = await takerService.getTakersByMaker(test.maker_id);
     const randomTakers = faker.helpers.arrayElements(takers, {
-        min: 1,
+        min: MIN_TAKERS,
         max: takers.length,
     });
 
     await Promise.all(
         randomTakers.map(async (taker) => {
-            await createRandomSubmission(test, taker);
+            await createRandomSubmission(test, taker.id);
+            await testService.addAccessedBy(test.id, taker.id);
         })
     );
 
-    test.datetime = faker.date.recent({
-        days: 2,
-        refDate: test.datetime,
-    });
-
-    if (test.datetime.getTime() < new Date().getTime()) {
-        test.status = TEST_STATUS.PUBLISHED;
-    }
-
-    await test.save({ validateBeforeSave: false });
+    logger.info("Seed submissions done");
 };

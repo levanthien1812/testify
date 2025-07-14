@@ -14,17 +14,23 @@ const generatePasscode = catchAsync(async (req, res, next) => {
 });
 
 const createPasscode = catchAsync(async (req, res, next) => {
+    const { testId } = req.params;
     const { passcode: passcodeBody } = req.body;
 
+    const test = await testService.findById(testId);
+
     // Delete previous passcodes if any
-    do {
-        await passcodeService.deletePasscodeByTestId(req.params.testId);
-    } while (await passcodeService.findPasscodeByCode(passcodeBody.code));
+    if (test.passcode_id) {
+        await passcodeService.deleteById(test.passcode_id);
+    }
 
     const passcode = await passcodeService.createPasscode({
         ...passcodeBody,
-        test_id: req.params.testId,
     });
+
+    if (passcode) {
+        await testService.updateTest(testId, { passcode_id: passcode.id });
+    }
 
     return res.status(httpStatus.CREATED).send({ passcode });
 });
@@ -39,21 +45,9 @@ const checkPasscode = catchAsync(async (req, res, next) => {
 
     return res.status(httpStatus.OK).send({ passcode });
 });
-const getPasscodeByTestId = catchAsync(async (req, res, next) => {
-    const passcode = await passcodeService.findPasscodeByTestId(
-        req.params.testId
-    );
-
-    if (!passcode) {
-        throw new ApiError(httpStatus.NOT_FOUND, "Passcode not found!");
-    }
-
-    return res.status(httpStatus.OK).send({ passcode });
-});
 
 export default {
     generatePasscode,
     createPasscode,
     checkPasscode,
-    getPasscodeByTestId,
 };

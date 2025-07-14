@@ -8,22 +8,22 @@ const findPasscodeByCode = async (code) => {
     return await PassCode.findOne({ code });
 };
 
-const deletePasscodeByTestId = async (testId) => {
-    return await PassCode.deleteMany({ test_id: testId });
+const deleteById = async (id) => {
+    return await PassCode.findByIdAndDelete(id);
 };
 
-const findPasscodeByTestId = async (testId) => {
-    return await PassCode.findOne({ test_id: testId });
+const getById = async (id) => {
+    return await PassCode.findById(id);
 };
 
-const checkPasscode = async (code, testId) => {
-    return await PassCode.exists({ test_id: testId, code: code });
+const checkPasscode = async (id, code) => {
+    return await PassCode.findOne({ _id: id, code });
 };
 
 export default {
     createPasscode,
-    deletePasscodeByTestId,
     findPasscodeByCode,
-    findPasscodeByTestId,
+    deleteById,
+    getById,
     checkPasscode,
 };

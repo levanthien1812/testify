@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { toJSON } from "./plugins/toJSON.js";
+import { FILL_GAP_INDICATOR } from "../config/constants/constants.js";
 
 const fillGapsQuestionSchema = mongoose.Schema({
     text: {
@@ -7,7 +8,7 @@ const fillGapsQuestionSchema = mongoose.Schema({
         required: true,
         match: [
             /.*\_{3}.*/,
-            "Text is not in correct format, must contain at least one ___ representing a gap",
+            `Text is not in correct format, must contain at least one ${FILL_GAP_INDICATOR} representing a gap`,
         ],
     },
     question_id: {

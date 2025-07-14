@@ -4,6 +4,7 @@ export const ERROR_CODE = {
     TEST_CLOSED: "TEST_CLOSED",
     PASSCODE_REQUIRED: "PASSCODE_REQUIRED",
     INCORRECT_PASSCODE: "INCORRECT_PASSCODE",
+    PASSCODE_NOT_SUPPORTED: "PASSCODE_NOT_SUPPORTED",
 };
 
 export const ERROR_MESSAGE = {
@@ -13,4 +14,5 @@ export const ERROR_MESSAGE = {
     [ERROR_CODE.TEST_CLOSED]: "The test you want to access is already closed!",
     [ERROR_CODE.PASSCODE_REQUIRED]: "Passcode is required for this test!",
     [ERROR_CODE.INCORRECT_PASSCODE]: "Passcode is not correct!",
+    [ERROR_CODE.PASSCODE_NOT_SUPPORTED]: "Passcode is not supported!",
 };

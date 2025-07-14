@@ -332,12 +332,12 @@ const getQuestionsResultForTest = async (testId) => {
                             submission.id,
                             true
                         );
-                    if (answer && answer.is_correct) {
+                    if (answer.skipped) {
+                        noOfSkippedAnswers++;
+                    } else if (answer && answer.is_correct) {
                         noOfCorrectAnswers++;
                     } else if (answer && !answer.is_correct) {
                         noOfWrongAnswers++;
-                    } else {
-                        noOfSkippedAnswers++;
                     }
                 })
             );

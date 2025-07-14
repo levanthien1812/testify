@@ -69,25 +69,22 @@ const createRandomQuestions = async (test) => {
     return allQuestions;
 };
 
-export const seedQuestions = async () => {
-    logger.info("Seeding questions...");
+export const seedQuestions = async (testId) => {
+    logger.info("Seeding questions for " + testId + "...");
 
-    const tests = await Test.find();
+    const test = await Test.findById(testId);
+
+    const randomQuestions = await createRandomQuestions(test);
+    const questions = await Question.insertMany(randomQuestions);
 
     await Promise.all(
-        tests.map(async (test) => {
-            const questions = await createRandomQuestions(test);
-            const questionDocs = await Question.insertMany(questions);
-
-            await Promise.all(
-                questionDocs.map(async (questionDoc) => {
-                    await createQuestionContentDoc(questionDoc);
-                    await createRandomAnswer(questionDoc);
-                })
-            );
-
-            test.are_answers_provided = true;
-            await test.save();
+        questions.map(async (question) => {
+            await createQuestionContentDoc(question);
+            await createRandomAnswer(question);
         })
     );
+
+    test.are_answers_provided = true;
+    await test.save();
+    logger.info("Seed questions done");
 };

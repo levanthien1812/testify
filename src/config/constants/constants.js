@@ -13,3 +13,5 @@ export const CHAT_OPTION = {
 };
 
 export const MANUAL_SCORE_TYPE = [QUESTION_TYPE.RESPONSE];
+
+export const FILL_GAP_INDICATOR = "___";
