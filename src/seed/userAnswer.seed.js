@@ -8,6 +8,7 @@ import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import { Answer } from "../models/answer.model.js";
 import {
     AUTO_SCORE_TYPE,
+    FILL_GAPS_METHOD,
     MANUAL_SCORE_TYPE,
 } from "../config/constants/constants.js";
 
@@ -58,11 +59,39 @@ export const createRandomAnswer = async (question, submission) => {
             }
             break;
         case QUESTION_TYPE.FILL_IN_THE_GAPS:
-            let gaps = [];
-            for (let i = 0; i < questionContentDoc.num_gaps; i++) {
-                gaps.push(faker.lorem.word());
+            const gaps = [];
+            const json_text = JSON.parse(questionContentDoc.json_text);
+            let remainingGivenWords = faker.helpers.shuffle(
+                questionContentDoc.given_words
+            );
+            for (let i = 0; i < json_text.content[0].content.length; i++) {
+                if (
+                    json_text.content[0].content[i].type === "inputPlaceholder"
+                ) {
+                    if (
+                        questionContentDoc.fill_method ===
+                        FILL_GAPS_METHOD.INPUT
+                    ) {
+                        gaps.push({
+                            id: json_text.content[0].content[i].attrs.id,
+                            text: faker.lorem.word(),
+                        });
+                    } else {
+                        const randomWord =
+                            faker.helpers.arrayElement(remainingGivenWords);
+
+                        gaps.push({
+                            id: json_text.content[0].content[i].attrs.id,
+                            text: randomWord.text,
+                        });
+
+                        remainingGivenWords = remainingGivenWords.filter(
+                            (word) => word.text !== randomWord.text
+                        );
+                    }
+                }
             }
-            randomAnswer = { gaps: gaps };
+            randomAnswer = { gaps };
             break;
         case QUESTION_TYPE.MATCHING:
             let matchings = [];

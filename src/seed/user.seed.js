@@ -37,11 +37,11 @@ export const seedUsers = async () => {
 
             await seedTakersForMaker(
                 maker.id,
-                faker.number.int({ min: 5, max: 20 })
+                faker.number.int({ min: 5, max: 40 })
             );
             await seedGroupsForMaker(
                 maker.id,
-                faker.number.int({ min: 5, max: 20 })
+                faker.number.int({ min: 5, max: 40 })
             );
         })
     );

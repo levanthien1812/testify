@@ -1,7 +1,75 @@
 import { faker } from "@faker-js/faker";
 import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import { questionTypeToQuestionModel } from "../utils/mapping.js";
-import { FILL_GAP_INDICATOR } from "../config/constants/constants.js";
+import {
+    FILL_GAP_INDICATOR,
+    FILL_GAPS_METHOD,
+} from "../config/constants/constants.js";
+
+function generateTipTapDoc(numOfGaps) {
+    const content = [];
+
+    for (let i = 0; i < numOfGaps; i++) {
+        // Add random text before the gap
+        content.push({
+            type: "text",
+            text: faker.lorem.words({ min: 1, max: 3 }),
+        });
+
+        // Add a gap (inputPlaceholder)
+        content.push({
+            type: "inputPlaceholder",
+            text: "",
+            attrs: {
+                id: `gap-${i + 1}`,
+            },
+        });
+    }
+
+    // Optional: end with more text
+    content.push({
+        type: "text",
+        text: faker.lorem.words({ min: 1, max: 3 }),
+    });
+
+    return {
+        type: "doc",
+        content: [
+            {
+                type: "paragraph",
+                content,
+            },
+        ],
+    };
+}
+
+function convertDocToSentence(doc, gapLabel = FILL_GAP_INDICATOR) {
+    if (
+        !doc ||
+        doc.type !== "doc" ||
+        !Array.isArray(doc.content) ||
+        !Array.isArray(doc.content[0]?.content)
+    ) {
+        throw new Error("Invalid Tiptap doc structure.");
+    }
+
+    const paragraph = doc.content[0].content;
+
+    return paragraph
+        .map((node) => {
+            if (node.type === "text") {
+                return node.text;
+            }
+            if (node.type === "inputPlaceholder") {
+                return gapLabel;
+            }
+            return "";
+        })
+        .join(" ")
+        .replace(/\s+([,.!?;:])/g, "$1") // clean up spaces before punctuation
+        .replace(/\s+/g, " ") // normalize spaces
+        .trim();
+}
 
 export const createQuestionContentDoc = async (questionDoc) => {
     let content;
@@ -21,22 +89,32 @@ export const createQuestionContentDoc = async (questionDoc) => {
             break;
         case QUESTION_TYPE.FILL_IN_THE_GAPS:
             const numGaps = faker.number.int({ min: 1, max: 5 });
-            let text = faker.lorem.sentence();
-            const randomPositions = Array(numGaps)
-                .fill(0)
-                .map(() => faker.number.int({ min: 0, max: text.length - 1 }));
+            const method = faker.helpers.arrayElement(
+                Object.values(FILL_GAPS_METHOD)
+            );
+            const json_text = generateTipTapDoc(numGaps);
+            const text = convertDocToSentence(json_text);
+            let given_words = [];
 
-            randomPositions.map((position) => {
-                text =
-                    text.slice(0, position) +
-                    FILL_GAP_INDICATOR +
-                    text.slice(position, text.length);
-            });
+            if (method === FILL_GAPS_METHOD.DRAG_DROP) {
+                const additionalNoOfWords = faker.number.int({
+                    min: 1,
+                    max: 5,
+                });
+                for (let i = 0; i < numGaps + additionalNoOfWords; i++) {
+                    given_words.push({
+                        text: faker.lorem.word(),
+                    });
+                }
+            }
 
             content = {
                 question_id: questionDoc._id,
                 num_gaps: numGaps,
                 text: text,
+                fill_method: method,
+                given_words: given_words,
+                json_text: JSON.stringify(json_text),
             };
             break;
         case QUESTION_TYPE.MATCHING:

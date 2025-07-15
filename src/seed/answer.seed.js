@@ -1,3 +1,4 @@
+import { FILL_GAPS_METHOD } from "../config/constants/constants.js";
 import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import { questionTypeToQuestionModel } from "../utils/mapping.js";
 import { faker } from "@faker-js/faker";
@@ -21,8 +22,36 @@ export const createRandomAnswer = async (question) => {
             break;
         case QUESTION_TYPE.FILL_IN_THE_GAPS:
             const gaps = [];
-            for (let i = 0; i < questionContentDoc.num_gaps; i++) {
-                gaps.push(faker.lorem.word());
+            const json_text = JSON.parse(questionContentDoc.json_text);
+            let remainingGivenWords = faker.helpers.shuffle(
+                questionContentDoc.given_words
+            );
+            for (let i = 0; i < json_text.content[0].content.length; i++) {
+                if (
+                    json_text.content[0].content[i].type === "inputPlaceholder"
+                ) {
+                    if (
+                        questionContentDoc.fill_method ===
+                        FILL_GAPS_METHOD.INPUT
+                    ) {
+                        gaps.push({
+                            id: json_text.content[0].content[i].attrs.id,
+                            text: faker.lorem.word(),
+                        });
+                    } else {
+                        const randomWord =
+                            faker.helpers.arrayElement(remainingGivenWords);
+
+                        gaps.push({
+                            id: json_text.content[0].content[i].attrs.id,
+                            text: randomWord.text,
+                        });
+
+                        remainingGivenWords = remainingGivenWords.filter(
+                            (word) => word.text !== randomWord.text
+                        );
+                    }
+                }
             }
             questionContentDoc.answer = { gaps };
             break;

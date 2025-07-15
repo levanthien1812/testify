@@ -9,9 +9,12 @@ const fillGapsAnswerSchema = mongoose.Schema({
     },
     answer: {
         type: {
-            gaps: {
-                type: [String],
-            },
+            gaps: [
+                {
+                    id: String,
+                    text: String,
+                },
+            ],
         },
         required: true,
         _id: false,

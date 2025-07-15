@@ -1,8 +1,11 @@
 import mongoose from "mongoose";
 import { toJSON } from "./plugins/toJSON.js";
-import { FILL_GAP_INDICATOR } from "../config/constants/constants.js";
+import {
+    FILL_GAP_INDICATOR,
+    FILL_GAPS_METHOD,
+} from "../config/constants/constants.js";
 
-const fillGapsQuestionSchema = mongoose.Schema({
+const fillGapsQuestionSchema = new mongoose.Schema({
     text: {
         type: String,
         required: true,
@@ -26,7 +29,12 @@ const fillGapsQuestionSchema = mongoose.Schema({
     answer: {
         type: {
             gaps: {
-                type: [String],
+                type: [
+                    {
+                        id: String,
+                        text: String,
+                    },
+                ],
                 _id: false,
             },
             explaination: {
@@ -35,6 +43,36 @@ const fillGapsQuestionSchema = mongoose.Schema({
         },
         select: false,
         _id: false,
+    },
+    json_text: {
+        type: String,
+        required: true,
+    },
+    fill_method: {
+        type: String,
+        required: true,
+        enum: Object.values(FILL_GAPS_METHOD),
+    },
+    given_words: {
+        type: [
+            {
+                text: {
+                    type: String,
+                    required: true,
+                },
+                _id: false,
+            },
+        ],
+        validate(value) {
+            if (
+                this.fill_method === FILL_GAPS_METHOD.DRAG_DROP &&
+                value.length < this.num_gaps
+            ) {
+                throw new Error(
+                    `Please provide at least ${this.num_gaps} words`
+                );
+            }
+        },
     },
     __v: { type: Number, select: false },
 });
