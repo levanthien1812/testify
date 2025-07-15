@@ -80,6 +80,8 @@ export const seedQuestions = async (testId) => {
     await Promise.all(
         questions.map(async (question) => {
             await createQuestionContentDoc(question);
+            question.is_content_provided = true;
+            await question.save();
             await createRandomAnswer(question);
         })
     );
