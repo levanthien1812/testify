@@ -13,6 +13,7 @@ const fillGapsAnswerSchema = mongoose.Schema({
                 {
                     id: String,
                     text: String,
+                    is_correct: Boolean,
                 },
             ],
         },
