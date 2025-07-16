@@ -166,7 +166,7 @@ const checkAnswersProvided = async (testId) => {
             .find({
                 question_id: question.id,
             })
-            .select("answer");
+            .select("+answer");
 
         return (
             AUTO_SCORE_TYPE.includes(question.type) && !!questionContent.answer

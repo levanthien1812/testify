@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
 import { QUESTION_LEVEL } from "../config/constants/levels.js";
-import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
+import {
+    QUESTION_TYPE,
+    QUESTION_TYPE_LABEL,
+} from "../config/constants/questionTypes.js";
 import { toJSON } from "./plugins/toJSON.js";
+import { ALLOWED_PARTIAL_SCORING_TYPES } from "../config/constants/constants.js";
 
 const questionSchema = mongoose.Schema(
     {
@@ -36,6 +40,23 @@ const questionSchema = mongoose.Schema(
         is_content_provided: {
             type: Boolean,
             default: false,
+        },
+        partial_scoring: {
+            type: Boolean,
+            default: false,
+            validate(value) {
+                if (
+                    !ALLOWED_PARTIAL_SCORING_TYPES.includes(this.type) &&
+                    value
+                ) {
+                    throw new Error(
+                        `${
+                            QUESTION_TYPE_LABEL[this.type]
+                        } does not support partial scoring.`
+                    );
+                }
+                return true;
+            },
         },
         __v: { type: Number, select: false },
     },

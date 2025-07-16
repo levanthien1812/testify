@@ -8,6 +8,10 @@ import {
 } from "../utils/mapping.js";
 import { isEqual } from "../utils/isEqual.js";
 import submissionService from "./submission.service.js";
+import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
+import { FillGapsAnswer } from "../models/fillGapsAnswer.model.js";
+import { pickFields } from "../utils/object.js";
+import { MatchingAnswer } from "../models/matchingAnswer.model.js";
 
 const createAnswers = async (submissionId, answersBody) => {
     const answers = await Promise.all(
@@ -98,20 +102,31 @@ const scoreAnswerByAnswerId = async (answerId) => {
         .findOne({
             question_id: question.id,
         })
-        .select("answer");
+        .select("+answer");
 
     if (questionContent.answer) {
-        if (
-            isEqual(
-                answerContent.answer.toObject(),
-                questionContent.answer.toObject()
-            )
-        ) {
-            answer.is_correct = true;
-            answer.score = question.score;
+        if (!question.partial_scoring) {
+            if (
+                isEqual(
+                    answerContent.answer.toObject(),
+                    questionContent.answer.toObject()
+                )
+            ) {
+                answer.is_correct = true;
+                answer.score = question.score;
+            } else {
+                answer.is_correct = false;
+                answer.score = 0;
+            }
         } else {
-            answer.is_correct = false;
-            answer.score = 0;
+            const partialScore = await calculatePartialScore(
+                question,
+                questionContent,
+                answerContent
+            );
+            answer.score = parseFloat(partialScore.toFixed(2));
+
+            answer.is_correct = partialScore === question.score;
         }
         answer.evaluated = true;
         await answer.save();
@@ -169,6 +184,81 @@ const getAnswersBySubmissionId = async (submissionId, options) => {
     );
 
     return answersWithContent;
+};
+
+const calculatePartialScore = async (question, questionContent, userAnswer) => {
+    let partialScore = 0;
+    let isAllCorrect = true;
+    const makerAnswer = questionContent.answer;
+
+    switch (question.type) {
+        case QUESTION_TYPE.FILL_IN_THE_GAPS: {
+            const itemsCount = makerAnswer.gaps.length;
+            const scoreForEachItem = question.score / itemsCount;
+
+            const updatedUserAnswer = await Promise.all(
+                userAnswer.answer.gaps.map(async (gap) => {
+                    const isCorrect = makerAnswer.gaps.some(
+                        (makerGap) =>
+                            makerGap.id === gap.id && makerGap.text === gap.text
+                    );
+                    if (isCorrect) {
+                        partialScore += scoreForEachItem;
+                    } else {
+                        isAllCorrect = false;
+                    }
+
+                    return {
+                        ...gap,
+                        is_correct: isCorrect,
+                    };
+                })
+            );
+
+            await FillGapsAnswer.findByIdAndUpdate(userAnswer.id, {
+                $set: {
+                    answer: { gaps: updatedUserAnswer },
+                },
+            });
+
+            break;
+        }
+        case QUESTION_TYPE.MATCHING: {
+            const itemsCount = makerAnswer.matchings.length;
+            const scoreForEachItem = question.score / itemsCount;
+
+            const updatedUserAnswer = await Promise.all(
+                userAnswer.answer.matchings.map(async (matching) => {
+                    const isCorrect = makerAnswer.matchings.some(
+                        (takerMatching) =>
+                            takerMatching.left === matching.left &&
+                            takerMatching.right === matching.right
+                    );
+                    if (isCorrect) {
+                        partialScore += scoreForEachItem;
+                    } else {
+                        isAllCorrect = false;
+                    }
+                    return {
+                        ...matching,
+                        is_correct: isCorrect,
+                    };
+                })
+            );
+
+            await MatchingAnswer.findByIdAndUpdate(userAnswer.id, {
+                $set: {
+                    answer: { matchings: updatedUserAnswer },
+                },
+            });
+
+            break;
+        }
+        default:
+            break;
+    }
+
+    return isAllCorrect ? question.score : partialScore;
 };
 
 export default {

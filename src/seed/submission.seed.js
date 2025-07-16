@@ -29,11 +29,13 @@ export const createRandomSubmission = async (test, takerId) => {
 
     const questions = await Question.find({ test_id: test.id });
 
+    logger.info("Seeding answers for submission " + submission.id + "...");
     await Promise.all(
         questions.map(async (question) => {
             await createRandomAnswer(question, submission);
         })
     );
+    logger.info("Seed answers for submission " + submission.id + " done");
 
     await submissionService.scoreSubmission(submission.id);
 };

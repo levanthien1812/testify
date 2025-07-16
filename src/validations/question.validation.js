@@ -15,6 +15,7 @@ const createTestQuestion = {
         content: Joi.object().required(),
         part_id: Joi.string().optional(),
         test_id: Joi.string().optional(),
+        partial_scoring: Joi.boolean().optional(),
     }),
     params: Joi.object().keys({
         testId: Joi.string().required(),

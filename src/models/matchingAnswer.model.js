@@ -14,6 +14,7 @@ const matchingAnswerSchema = mongoose.Schema({
                     {
                         left: mongoose.SchemaTypes.ObjectId,
                         right: mongoose.SchemaTypes.ObjectId,
+                        is_correct: Boolean,
                     },
                 ],
                 _id: false,

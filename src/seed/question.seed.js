@@ -6,6 +6,7 @@ import { Question } from "../models/question.model.js";
 import { logger } from "../config/logger.js";
 import { createQuestionContentDoc } from "./questionContent.seed.js";
 import { createRandomAnswer } from "./answer.seed.js";
+import { ALLOWED_PARTIAL_SCORING_TYPES } from "../config/constants/constants.js";
 
 const createQuestions = (totalScore, numQuestions, testId, partId = null) => {
     let scores = [];
@@ -26,17 +27,22 @@ const createQuestions = (totalScore, numQuestions, testId, partId = null) => {
     scores.push(remainingScore);
 
     const questions = scores.map((score, index) => {
+        const randomeType = faker.helpers.arrayElement(
+            Object.values(QUESTION_TYPE)
+        );
+
+        let partialScoring = false;
+        if (ALLOWED_PARTIAL_SCORING_TYPES.includes(randomeType)) {
+            partialScoring = faker.datatype.boolean();
+        }
+
         return {
             order: index + 1,
             test_id: testId,
             part_id: partId,
             score,
-            type: Object.values(QUESTION_TYPE)[
-                faker.number.int({
-                    min: 0,
-                    max: Object.values(QUESTION_TYPE).length - 1,
-                })
-            ],
+            type: randomeType,
+            partial_scoring: partialScoring,
         };
     });
 
