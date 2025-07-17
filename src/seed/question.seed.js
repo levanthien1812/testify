@@ -11,14 +11,12 @@ import { ALLOWED_PARTIAL_SCORING_TYPES } from "../config/constants/constants.js"
 const createQuestions = (totalScore, numQuestions, testId, partId = null) => {
     let scores = [];
     let remainingScore = totalScore;
+    let averageScore = totalScore / numQuestions;
 
     for (let i = 0; i < numQuestions - 1; i++) {
         const score = faker.number.float({
             min: 0.25,
-            max:
-                remainingScore <= (numQuestions - i - 1) * 0.25
-                    ? 0.25
-                    : remainingScore - (numQuestions - i - 1) * 0.25,
+            max: (Math.round(averageScore * 100) / 100) * 2,
             multipleOf: 0.25,
         });
         scores.push(score);

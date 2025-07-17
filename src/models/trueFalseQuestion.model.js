@@ -2,6 +2,10 @@ import mongoose from "mongoose";
 import { toJSON } from "./plugins/toJSON.js";
 
 const TrueFalseQuestionSchema = new mongoose.Schema({
+    instruction_text: {
+        type: String,
+        required: false,
+    },
     text: {
         type: String,
         required: true,

@@ -1,5 +1,8 @@
 import { faker } from "@faker-js/faker";
-import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
+import {
+    QUESTION_INSTRUCTIONS,
+    QUESTION_TYPE,
+} from "../config/constants/questionTypes.js";
 import { questionTypeToQuestionModel } from "../utils/mapping.js";
 import {
     FILL_GAP_INDICATOR,
@@ -79,6 +82,7 @@ export const createQuestionContentDoc = async (questionDoc) => {
             content = {
                 question_id: questionDoc._id,
                 text: faker.lorem.sentence(),
+                instruction_text: QUESTION_INSTRUCTIONS.MULTIPLE_CHOICES,
                 allow_multiple: false,
                 options: [...Array(faker.number.int({ min: 2, max: 6 }))].map(
                     () => ({
@@ -112,6 +116,7 @@ export const createQuestionContentDoc = async (questionDoc) => {
                 question_id: questionDoc._id,
                 num_gaps: numGaps,
                 text: text,
+                instruction_text: QUESTION_INSTRUCTIONS.FILL_IN_THE_GAPS,
                 fill_method: method,
                 given_words: given_words,
                 json_text: JSON.stringify(json_text),
@@ -133,6 +138,7 @@ export const createQuestionContentDoc = async (questionDoc) => {
 
             content = {
                 text: faker.lorem.sentence(),
+                instruction_text: QUESTION_INSTRUCTIONS.MATCHING,
                 question_id: questionDoc._id,
                 left_items: leftItems,
                 right_items: rightItems,
@@ -142,6 +148,7 @@ export const createQuestionContentDoc = async (questionDoc) => {
             content = {
                 question_id: questionDoc._id,
                 text: faker.lorem.sentence(),
+                instruction_text: QUESTION_INSTRUCTIONS.RESPONSE,
                 min_length: faker.number.int({ min: 1, max: 100 }),
                 max_length: faker.number.int({ min: 200, max: 1000 }),
             };
@@ -150,6 +157,7 @@ export const createQuestionContentDoc = async (questionDoc) => {
             content = {
                 question_id: questionDoc._id,
                 text: faker.lorem.sentence(),
+                instruction_text: QUESTION_INSTRUCTIONS.TRUE_FALSE,
             };
             break;
         default:
