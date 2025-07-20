@@ -13,3 +13,15 @@ export const QUESTION_TYPE_LABEL = {
     [QUESTION_TYPE.MATCHING]: "Matching",
     [QUESTION_TYPE.RESPONSE]: "Response",
 };
+
+export const QUESTION_INSTRUCTIONS = {
+    MULTIPLE_CHOICES_SINGLE:
+        "Select the correct answer from the given options.",
+    MULTIPLE_CHOICES_MULTIPLE: "Select all the correct answers.",
+    FILL_IN_THE_GAPS:
+        "Fill in the blank(s) with the most appropriate word or phrase.",
+    TRUE_FALSE: "Select whether the statement is true or false.",
+    MATCHING:
+        "Match each item in the left column with the correct item in the right column.",
+    RESPONSE: "Write your answer in the text box provided.",
+};

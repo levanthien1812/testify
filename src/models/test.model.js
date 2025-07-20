@@ -10,6 +10,9 @@ import { SHARE_OPTION } from "../config/constants/shareOptions.js";
 import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
 import { PassCode } from "./passcode.model.js";
 import { PAGINATION_MODE } from "../config/constants/test.js";
+import { User } from "./user.model.js";
+import { ROLES } from "../config/constants/roles.js";
+import { Maker } from "./maker.model.js";
 
 const TestOption = new mongoose.Schema({
     allow_close_time: {
@@ -244,9 +247,10 @@ TestSchema.virtual("passcode", {
     justOne: true,
 });
 
-TestSchema.pre(/^find/, function (next) {
+TestSchema.pre(/^find/, async function (next) {
     this.populate("takers");
     this.populate("passcode");
+
     next();
 });
 

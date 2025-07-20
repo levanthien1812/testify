@@ -1,5 +1,8 @@
 import { faker } from "@faker-js/faker";
-import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
+import {
+    QUESTION_INSTRUCTIONS,
+    QUESTION_TYPE,
+} from "../config/constants/questionTypes.js";
 import { questionTypeToQuestionModel } from "../utils/mapping.js";
 import {
     FILL_GAP_INDICATOR,
@@ -76,10 +79,15 @@ export const createQuestionContentDoc = async (questionDoc) => {
 
     switch (questionDoc.type) {
         case QUESTION_TYPE.MULTIPLE_CHOICES:
+            const allowMultiple = faker.datatype.boolean();
+
             content = {
                 question_id: questionDoc._id,
                 text: faker.lorem.sentence(),
-                allow_multiple: false,
+                instruction_text: !allowMultiple
+                    ? QUESTION_INSTRUCTIONS.MULTIPLE_CHOICES_SINGLE
+                    : QUESTION_INSTRUCTIONS.MULTIPLE_CHOICES_MULTIPLE,
+                allow_multiple: allowMultiple,
                 options: [...Array(faker.number.int({ min: 2, max: 6 }))].map(
                     () => ({
                         text: faker.word.words({ min: 1, max: 10 }),
@@ -112,6 +120,7 @@ export const createQuestionContentDoc = async (questionDoc) => {
                 question_id: questionDoc._id,
                 num_gaps: numGaps,
                 text: text,
+                instruction_text: QUESTION_INSTRUCTIONS.FILL_IN_THE_GAPS,
                 fill_method: method,
                 given_words: given_words,
                 json_text: JSON.stringify(json_text),
@@ -133,6 +142,7 @@ export const createQuestionContentDoc = async (questionDoc) => {
 
             content = {
                 text: faker.lorem.sentence(),
+                instruction_text: QUESTION_INSTRUCTIONS.MATCHING,
                 question_id: questionDoc._id,
                 left_items: leftItems,
                 right_items: rightItems,
@@ -142,6 +152,7 @@ export const createQuestionContentDoc = async (questionDoc) => {
             content = {
                 question_id: questionDoc._id,
                 text: faker.lorem.sentence(),
+                instruction_text: QUESTION_INSTRUCTIONS.RESPONSE,
                 min_length: faker.number.int({ min: 1, max: 100 }),
                 max_length: faker.number.int({ min: 200, max: 1000 }),
             };
@@ -150,6 +161,7 @@ export const createQuestionContentDoc = async (questionDoc) => {
             content = {
                 question_id: questionDoc._id,
                 text: faker.lorem.sentence(),
+                instruction_text: QUESTION_INSTRUCTIONS.TRUE_FALSE,
             };
             break;
         default:

@@ -7,7 +7,6 @@ import partService from "./part.service.js";
 import { questionTypeToQuestionModel } from "../utils/mapping.js";
 import testService from "./test.service.js";
 import { AUTO_SCORE_TYPE } from "../config/constants/constants.js";
-import fse from "fs-extra";
 import { Part } from "../models/part.model.js";
 import mongoose from "mongoose";
 import { shuffleQuestions } from "../utils/shuffleQuestions.js";

@@ -94,6 +94,7 @@ const scoreSubmission = async (submissionId) => {
             wrong_answers: totalWrongAnswers,
             correct_answers: totalCorrectAnswers,
             score: archivedScore,
+            is_evaluated: true,
         });
     }
 

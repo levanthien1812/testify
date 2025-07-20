@@ -7,6 +7,10 @@ export const ChoiceType = {
 };
 
 const multipleChoiceQuestionSchema = mongoose.Schema({
+    instruction_text: {
+        type: String,
+        required: false,
+    },
     text: {
         type: String,
         required: true,

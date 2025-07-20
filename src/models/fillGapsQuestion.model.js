@@ -6,6 +6,10 @@ import {
 } from "../config/constants/constants.js";
 
 const fillGapsQuestionSchema = new mongoose.Schema({
+    instruction_text: {
+        type: String,
+        required: false,
+    },
     text: {
         type: String,
         required: true,

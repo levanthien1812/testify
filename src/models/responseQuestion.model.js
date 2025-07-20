@@ -6,6 +6,10 @@ const ResponseQuestionSchema = Schema({
         type: Schema.Types.ObjectId,
         required: true,
     },
+    instruction_text: {
+        type: String,
+        required: false,
+    },
     text: {
         type: String,
         required: true,
