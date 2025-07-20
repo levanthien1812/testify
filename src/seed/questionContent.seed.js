@@ -79,11 +79,15 @@ export const createQuestionContentDoc = async (questionDoc) => {
 
     switch (questionDoc.type) {
         case QUESTION_TYPE.MULTIPLE_CHOICES:
+            const allowMultiple = faker.datatype.boolean();
+
             content = {
                 question_id: questionDoc._id,
                 text: faker.lorem.sentence(),
-                instruction_text: QUESTION_INSTRUCTIONS.MULTIPLE_CHOICES,
-                allow_multiple: false,
+                instruction_text: !allowMultiple
+                    ? QUESTION_INSTRUCTIONS.MULTIPLE_CHOICES_SINGLE
+                    : QUESTION_INSTRUCTIONS.MULTIPLE_CHOICES_MULTIPLE,
+                allow_multiple: allowMultiple,
                 options: [...Array(faker.number.int({ min: 2, max: 6 }))].map(
                     () => ({
                         text: faker.word.words({ min: 1, max: 10 }),

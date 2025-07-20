@@ -217,9 +217,12 @@ const getTest = catchAsync(async (req, res, next) => {
         }
     }
 
-    return res
-        .status(httpStatus.OK)
-        .send({ test, parts, questions, submissionsCount });
+    return res.status(httpStatus.OK).send({
+        test: testService.filterFieldsByRole(test.toObject(), req.user.role),
+        parts,
+        questions,
+        submissionsCount,
+    });
 });
 
 const assignTakers = catchAsync(async (req, res, next) => {

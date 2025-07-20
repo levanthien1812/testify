@@ -15,7 +15,9 @@ export const QUESTION_TYPE_LABEL = {
 };
 
 export const QUESTION_INSTRUCTIONS = {
-    MULTIPLE_CHOICES: "Select the correct answer from the given options.",
+    MULTIPLE_CHOICES_SINGLE:
+        "Select the correct answer from the given options.",
+    MULTIPLE_CHOICES_MULTIPLE: "Select all the correct answers.",
     FILL_IN_THE_GAPS:
         "Fill in the blank(s) with the most appropriate word or phrase.",
     TRUE_FALSE: "Select whether the statement is true or false.",

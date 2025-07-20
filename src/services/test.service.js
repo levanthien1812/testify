@@ -87,7 +87,7 @@ const getTests = async (user, reqQuery) => {
             });
 
             return {
-                ...test.toObject(),
+                ...filterFieldsByRole(test.toObject(), user.role),
                 submissions_count: submissionsCount,
             };
         })
@@ -361,6 +361,23 @@ const isTestBelongToUser = async (testId, userId) => {
     return test.maker_id === maker.id;
 };
 
+const filterFieldsByRole = (test, role) => {
+    const tempTest = { ...test };
+
+    if (role === ROLES.TAKER) {
+        delete tempTest.taker_ids;
+        delete tempTest.joined_taker_ids;
+        delete tempTest.accessed_by;
+        delete tempTest.takers;
+        delete tempTest.passcode_id;
+        delete tempTest.share_option;
+        delete tempTest.passcode;
+        delete tempTest.are_answers_provided;
+    }
+
+    return tempTest;
+};
+
 export default {
     createTest,
     getTests,
@@ -376,4 +393,5 @@ export default {
     getTakerStatistics,
     getQuestionsResultForTest,
     isTestBelongToUser,
+    filterFieldsByRole,
 };

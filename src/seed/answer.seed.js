@@ -14,10 +14,24 @@ export const createRandomAnswer = async (question) => {
     switch (question.type) {
         case QUESTION_TYPE.MULTIPLE_CHOICES:
             if (questionContentDoc.options.length > 0) {
-                const randomOption = faker.helpers.arrayElement(
-                    questionContentDoc.options
-                );
-                questionContentDoc.answer = { options: [randomOption._id] };
+                if (!questionContentDoc.allow_multiple) {
+                    const randomOption = faker.helpers.arrayElement(
+                        questionContentDoc.options
+                    );
+
+                    questionContentDoc.answer = { options: [randomOption._id] };
+                } else {
+                    const randomOptions = faker.helpers.arrayElements(
+                        questionContentDoc.options,
+                        faker.number.int({
+                            min: 1,
+                            max: questionContentDoc.options.length,
+                        })
+                    );
+                    questionContentDoc.answer = {
+                        options: randomOptions.map((option) => option._id),
+                    };
+                }
             }
             break;
         case QUESTION_TYPE.FILL_IN_THE_GAPS:
