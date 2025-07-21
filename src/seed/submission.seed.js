@@ -49,28 +49,45 @@ export const mockSubmissions = async (testId) => {
     const test = await testService.findById(testId);
     const MIN_TAKERS = 5;
 
-    if (
-        test.share_option === SHARE_OPTION.RESTRICTED &&
-        (!test.taker_ids || test.taker_ids.length < MIN_TAKERS)
-    ) {
-        const newTakers = await seedTakersForMaker(test.maker_id, MIN_TAKERS);
-        await testService.assignTakers(
-            test.id,
-            newTakers.map((taker) => taker.id)
-        );
+    let randomTakerIds;
+    if (test.share_option === SHARE_OPTION.RESTRICTED) {
+        if (!test.taker_ids || test.taker_ids.length < MIN_TAKERS) {
+            const newTakers = await seedTakersForMaker(
+                test.maker_id,
+                MIN_TAKERS
+            );
+            await testService.assignTakers(
+                test.id,
+                newTakers.map((taker) => taker.id)
+            );
+            randomTakerIds = faker.helpers
+                .arrayElements(newTakers, {
+                    min: MIN_TAKERS,
+                    max: newTakers.length,
+                })
+                .map((taker) => taker.id);
+        } else {
+            randomTakerIds = faker.helpers.arrayElements(test.taker_ids, {
+                min: MIN_TAKERS,
+                max: test.taker_ids.length,
+            });
+        }
+    } else {
+        const takers = await takerService.getTakersByMaker(test.maker_id);
+        randomTakerIds = faker.helpers
+            .arrayElements(takers, {
+                min: MIN_TAKERS,
+                max: takers.length,
+            })
+            .map((taker) => taker.id);
     }
 
     await submissionService.deleteSubmissionsByTestId(test.id);
-    const takers = await takerService.getTakersByMaker(test.maker_id);
-    const randomTakers = faker.helpers.arrayElements(takers, {
-        min: MIN_TAKERS,
-        max: takers.length,
-    });
 
     await Promise.all(
-        randomTakers.map(async (taker) => {
-            await createRandomSubmission(test, taker.id);
-            await testService.addAccessedBy(test.id, taker.id);
+        randomTakerIds.map(async (takerId) => {
+            await createRandomSubmission(test, takerId);
+            await testService.addAccessedBy(test.id, takerId);
         })
     );
 
