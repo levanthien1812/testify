@@ -70,66 +70,6 @@ const getTest = catchAsync(async (req, res, next) => {
             test.maker_id
         );
 
-        if (test.share_option === SHARE_OPTION.PASSCODE) {
-            if (!passcode) {
-                throw new ApiError(
-                    httpStatus.BAD_REQUEST,
-                    ERROR_MESSAGE[ERROR_CODE.PASSCODE_REQUIRED],
-                    ERROR_CODE.PASSCODE_REQUIRED
-                );
-            }
-
-            if (!test.passcode_id) {
-                throw new ApiError(
-                    httpStatus.BAD_REQUEST,
-                    ERROR_MESSAGE[ERROR_CODE.PASSCODE_NOT_SUPPORTED],
-                    ERROR_CODE.PASSCODE_NOT_SUPPORTED
-                );
-            }
-
-            const isCorrectPasscode = await passcodeService.checkPasscode(
-                test.passcode_id,
-                passcode
-            );
-            if (!isCorrectPasscode) {
-                throw new ApiError(
-                    httpStatus.BAD_REQUEST,
-                    ERROR_MESSAGE[ERROR_CODE.INCORRECT_PASSCODE],
-                    ERROR_CODE.INCORRECT_PASSCODE
-                );
-            }
-        }
-
-        if (
-            test.share_option === SHARE_OPTION.RESTRICTED &&
-            !test.taker_ids.includes(taker.id)
-        ) {
-            throw new ApiError(
-                httpStatus.FORBIDDEN,
-                ERROR_MESSAGE[ERROR_CODE.TEST_ACCESS_DENIED],
-                ERROR_CODE.TEST_ACCESS_DENIED
-            );
-        }
-
-        if (
-            test.status === TEST_STATUS.PUBLISHABLE ||
-            test.status === TEST_STATUS.DRAFT
-        ) {
-            throw new ApiError(
-                httpStatus.BAD_REQUEST,
-                ERROR_MESSAGE[ERROR_CODE.TEST_NOT_AVAILABLE],
-                ERROR_CODE.TEST_NOT_AVAILABLE
-            );
-        }
-
-        if (test.status === TEST_STATUS.CLOSED) {
-            throw new ApiError(
-                httpStatus.BAD_REQUEST,
-                ERROR_MESSAGE[ERROR_CODE.TEST_CLOSED],
-                ERROR_CODE.TEST_CLOSED
-            );
-        }
-
         const submissions =
             await submissionService.getSubmissionsByTakerIdAndTestId(
                 taker.id,
