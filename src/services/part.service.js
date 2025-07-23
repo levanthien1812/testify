@@ -21,7 +21,7 @@ const addPart = async (partBody) => {
 const validateParts = async (testId) => {
     const test = await testService.findById(testId);
 
-    if (test.num_parts <= 1) {
+    if (test.num_parts === 0) {
         return true;
     }
 

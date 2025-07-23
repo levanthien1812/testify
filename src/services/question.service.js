@@ -243,7 +243,7 @@ const validateQuestions = async (testId) => {
     const test = await Test.findById(testId);
     let validated;
 
-    if (test.num_parts === 1) {
+    if (test.num_parts === 0) {
         const questions = await Question.find({ test_id: testId });
 
         const totalQuestionsScores = questions.reduce(
@@ -305,7 +305,7 @@ const deleteQuestion = async (questionId, testId, questionBody) => {
         $inc: { num_questions: -1 },
     });
 
-    if (test.num_parts === 1 && test.num_questions > 0) {
+    if (test.num_parts === 0 && test.num_questions > 0) {
         // Reorder subsequent questions
         await Question.updateMany(
             { test_id: testId, order: { $gt: questionBody.order } },

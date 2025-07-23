@@ -56,7 +56,7 @@ export const seedParts = async (testId) => {
 
     const test = await Test.findById(testId);
 
-    if (test.num_parts <= 1) {
+    if (test.num_parts === 0) {
         return;
     }
     const parts = await createRandomParts(test);
