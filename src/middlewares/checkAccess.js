@@ -41,6 +41,8 @@ export const checkAccess = () => async (req, res, next) => {
         );
 
         if (test.share_option === SHARE_OPTION.PASSCODE) {
+            const passcode = req.query.passcode;
+
             if (!passcode) {
                 return next(
                     new ApiError(

@@ -14,7 +14,7 @@ const createTest = {
         description: Joi.string().allow(null).allow(""),
         parts: Joi.array().length(0),
         num_questions: Joi.number().min(1).required(),
-        num_parts: Joi.number().min(1).default(1),
+        num_parts: Joi.number().min(0).default(0).not(1),
         options: Joi.object()
             .optional()
             .keys({

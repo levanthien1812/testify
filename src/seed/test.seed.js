@@ -77,7 +77,10 @@ const createRandomTest = async () => {
         },
     ]);
 
-    const numParts = faker.number.int({ min: 1, max: 4 });
+    const numParts = faker.helpers.arrayElement([
+        0,
+        faker.number.int({ min: 2, max: 4 }),
+    ]);
     const numQuestions = faker.number.int({ min: numParts, max: 40 });
 
     const datetime = faker.date.soon({ days: 4 });

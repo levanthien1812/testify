@@ -184,8 +184,16 @@ const TestSchema = new mongoose.Schema(
         },
         num_parts: {
             type: Number,
-            min: 1,
-            default: 1,
+            min: 0,
+            default: 0,
+            required: true,
+            validate(value) {
+                if (value === 1) {
+                    throw new Error(
+                        "Test must have at least 2 parts or no part"
+                    );
+                }
+            },
         },
         num_questions: {
             type: Number,
