@@ -10,6 +10,7 @@ import { AUTO_SCORE_TYPE } from "../config/constants/constants.js";
 import { Part } from "../models/part.model.js";
 import mongoose from "mongoose";
 import { shuffleQuestions } from "../utils/shuffleQuestions.js";
+import { pickFields } from "../utils/object.js";
 
 const createQuestionContent = async (questionType, questionContent) => {
     const model = questionTypeToQuestionModel.get(questionType);
@@ -209,6 +210,10 @@ const getQuestionsByTestId = async (testId, options = {}) => {
     if (options.shuffleQuestions) {
         questions = shuffleQuestions(questions);
     }
+    if (options.includeContent) {
+        questions = await getQuestionsContent(questions);
+    }
+
     return questions;
 };
 
@@ -290,15 +295,27 @@ const getQuestionsByPart = async (partId, options = {}) => {
         questions = shuffleQuestions(questions);
     }
 
+    if (options.includeContent) {
+        questions = await getQuestionsContent(questions);
+    }
+
     return questions;
 };
 
-const deleteQuestion = async (questionId, testId, questionBody) => {
+const deleteQuestion = async (
+    questionId,
+    testId = null,
+    questionBody = null
+) => {
     if (mongoose.Types.ObjectId.isValid(questionId)) {
         const question = await Question.findById(questionId);
-        await deleteQuestionContent(questionId, question.type);
+        if (question) {
+            await deleteQuestionContent(questionId, question.type);
+        }
         await Question.findByIdAndDelete(questionId);
     }
+
+    if (!testId) return true;
 
     const test = await Test.findById(testId);
     await Test.findByIdAndUpdate(testId, {
@@ -412,16 +429,47 @@ export const deleteQuestionById = async (questionId) => {
     return deleted;
 };
 
+export const cloneQuestion = async (questionId) => {
+    const originalQuestion = await Question.findById(questionId);
+    const model = questionTypeToQuestionModel.get(originalQuestion.type);
+    const originalQuestionContent = await model.findOne({
+        question_id: originalQuestion.id,
+    });
+
+    const copiedQuestionBody = pickFields(originalQuestion.toObject(), [
+        "score",
+        "type",
+        "partial_scoring",
+        "level",
+    ]);
+
+    copiedQuestionBody.imported_from = originalQuestion.id;
+
+    const copiedQuestion = await Question.create(copiedQuestionBody);
+    const copiedQuestionContentBody = {
+        ...originalQuestionContent.toObject(),
+        question_id: copiedQuestion.id,
+    };
+    delete copiedQuestionContentBody.id;
+
+    const copiedQuestionContent = await model.create(copiedQuestionContentBody);
+
+    return {
+        ...copiedQuestion.toObject(),
+        content: copiedQuestionContent,
+    };
+};
+
 export default {
     createQuestion,
     updateQuestion,
     addAnswer,
     getQuestionsByTestId,
     getQuestionContent,
-    getQuestionsContent,
     getQuestionsByPart,
     validateQuestions,
     deleteQuestion,
     reorderQuestions,
     deleteQuestionById,
+    cloneQuestion,
 };

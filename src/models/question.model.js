@@ -58,6 +58,11 @@ const questionSchema = mongoose.Schema(
                 return true;
             },
         },
+        imported_from: {
+            type: mongoose.SchemaTypes.ObjectId,
+            ref: "Question",
+            required: false,
+        },
         __v: { type: Number, select: false },
     },
     {

@@ -8,6 +8,16 @@ const createQuestionBank = async (bankBody) => {
 
 const getQuestionBanksByMakerId = async (makerId) => {
     const questionBanks = await QuestionBank.find({ maker_id: makerId });
+    // bookmarked banks come first
+    questionBanks.sort((a, b) => {
+        if (a.is_bookmarked && !b.is_bookmarked) {
+            return -1;
+        }
+        if (!a.is_bookmarked && b.is_bookmarked) {
+            return 1;
+        }
+        return 0;
+    });
     return questionBanks;
 };
 
@@ -76,6 +86,19 @@ const deleteQuestionBank = async (bankId) => {
     return bank;
 };
 
+const removeQuestionFromBank = async (bankId, questionId) => {
+    const bank = await QuestionBank.findByIdAndUpdate(
+        bankId,
+        {
+            $pull: { question_ids: questionId },
+            $set: { updated_at: Date.now() },
+        },
+        { new: true }
+    );
+
+    return bank;
+};
+
 export default {
     createQuestionBank,
     getQuestionBanksByMakerId,
@@ -86,4 +109,5 @@ export default {
     getQuestionsByBankId,
     getQuestionBankByIdWithQuestions,
     deleteQuestionBank,
+    removeQuestionFromBank,
 };
