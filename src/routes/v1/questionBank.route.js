@@ -40,19 +40,23 @@ router
     );
 
 router
-    .route("/:id/questions/:questionId")
-    .patch(
-        auth(RIGHTS.UPDATE_QUESTION_IN_BANK),
-        validate(questionBankValidation.updateQuestion),
-        questionBankController.updateQuestionInBank
-    );
-
-router
     .route("/:id/questions/import")
     .patch(
         auth(RIGHTS.IMPORT_QUESTIONS_TO_BANK),
         validate(questionBankValidation.importQuestionsToBank),
         questionBankController.importQuestionToBank
+    );
+
+router
+    .route("/:id/questions/:questionId")
+    .patch(
+        auth(RIGHTS.UPDATE_QUESTION_IN_BANK),
+        validate(questionBankValidation.updateQuestion),
+        questionBankController.updateQuestionInBank
+    )
+    .delete(
+        auth(RIGHTS.DELETE_QUESTION_IN_BANK),
+        questionBankController.deleteQuestion
     );
 
 export default router;

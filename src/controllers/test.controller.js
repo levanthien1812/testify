@@ -104,6 +104,8 @@ const getTest = catchAsync(async (req, res, next) => {
         await testService.addAccessedBy(testId, taker.id);
     }
 
+    options.includeContent = true;
+
     if (req.user.role === ROLES.MAKER) {
         options.includeCorrectAnswers = true;
     }
@@ -137,10 +139,6 @@ const getTest = catchAsync(async (req, res, next) => {
                             part.id,
                             options
                         );
-                    questionsByPart = await questionService.getQuestionsContent(
-                        questionsByPart,
-                        options
-                    );
 
                     return { ...part.toObject(), questions: questionsByPart };
                 })
@@ -148,10 +146,6 @@ const getTest = catchAsync(async (req, res, next) => {
         } else {
             questions = await questionService.getQuestionsByTestId(
                 testId,
-                options
-            );
-            questions = await questionService.getQuestionsContent(
-                questions,
                 options
             );
         }
@@ -242,6 +236,12 @@ const getQuestionsResultForTest = catchAsync(async (req, res, next) => {
         .send({ questions_result: questionsResult });
 });
 
+const getTestsToImportQuestionToBank = catchAsync(async (req, res, next) => {
+    const tests = await testService.getTestsToImportQuestionToBank(req.user.id);
+
+    return res.status(httpStatus.OK).send({ tests });
+});
+
 export default {
     createTest,
     getTests,
@@ -254,4 +254,5 @@ export default {
     getTakersDetails,
     mockTest,
     getQuestionsResultForTest,
+    getTestsToImportQuestionToBank,
 };

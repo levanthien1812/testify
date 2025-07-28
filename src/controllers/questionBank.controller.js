@@ -62,10 +62,18 @@ const getQuestionBank = catchAsync(async (req, res, next) => {
 const importQuestionToBank = catchAsync(async (req, res, next) => {
     const questionBankId = req.params.id;
     const questions = req.body.questions;
+
+    const updatedQuestions = await Promise.all(
+        questions.map(async (questionId) => {
+            return await questionService.cloneQuestion(questionId);
+        })
+    );
+
     const updatedBank = await questionBankService.addQuestionsToBank(
         questionBankId,
-        questions
+        updatedQuestions.map((question) => question.id)
     );
+
     return res.status(httpStatus.OK).send({ questionBank: updatedBank });
 });
 
@@ -87,6 +95,15 @@ const deleteQuestionBank = catchAsync(async (req, res, next) => {
     return res.status(httpStatus.OK).send({ deleted });
 });
 
+const deleteQuestion = catchAsync(async (req, res, next) => {
+    const questionId = req.params.questionId;
+    const deleted = await questionService.deleteQuestion(questionId);
+
+    await questionBankService.removeQuestionFromBank(req.params.id, questionId);
+
+    return res.status(httpStatus.OK).send({ deleted });
+});
+
 export default {
     createQuestionBank,
     getQuestionBanks,
@@ -96,4 +113,5 @@ export default {
     importQuestionToBank,
     updateQuestionInBank,
     deleteQuestionBank,
+    deleteQuestion,
 };

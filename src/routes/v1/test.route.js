@@ -17,6 +17,7 @@ import passcodeController from "../../controllers/passcode.controller.js";
 import passcodeValidation from "../../validations/passcode.validation.js";
 import questionValidation from "../../validations/question.validation.js";
 import { checkAccess } from "../../middlewares/checkAccess.js";
+import testService from "../../services/test.service.js";
 
 const router = express.Router();
 
@@ -31,6 +32,13 @@ router
         auth(RIGHTS.GET_TESTS),
         validate(testValidation.getTests),
         testController.getTests
+    );
+
+router
+    .route("/tests-for-importing-questions-to-bank")
+    .get(
+        auth(RIGHTS.GET_TESTS_FOR_IMPORTING_QUESTIONS_TO_BANK),
+        testController.getTestsToImportQuestionToBank
     );
 
 router

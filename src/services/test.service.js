@@ -378,6 +378,34 @@ const filterFieldsByRole = (test, role) => {
     return tempTest;
 };
 
+const getTestsToImportQuestionToBank = async (userId) => {
+    const maker = await makerService.getMakerByUserId(userId);
+    let tests = await Test.find({ maker_id: maker.id }).select(
+        "id title num_questions"
+    );
+
+    tests = await Promise.all(
+        tests.map(async (test) => {
+            let questions = await questionService.getQuestionsByTestId(
+                test.id,
+                { includeContent: true }
+            );
+
+            if (test.num_parts > 1) {
+                questions.sort((a, b) => a.part.order - b.part.order);
+            }
+            return {
+                ...test.toObject(),
+                questions,
+            };
+        })
+    );
+
+    tests = tests.filter((test) => test.questions.length > 0);
+
+    return tests;
+};
+
 export default {
     createTest,
     getTests,
@@ -394,4 +422,5 @@ export default {
     getQuestionsResultForTest,
     isTestBelongToUser,
     filterFieldsByRole,
+    getTestsToImportQuestionToBank,
 };
