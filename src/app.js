@@ -21,7 +21,7 @@ app.use(express.json({ limit: "10mb" }));
 
 app.use(express.urlencoded({ extended: true, limit: "10mb" }));
 
-app.use(cors({ credentials: true, origin: "http://localhost:3001" }));
+app.use(cors({ credentials: true, origin: process.env.CLIENT_URL }));
 app.options("*", cors());
 
 app.use(passport.initialize());
