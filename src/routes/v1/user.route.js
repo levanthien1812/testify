@@ -15,6 +15,7 @@ router
     .get(auth(RIGHTS.GET_USERS), userController.getUsers)
     .patch(
         auth(RIGHTS.UPDATE_USER),
+        upload.single("file"),
         validate(userValidation.updateUser),
         userController.updateUser
     );

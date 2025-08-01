@@ -1,5 +1,6 @@
 import { getLinkPreview } from "link-preview-js";
 import { URL_REGEX } from "../config/constants/message.js";
+import fse from "fs-extra";
 
 export const getLinksFromMessage = (messageText) => {
     return messageText.match(URL_REGEX);
@@ -47,6 +48,18 @@ export const unlinkImages = (images) => {
                 } else {
                     console.error(err);
                 }
+            }
+        });
+    });
+};
+
+export const checkLinkImage = (image) => {
+    return new Promise((resolve, reject) => {
+        fse.access(image, (err) => {
+            if (err) {
+                resolve(false);
+            } else {
+                resolve(true);
             }
         });
     });
