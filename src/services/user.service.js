@@ -1,5 +1,6 @@
 import { ROLES } from "../config/constants/roles.js";
 import { User } from "../models/user.model.js";
+import bcrypt from "bcryptjs";
 
 const createUser = async (body) => {
     const newUser = await User.create(body);

@@ -25,12 +25,13 @@ const updateUser = {
     body: Joi.object().keys({
         name: Joi.string(),
         email: Joi.string().email(),
-        photo: Joi.string(),
         gender: Joi.string().valid("male", "female"),
         birthday: Joi.date(),
+        file: Joi.string().optional(),
         phone_number: Joi.string(),
-        password: Joi.string(),
-        password_confirm: Joi.string(),
+        old_password: Joi.string().optional(),
+        password: Joi.string().optional(),
+        password_confirm: Joi.string().optional(),
     }),
 };
 

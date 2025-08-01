@@ -6,8 +6,9 @@ import catchAsync from "../utils/catchAsync.js";
 import testService from "../services/test.service.js";
 import takerService from "../services/taker.service.js";
 import makerService from "../services/maker.service.js";
-import { unlinkImages } from "../utils/linkImage.js";
+import { checkLinkImage, unlinkImages } from "../utils/linkImage.js";
 import takerGroupService from "../services/takerGroup.service.js";
+import { ApiError } from "../utils/apiError.js";
 
 const getUsers = catchAsync(async (req, res, next) => {
     const users = await User.find();
@@ -179,7 +180,40 @@ const getTakerUsersByEmailSearch = catchAsync(async (req, res) => {
 });
 
 const updateUser = catchAsync(async (req, res) => {
-    const updatedUser = await userService.updateUser(req.params.id, req.body);
+    const user = await userService.getUserById(req.user.id);
+    if (req.body.email && req.body.email !== user.email) {
+        if (await userService.checkUserEmailExist(req.body.email)) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Email already exists!");
+        }
+    }
+
+    if (req.body.password) {
+        const isPasswordMatch = await user.isPasswordMatch(
+            req.body.old_password
+        );
+        if (!isPasswordMatch) {
+            throw new ApiError(httpStatus.BAD_REQUEST, "Wrong password!");
+        }
+        delete req.body.old_password;
+
+        if (req.body.password !== req.body.password_confirm) {
+            throw new ApiError(
+                httpStatus.BAD_REQUEST,
+                "Passwords do not match!"
+            );
+        }
+        delete req.body.password_confirm;
+    }
+
+    if (req.file) {
+        if (await checkLinkImage(req.user.photo)) {
+            unlinkImages([req.user.photo]);
+        }
+        req.body.photo = req.file.path;
+        delete req.body.file;
+    }
+
+    const updatedUser = await userService.updateUser(req.user.id, req.body);
 
     return res.status(httpStatus.OK).send({ user: updatedUser });
 });
