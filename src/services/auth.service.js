@@ -32,6 +32,13 @@ const refreshAuth = async (refreshToken) => {
             TOKEN_TYPE.REFRESH
         );
 
+        if (!refreshTokenDoc) {
+            throw new ApiError(
+                httpStatus.UNAUTHORIZED,
+                "Refresh token not found"
+            );
+        }
+
         const user = await userService.getUser(refreshTokenDoc.user);
         if (!user) {
             throw new ApiError(httpStatus.NOT_FOUND, "User not found");

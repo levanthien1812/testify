@@ -211,7 +211,7 @@ const getQuestionsByTestId = async (testId, options = {}) => {
         questions = shuffleQuestions(questions);
     }
     if (options.includeContent) {
-        questions = await getQuestionsContent(questions);
+        questions = await getQuestionsContent(questions, options);
     }
 
     return questions;
@@ -296,7 +296,7 @@ const getQuestionsByPart = async (partId, options = {}) => {
     }
 
     if (options.includeContent) {
-        questions = await getQuestionsContent(questions);
+        questions = await getQuestionsContent(questions, options);
     }
 
     return questions;

@@ -2,8 +2,8 @@ import httpStatus from "http-status";
 import passcodeService from "../services/passcode.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import { generatePasscodeByFormat } from "../utils/passcode.js";
-import { PASSCODE_METHOD } from "../config/constants/passCode.js";
 import { ApiError } from "../utils/apiError.js";
+import testService from "../services/test.service.js";
 
 const generatePasscode = catchAsync(async (req, res, next) => {
     const { passcode: passcodeBody } = req.body;
@@ -37,10 +37,15 @@ const createPasscode = catchAsync(async (req, res, next) => {
 
 const checkPasscode = catchAsync(async (req, res, next) => {
     const { passcode: code } = req.body;
+
     const passcode = await passcodeService.findPasscodeByCode(code);
 
     if (!passcode) {
         throw new ApiError(httpStatus.NOT_FOUND, "Passcode not found!");
+    }
+
+    if (!passcodeService.checkPasscode(code)) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Invalid passcode!");
     }
 
     return res.status(httpStatus.OK).send({ passcode });

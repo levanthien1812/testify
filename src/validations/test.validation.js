@@ -92,7 +92,14 @@ const getTests = {
     }),
 };
 
+const getTestByCode = {
+    params: Joi.object().keys({
+        code: Joi.string().required(),
+    }),
+};
+
 export default {
     createTest,
     getTests,
+    getTestByCode,
 };
