@@ -406,6 +406,11 @@ const getTestsToImportQuestionToBank = async (userId) => {
     return tests;
 };
 
+const getTestByPasscode = async (passcodeId) => {
+    const test = await Test.findOne({ passcode_id: passcodeId });
+    return test;
+};
+
 export default {
     createTest,
     getTests,
@@ -423,4 +428,5 @@ export default {
     isTestBelongToUser,
     filterFieldsByRole,
     getTestsToImportQuestionToBank,
+    getTestByPasscode,
 };

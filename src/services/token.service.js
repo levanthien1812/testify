@@ -39,7 +39,7 @@ const verifyToken = async (token, type) => {
         blacklisted: false,
     });
     if (!tokenDoc) {
-        throw new Error("Token not found");
+        // throw new ApiError(httpStatus.UNAUTHORIZED, "Token not found");
     }
     return tokenDoc;
 };

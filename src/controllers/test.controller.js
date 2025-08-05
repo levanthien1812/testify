@@ -54,10 +54,18 @@ const getTests = catchAsync(async (req, res, next) => {
 });
 
 const getTest = catchAsync(async (req, res, next) => {
-    const { testId, takerId } = req.params;
-    const { passcode, started } = req.query;
+    const { testId, takerId, code } = req.params;
+    const { started } = req.query;
 
-    const test = await testService.getTest(testId, req.user, takerId);
+    let test = null;
+    if (code) {
+        const passcode = await passcodeService.findPasscodeByCode(code);
+        test = await testService.getTestByPasscode(passcode.id);
+    }
+
+    if (testId) {
+        test = await testService.getTest(testId, req.user, takerId);
+    }
 
     let options = {};
     let parts = [];
@@ -73,7 +81,7 @@ const getTest = catchAsync(async (req, res, next) => {
         const submissions =
             await submissionService.getSubmissionsByTakerIdAndTestId(
                 taker.id,
-                testId
+                test.id
             );
         submissionsCount = submissions.length;
 
@@ -101,7 +109,7 @@ const getTest = catchAsync(async (req, res, next) => {
             }
         }
 
-        await testService.addAccessedBy(testId, taker.id);
+        await testService.addAccessedBy(test.id, taker.id);
     }
 
     options.includeContent = true;
@@ -131,7 +139,7 @@ const getTest = catchAsync(async (req, res, next) => {
         }
 
         if (test.num_parts > 1) {
-            parts = await partService.getPartsByTestId(testId);
+            parts = await partService.getPartsByTestId(test.id);
             parts = await Promise.all(
                 parts.map(async (part) => {
                     let questionsByPart =
@@ -145,7 +153,7 @@ const getTest = catchAsync(async (req, res, next) => {
             );
         } else {
             questions = await questionService.getQuestionsByTestId(
-                testId,
+                test.id,
                 options
             );
         }

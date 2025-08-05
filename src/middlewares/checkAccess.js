@@ -8,112 +8,135 @@ import takerService from "../services/taker.service.js";
 import passcodeService from "../services/passcode.service.js";
 import { SHARE_OPTION } from "../config/constants/shareOptions.js";
 import { TEST_STATUS } from "../config/constants/testStatus.js";
+import testService from "../services/test.service.js";
+import catchAsync from "../utils/catchAsync.js";
 
-export const checkAccess = () => async (req, res, next) => {
-    const testId = req.params.testId;
-    const user = req.user;
-    if (!user)
-        return next(new ApiError(httpStatus.UNAUTHORIZED, "User not found"));
+export const checkAccess = () =>
+    catchAsync(async (req, res, next) => {
+        const testId = req.params.testId;
+        const code = req.params.code;
 
-    const test = await Test.findById(testId);
-
-    if (!test) {
-        return next(new ApiError(httpStatus.NOT_FOUND, "Test not found", 404));
-    }
-
-    if (user.role === ROLES.MAKER) {
-        const maker = await makerService.getMakerByUserId(user.id);
-        if (test.maker_id.toString() !== maker.id.toString()) {
+        const user = req.user;
+        if (!user)
             return next(
-                new ApiError(
-                    httpStatus.FORBIDDEN,
-                    ERROR_MESSAGE[ERROR_CODE.TEST_ACCESS_DENIED],
-                    ERROR_CODE.TEST_ACCESS_DENIED
-                )
+                new ApiError(httpStatus.UNAUTHORIZED, "User not found")
+            );
+
+        let test = null;
+        if (code) {
+            const passcode = await passcodeService.findPasscodeByCode(code);
+
+            await passcodeService.checkPasscode(code);
+
+            test = await testService.getTestByPasscode(passcode.id);
+        }
+
+        if (testId) {
+            test = await Test.findById(testId);
+        }
+
+        if (!test) {
+            return next(
+                new ApiError(httpStatus.NOT_FOUND, "Test not found", 404)
             );
         }
-    }
 
-    if (req.user.role === ROLES.TAKER) {
-        const taker = await takerService.getTakerByUserIdAndMakerId(
-            user.id,
-            test.maker_id
-        );
-
-        if (test.share_option === SHARE_OPTION.PASSCODE) {
-            const passcode = req.query.passcode;
-
-            if (!passcode) {
+        if (user.role === ROLES.MAKER) {
+            const maker = await makerService.getMakerByUserId(user.id);
+            if (test.maker_id.toString() !== maker.id.toString()) {
                 return next(
                     new ApiError(
-                        httpStatus.BAD_REQUEST,
-                        ERROR_MESSAGE[ERROR_CODE.PASSCODE_REQUIRED],
-                        ERROR_CODE.PASSCODE_REQUIRED
-                    )
-                );
-            }
-
-            if (!test.passcode_id) {
-                return next(
-                    new ApiError(
-                        httpStatus.BAD_REQUEST,
-                        ERROR_MESSAGE[ERROR_CODE.PASSCODE_NOT_SUPPORTED],
-                        ERROR_CODE.PASSCODE_NOT_SUPPORTED
-                    )
-                );
-            }
-
-            const isCorrectPasscode = await passcodeService.checkPasscode(
-                test.passcode_id,
-                passcode
-            );
-            if (!isCorrectPasscode) {
-                return next(
-                    new ApiError(
-                        httpStatus.BAD_REQUEST,
-                        ERROR_MESSAGE[ERROR_CODE.INCORRECT_PASSCODE],
-                        ERROR_CODE.INCORRECT_PASSCODE
+                        httpStatus.FORBIDDEN,
+                        ERROR_MESSAGE[ERROR_CODE.TEST_ACCESS_DENIED],
+                        ERROR_CODE.TEST_ACCESS_DENIED
                     )
                 );
             }
         }
 
-        if (
-            test.share_option === SHARE_OPTION.RESTRICTED &&
-            !test.taker_ids.includes(taker.id)
-        ) {
-            return next(
-                new ApiError(
-                    httpStatus.FORBIDDEN,
-                    ERROR_MESSAGE[ERROR_CODE.TEST_ACCESS_DENIED],
-                    ERROR_CODE.TEST_ACCESS_DENIED
-                )
+        if (req.user.role === ROLES.TAKER) {
+            const taker = await takerService.getTakerByUserIdAndMakerId(
+                user.id,
+                test.maker_id
             );
+
+            if (!test.accessed_by.includes(user.id)) {
+                if (test.share_option === SHARE_OPTION.PASSCODE) {
+                    if (!code) {
+                        return next(
+                            new ApiError(
+                                httpStatus.BAD_REQUEST,
+                                ERROR_MESSAGE[ERROR_CODE.PASSCODE_REQUIRED],
+                                ERROR_CODE.PASSCODE_REQUIRED
+                            )
+                        );
+                    }
+
+                    const isCorrectPasscode =
+                        await passcodeService.checkCorrectPasscode(
+                            test.passcode_id,
+                            code
+                        );
+                    if (!isCorrectPasscode) {
+                        return next(
+                            new ApiError(
+                                httpStatus.BAD_REQUEST,
+                                ERROR_MESSAGE[ERROR_CODE.INCORRECT_PASSCODE],
+                                ERROR_CODE.INCORRECT_PASSCODE
+                            )
+                        );
+                    }
+                } else {
+                    if (!test.passcode_id && code) {
+                        return next(
+                            new ApiError(
+                                httpStatus.BAD_REQUEST,
+                                ERROR_MESSAGE[
+                                    ERROR_CODE.PASSCODE_NOT_SUPPORTED
+                                ],
+                                ERROR_CODE.PASSCODE_NOT_SUPPORTED
+                            )
+                        );
+                    }
+                }
+
+                if (
+                    test.share_option === SHARE_OPTION.RESTRICTED &&
+                    !test.taker_ids.includes(taker.id)
+                ) {
+                    return next(
+                        new ApiError(
+                            httpStatus.FORBIDDEN,
+                            ERROR_MESSAGE[ERROR_CODE.TEST_ACCESS_DENIED],
+                            ERROR_CODE.TEST_ACCESS_DENIED
+                        )
+                    );
+                }
+            }
+
+            if (
+                test.status === TEST_STATUS.PUBLISHABLE ||
+                test.status === TEST_STATUS.DRAFT
+            ) {
+                return next(
+                    new ApiError(
+                        httpStatus.BAD_REQUEST,
+                        ERROR_MESSAGE[ERROR_CODE.TEST_NOT_AVAILABLE],
+                        ERROR_CODE.TEST_NOT_AVAILABLE
+                    )
+                );
+            }
+
+            if (test.status === TEST_STATUS.CLOSED) {
+                return next(
+                    new ApiError(
+                        httpStatus.BAD_REQUEST,
+                        ERROR_MESSAGE[ERROR_CODE.TEST_CLOSED],
+                        ERROR_CODE.TEST_CLOSED
+                    )
+                );
+            }
         }
 
-        if (
-            test.status === TEST_STATUS.PUBLISHABLE ||
-            test.status === TEST_STATUS.DRAFT
-        ) {
-            return next(
-                new ApiError(
-                    httpStatus.BAD_REQUEST,
-                    ERROR_MESSAGE[ERROR_CODE.TEST_NOT_AVAILABLE],
-                    ERROR_CODE.TEST_NOT_AVAILABLE
-                )
-            );
-        }
-
-        if (test.status === TEST_STATUS.CLOSED) {
-            return next(
-                new ApiError(
-                    httpStatus.BAD_REQUEST,
-                    ERROR_MESSAGE[ERROR_CODE.TEST_CLOSED],
-                    ERROR_CODE.TEST_CLOSED
-                )
-            );
-        }
-    }
-
-    return next();
-};
+        return next();
+    });

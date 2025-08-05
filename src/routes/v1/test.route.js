@@ -9,15 +9,12 @@ import partController from "../../controllers/part.controller.js";
 import submissionController from "../../controllers/submission.controller.js";
 import answerValidation from "../../validations/answer.validation.js";
 import answerController from "../../controllers/answer.controller.js";
-import { uploadSingle } from "../../middlewares/upload.js";
-import { upload } from "../../config/multer.js";
 import { RIGHTS } from "../../config/constants/roles.js";
 import userValidation from "../../validations/user.validation.js";
 import passcodeController from "../../controllers/passcode.controller.js";
 import passcodeValidation from "../../validations/passcode.validation.js";
 import questionValidation from "../../validations/question.validation.js";
 import { checkAccess } from "../../middlewares/checkAccess.js";
-import testService from "../../services/test.service.js";
 
 const router = express.Router();
 
@@ -32,6 +29,15 @@ router
         auth(RIGHTS.GET_TESTS),
         validate(testValidation.getTests),
         testController.getTests
+    );
+
+router
+    .route("/code/:code")
+    .get(
+        auth(RIGHTS.GET_TEST),
+        validate(testValidation.getTestByCode),
+        checkAccess(),
+        testController.getTest
     );
 
 router
