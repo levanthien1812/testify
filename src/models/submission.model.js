@@ -37,6 +37,13 @@ const SubmissionSchema = new mongoose.Schema(
             required: true,
             default: false,
         },
+        shuffled_questions: [
+            {
+                type: mongoose.SchemaTypes.ObjectId,
+                ref: "Question",
+                required: true,
+            },
+        ],
     },
     {
         timestamps: {

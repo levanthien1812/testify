@@ -60,7 +60,7 @@ export const checkAccess = () =>
                 test.maker_id
             );
 
-            if (!test.accessed_by.includes(user.id)) {
+            if (!test.accessed_by.includes(taker.id)) {
                 if (test.share_option === SHARE_OPTION.PASSCODE) {
                     if (!code) {
                         return next(

@@ -26,6 +26,7 @@ const TrueFalseQuestionSchema = new mongoose.Schema({
                 type: String,
             },
         },
+        select: false,
         _id: false,
     },
     __v: { type: Number, select: false },

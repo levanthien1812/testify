@@ -231,7 +231,7 @@ const TestSchema = new mongoose.Schema(
             required: true,
         },
         __v: { type: Number, select: false },
-        accessed_by: [{ type: mongoose.SchemaTypes.ObjectId, ref: "User" }],
+        accessed_by: [{ type: mongoose.SchemaTypes.ObjectId, ref: "Taker" }],
     },
     {
         timestamps: {
