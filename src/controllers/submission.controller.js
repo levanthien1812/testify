@@ -63,6 +63,12 @@ const createSubmission = catchAsync(async (req, res, next) => {
         req.body.answers
     );
 
+    if (test.options.allow_shuffle_questions.enable) {
+        await submissionService.updateSubmission(submission.id, {
+            shuffled_questions: newAnswers.map((answer) => answer.question_id),
+        });
+    }
+
     if (test.are_answers_provided) {
         await submissionService.scoreSubmission(submission);
     }

@@ -24,13 +24,25 @@ const getAnswers = catchAsync(async (req, res, next) => {
     const submission = await submissionService.findById(submissionId);
     const test = await testService.findById(submission.test_id);
 
-    const answers = await answerService.getAnswersBySubmissionId(submissionId, {
+    let answers = await answerService.getAnswersBySubmissionId(submissionId, {
         excludeScore:
             req.user.role === ROLES.TAKER &&
             !test.options.allow_show_maker_answers_after_test.enable,
     });
 
-    return res.status(httpStatus.OK).send({ answers: answers });
+    if (
+        submission.shuffled_questions &&
+        submission.shuffled_questions.length === answers.length
+    ) {
+        answers = submission.shuffled_questions.map((questionId) => {
+            const answer = answers.find(
+                (answer) =>
+                    answer.question_id.toString() === questionId.toString()
+            );
+            return answer;
+        });
+    }
+    return res.status(httpStatus.OK).send({ answers });
 });
 
 export default { updateAnswer, getAnswers };
