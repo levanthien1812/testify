@@ -9,7 +9,10 @@ import { TEST_STATUS } from "../config/constants/testStatus.js";
 import { SHARE_OPTION } from "../config/constants/shareOptions.js";
 import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
 import { PassCode } from "./passcode.model.js";
-import { PAGINATION_MODE } from "../config/constants/test.js";
+import {
+    PAGINATION_MODE,
+    QUESTION_NUMBERING_METHOD,
+} from "../config/constants/test.js";
 import { User } from "./user.model.js";
 import { ROLES } from "../config/constants/roles.js";
 import { Maker } from "./maker.model.js";
@@ -208,6 +211,11 @@ const TestSchema = new mongoose.Schema(
         share_option: {
             type: String,
             enum: Object.values(SHARE_OPTION),
+        },
+        question_numbering_method: {
+            type: String,
+            enum: Object.values(QUESTION_NUMBERING_METHOD),
+            default: QUESTION_NUMBERING_METHOD.CONTINUOUS,
         },
         // assigned by maker
         taker_ids: [String],
