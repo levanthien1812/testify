@@ -11,6 +11,7 @@ import { Part } from "../models/part.model.js";
 import mongoose from "mongoose";
 import { shuffleQuestions } from "../utils/shuffleQuestions.js";
 import { pickFields } from "../utils/object.js";
+import { QUESTION_NUMBERING_METHOD } from "../config/constants/test.js";
 
 const createQuestionContent = async (questionType, questionContent) => {
     const model = questionTypeToQuestionModel.get(questionType);
@@ -351,6 +352,8 @@ const deleteQuestion = async (
 
 const reorderQuestions = async (testId, questionBody) => {
     const { startOrder, endOrder, partFromId, partToId } = questionBody;
+    const test = await testService.findById(testId);
+
     const questionAtStartOrder = await Question.findOne({
         test_id: testId,
         order: startOrder,
@@ -389,13 +392,20 @@ const reorderQuestions = async (testId, questionBody) => {
             order: endOrder,
         });
     } else {
+        const isContinuous =
+            test.question_numbering_method ===
+            QUESTION_NUMBERING_METHOD.CONTINUOUS;
+        const moveDirection = startOrder < endOrder ? "down" : "up";
+
+        const isSpecialCase = isContinuous && moveDirection === "down";
+
         await Question.updateMany(
             {
                 test_id: testId,
-                order: { $gte: endOrder },
+                order: isSpecialCase ? { $lte: endOrder } : { $gte: endOrder },
                 ...(partToId ? { part_id: partToId } : {}),
             },
-            { $inc: { order: 1 } }
+            { $inc: { order: isSpecialCase ? -1 : 1 } }
         );
 
         await Question.findByIdAndUpdate(questionAtStartOrder._id, {
@@ -406,19 +416,55 @@ const reorderQuestions = async (testId, questionBody) => {
         await Question.updateMany(
             {
                 test_id: testId,
-                order: { $gte: startOrder },
+                order: isSpecialCase
+                    ? { $lte: startOrder }
+                    : { $gte: startOrder },
                 ...(partFromId ? { part_id: partFromId } : {}),
             },
-            { $inc: { order: -1 } }
+            { $inc: { order: isSpecialCase ? 1 : -1 } }
         );
 
-        await Part.findByIdAndUpdate(partFromId, {
+        const partFrom = await Part.findByIdAndUpdate(partFromId, {
             $inc: { num_questions: -1 },
         });
 
-        await Part.findByIdAndUpdate(partToId, {
+        const partTo = await Part.findByIdAndUpdate(partToId, {
             $inc: { num_questions: 1 },
         });
+
+        if (isContinuous) {
+            if (partFrom.order < partTo.order) {
+                for (let i = partFrom.order + 1; i < partTo.order; i++) {
+                    const part = await Part.findOne({
+                        test_id: testId,
+                        order: i,
+                    });
+                    await Question.findOneAndUpdate(
+                        {
+                            part_id: part._id,
+                        },
+                        {
+                            $inc: { order: -1 },
+                        }
+                    );
+                }
+            } else {
+                for (let i = partFrom.order - 1; i > partTo.order; i--) {
+                    const part = await Part.findOne({
+                        test_id: testId,
+                        order: i,
+                    });
+                    await Question.findOneAndUpdate(
+                        {
+                            part_id: part._id,
+                        },
+                        {
+                            $inc: { order: 1 },
+                        }
+                    );
+                }
+            }
+        }
     }
 
     return true;

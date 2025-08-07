@@ -2,7 +2,10 @@ import Joi from "joi";
 import { datetime } from "./custom.validation.js";
 import { TEST_LEVEL } from "../config/constants/levels.js";
 import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
-import { PAGINATION_MODE } from "../config/constants/test.js";
+import {
+    PAGINATION_MODE,
+    QUESTION_NUMBERING_METHOD,
+} from "../config/constants/test.js";
 
 const createTest = {
     body: Joi.object().keys({
@@ -15,6 +18,9 @@ const createTest = {
         parts: Joi.array().length(0),
         num_questions: Joi.number().min(1).required(),
         num_parts: Joi.number().min(0).default(0).not(1),
+        question_numbering_method: Joi.string()
+            .optional()
+            .valid(...Object.values(QUESTION_NUMBERING_METHOD)),
         options: Joi.object()
             .optional()
             .keys({
