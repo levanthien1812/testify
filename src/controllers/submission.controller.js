@@ -132,7 +132,15 @@ const getSubmissions = catchAsync(async (req, res, next) => {
         );
     }
 
-    return res.status(httpStatus.OK).send({ submissions });
+    const scores = await submissionService.calculateScores(req.params.testId);
+    const rates = await submissionService.calculateRates(req.params.testId);
+
+    return res.status(httpStatus.OK).send({
+        submissions,
+        total_submissions: submissions.length,
+        ...scores,
+        ...rates,
+    });
 });
 
 export default { createSubmission, getSubmission, getSubmissions };
