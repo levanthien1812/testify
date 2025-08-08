@@ -4,7 +4,6 @@ import { ApiError } from "../utils/apiError.js";
 import httpStatus from "http-status";
 
 export const validate = (schema) => (req, res, next) => {
-    console.log(req.body);
     const validSchema = pick(schema, ["body", "params", "query"]);
     const object = pick(req, Object.keys(validSchema));
     const { value, error } = Joi.compile(validSchema)

@@ -3,6 +3,7 @@ import { ROLES } from "../config/constants/roles.js";
 import { Submission } from "../models/submission.model.js";
 import { Test } from "../models/test.model.js";
 import answerService from "./answer.service.js";
+import testService from "./test.service.js";
 
 const createSubmission = async (submissionBody) => {
     const submission = await Submission.create(submissionBody);
@@ -121,6 +122,45 @@ const findByTestId = async (testId) => {
     return submisstions;
 };
 
+const calculateScores = async (testId) => {
+    let submissions = await Submission.find({ test_id: testId });
+    submissions = submissions.filter(
+        (submission) => submission.score !== undefined
+    );
+
+    const totalScore = submissions.reduce(
+        (acc, submission) => acc + submission.score,
+        0
+    );
+    const averageScore = totalScore / submissions.length;
+
+    const lowestScore = submissions.sort((a, b) => a.score - b.score)[0].score;
+    const highestScore = submissions.sort((a, b) => b.score - a.score)[0].score;
+
+    return {
+        average_score: averageScore,
+        lowest_score: lowestScore,
+        highest_score: highestScore,
+    };
+};
+
+const calculateRates = async (testId) => {
+    const test = await testService.findById(testId);
+    const submissions = await Submission.find({ test_id: testId });
+
+    const passRate =
+        submissions.filter((submission) => submission.score >= 5).length /
+        submissions.length;
+    const failRate =
+        submissions.filter((submission) => submission.score < 5).length /
+        submissions.length;
+
+    return {
+        pass_rate: passRate,
+        fail_rate: failRate,
+    };
+};
+
 export default {
     createSubmission,
     updateSubmission,
@@ -131,4 +171,6 @@ export default {
     findByTakerId,
     deleteSubmissionsByTestId,
     findByTestId,
+    calculateScores,
+    calculateRates,
 };
