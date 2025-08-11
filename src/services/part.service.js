@@ -56,6 +56,7 @@ const validateParts = async (testId) => {
 
 const getPartsByTestId = async (testId) => {
     const parts = await Part.find({ test_id: testId });
+    parts.sort((a, b) => a.order - b.order);
     return parts;
 };
 
