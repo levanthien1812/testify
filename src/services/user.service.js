@@ -1,6 +1,8 @@
 import { ROLES } from "../config/constants/roles.js";
 import { User } from "../models/user.model.js";
 import bcrypt from "bcryptjs";
+import makerService from "./maker.service.js";
+import takerService from "./taker.service.js";
 
 const createUser = async (body) => {
     const newUser = await User.create(body);
@@ -99,6 +101,18 @@ const checkUserEmailExist = async (email) => {
     return !!user;
 };
 
+const getTakerUsersByMakerUser = async (makerUserId) => {
+    const maker = await makerService.getMakerByUserId(makerUserId);
+    const takers = await takerService.getTakersByMaker(maker.id);
+    const takersUsers = await Promise.all(
+        takers.map(async (taker) => {
+            const user = await User.findById(taker.user_id);
+            return user;
+        })
+    );
+    return takersUsers;
+};
+
 export default {
     createUser,
     getUser,
@@ -111,4 +125,5 @@ export default {
     updateUser,
     checkUserEmailExist,
     getTakerUsersByEmailSearch,
+    getTakerUsersByMakerUser,
 };

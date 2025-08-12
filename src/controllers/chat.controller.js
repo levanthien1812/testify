@@ -26,7 +26,9 @@ const getMemberNames = async (members) => {
 const createChat = catchAsync(async (req, res, next) => {
     const option = req.query.option;
     const otherMembers = req.body.members;
-    const allowedMembers = await userService.getTakersByMaker(req.user.id);
+    const allowedMembers = await userService.getTakerUsersByMakerUser(
+        req.user.id
+    );
 
     if (
         !otherMembers.every((member) =>

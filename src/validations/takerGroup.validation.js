@@ -16,4 +16,12 @@ const updateTakerGroup = Joi.object().keys({
     }),
 });
 
-export default { createTakerGroup, updateTakerGroup };
+const addTakersToGroup = Joi.object().keys({
+    body: Joi.object().keys({
+        selectedGroup: Joi.string().required(),
+        takerIds: Joi.array().items(Joi.string()).required(),
+        removeCurrentGroup: Joi.boolean().optional(),
+    }),
+});
+
+export default { createTakerGroup, updateTakerGroup, addTakersToGroup };
