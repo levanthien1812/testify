@@ -218,6 +218,31 @@ const updateUser = catchAsync(async (req, res) => {
     return res.status(httpStatus.OK).send({ user: updatedUser });
 });
 
+const addTakersToGroup = catchAsync(async (req, res, next) => {
+    const group = req.body.selectedGroup;
+    const takers = req.body.takerIds;
+
+    await Promise.all(
+        takers.map(async (takerId) => {
+            const taker = await takerService.getById(takerId);
+            if (taker.group_id && req.body.removeCurrentGroup) {
+                await takerGroupService.removeTakerFromGroup(
+                    taker.group_id,
+                    takerId
+                );
+            }
+            await takerGroupService.addTakerToGroup(group, takerId);
+            await takerService.updateTaker(takerId, {
+                group_id: group,
+            });
+        })
+    );
+
+    return res
+        .status(httpStatus.OK)
+        .send("Takers added to group successfully!");
+});
+
 export default {
     getUsers,
     getTakersByMaker,
@@ -229,4 +254,5 @@ export default {
     updateTaker,
     getTakerUsersByEmailSearch,
     updateUser,
+    addTakersToGroup,
 };

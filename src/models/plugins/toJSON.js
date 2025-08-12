@@ -10,7 +10,7 @@ export const toJSON = (schema, options = { timestamps: false }) => {
     schema.set("toObject", {
         virtuals: true,
         transform: (doc, ret) => {
-            ret.id = ret._id.toString();
+            ret.id = ret._id?.toString();
             delete ret._id;
             delete ret.__v;
             if (!options.timestamps) {

@@ -30,11 +30,20 @@ router
     .get(auth(RIGHTS.GET_TAKERS), userController.getTakersByMaker);
 
 router
-    .route(`/takers/:id`)
+    .route("/takers/groups")
+    .post(
+        auth(RIGHTS.CREATE_TAKER_GROUP),
+        validate(takerGroupValidation.createTakerGroup),
+        takerGroupController.createTakerGroup
+    )
+    .get(auth(RIGHTS.GET_TAKER_GROUPS), takerGroupController.getTakerGroups);
+
+router
+    .route("/takers/add-to-group")
     .patch(
-        auth(RIGHTS.UPDATE_TAKER),
-        upload.single("file"),
-        userController.updateTaker
+        auth(RIGHTS.ADD_TAKERS_TO_GROUP),
+        validate(takerGroupValidation.addTakersToGroup),
+        userController.addTakersToGroup
     );
 
 router
@@ -42,6 +51,14 @@ router
     .get(
         auth(RIGHTS.GET_TAKERS_STATISTICS),
         userController.getTakersWithStatistics
+    );
+
+router
+    .route(`/takers/:id`)
+    .patch(
+        auth(RIGHTS.UPDATE_TAKER),
+        upload.single("file"),
+        userController.updateTaker
     );
 
 router
@@ -55,15 +72,6 @@ router
 router
     .route("/block/")
     .get(auth(RIGHTS.GET_BLOCKED_INFO), userController.getBlockedInfo);
-
-router
-    .route("/takers/groups")
-    .post(
-        auth(RIGHTS.CREATE_TAKER_GROUP),
-        validate(takerGroupValidation.createTakerGroup),
-        takerGroupController.createTakerGroup
-    )
-    .get(auth(RIGHTS.GET_TAKER_GROUPS), takerGroupController.getTakerGroups);
 
 router
     .route("/takers/groups/:id")
