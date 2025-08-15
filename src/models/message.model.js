@@ -1,14 +1,12 @@
-import { sendAt } from "cron";
-import { Schema, model } from "mongoose";
+import mongoose, { Schema, model } from "mongoose";
 import { toJSON } from "./plugins/toJSON.js";
-import { paginate } from "./plugins/paginate.js";
 import { Chat } from "./chat.model.js";
 import {
     MESSAGE_TYPE,
     NOTIFICATION_TYPE,
 } from "../config/constants/message.js";
 
-const MessageSchema = Schema(
+const MessageSchema = new mongoose.Schema(
     {
         text: {
             type: String,
@@ -28,7 +26,7 @@ const MessageSchema = Schema(
             required: true,
         },
         sender_id: {
-            type: Schema.Types.ObjectId,
+            type: String,
             ref: "User",
             required: true,
         },
@@ -115,6 +113,18 @@ MessageSchema.pre("save", async function (next) {
     } else {
         next(); // If read_by is not modified, proceed without changes
     }
+});
+
+MessageSchema.virtual("sender", {
+    ref: "User",
+    localField: "sender_id",
+    foreignField: "_id",
+    justOne: true,
+});
+
+MessageSchema.pre(/^find/, function (next) {
+    this.populate("sender", "name photo");
+    next();
 });
 
 MessageSchema.plugin(toJSON, { timestamps: true });

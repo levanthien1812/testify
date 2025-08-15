@@ -12,6 +12,7 @@ export const SOCKET_EVENTS = {
     GET_ONLINE_USERS: "get-online-users",
     UPDATE_READ_MESSAGES: "update-read-messages",
     READ_MESSAGES: "read-messages",
+    RECEIVE_READ_MESSAGES: "receive-read-messages",
     ADD_ONLINE_USERS: "add-online-users",
     SEND_ONLINE_USERS: "send-online-users",
     REMOVE_ONLINE_USERS: "remove-online-users",

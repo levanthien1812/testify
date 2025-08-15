@@ -8,6 +8,8 @@ const createMessage = async (messageBody) => {
         ...messageBody,
     });
 
+    await message.populate("sender", "name photo");
+
     return (await generateLinkPreviews([message]))[0];
 };
 
