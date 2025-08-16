@@ -122,8 +122,19 @@ MessageSchema.virtual("sender", {
     justOne: true,
 });
 
+MessageSchema.virtual("reactions.user", {
+    ref: "User",
+    localField: "reactions.user_id",
+    foreignField: "_id",
+    justOne: true,
+});
+
 MessageSchema.pre(/^find/, function (next) {
     this.populate("sender", "name photo");
+    this.populate({
+        path: "reactions.user",
+        select: "name photo",
+    });
     next();
 });
 
