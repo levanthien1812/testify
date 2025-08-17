@@ -13,6 +13,12 @@ router.post(
 );
 
 router.post(
+    "/send-verification-code",
+    validate(authValidation.sendEmailVerification),
+    authController.sendEmailVerification
+);
+
+router.post(
     "/verify-email",
     validate(authValidation.verifyEmail),
     authController.verifyEmail

@@ -1,4 +1,5 @@
 export const ERROR_CODE = {
+    EMAIL_NOT_VERIFIED: "EMAIL_NOT_VERIFIED",
     TEST_ACCESS_DENIED: "TEST_ACCESS_DENIED",
     TEST_NOT_AVAILABLE: "TEST_NOT_AVAILABLE",
     TEST_CLOSED: "TEST_CLOSED",
@@ -10,6 +11,7 @@ export const ERROR_CODE = {
 };
 
 export const ERROR_MESSAGE = {
+    [ERROR_CODE.EMAIL_NOT_VERIFIED]: "Your email is not verified!",
     [ERROR_CODE.TEST_ACCESS_DENIED]: "You dont have access to this test!",
     [ERROR_CODE.TEST_NOT_AVAILABLE]:
         "The test you want to access is not available yet!",

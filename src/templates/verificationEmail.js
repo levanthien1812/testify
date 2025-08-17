@@ -2,7 +2,7 @@ export const verificationEmailTemplate = `<!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8" />
-    <title>Verify Your Email</title>
+    <title>Email verification</title>
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -50,7 +50,7 @@ export const verificationEmailTemplate = `<!DOCTYPE html>
       <p>Thank you for signing up. Please use the following verification code to complete your registration:</p>
       <div class="code">{{VERIFICATION_CODE}}</div>
       <p>This code will expire in {{VERIFICATION_EXPIRES_IN_MINUTES}} minutes. If you did not request this, you can safely ignore this email.</p>
-      <p>Best regards,<br />Your App Team</p>
+      <p>Best regards,<br />Testify Team</p>
     </div>
     <div class="footer">
       &copy; 2025 Your Company. All rights reserved.

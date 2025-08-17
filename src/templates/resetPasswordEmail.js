@@ -53,7 +53,7 @@ export const resetPasswordEmailTemplate = `
         <a class="button" href="{{RESET_PASSWORD_URL}}" target="_blank">Reset Password</a>
       </p>
       <p>If you didn’t request this, please ignore this email. This link will expire in 10 minutes for your security.</p>
-      <p>Best regards,<br />Your App Team</p>
+      <p>Best regards,<br />Testify Team</p>
     </div>
     <div class="footer">
       &copy; 2025 Your Company. All rights reserved.
