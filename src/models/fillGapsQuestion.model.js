@@ -4,6 +4,8 @@ import {
     FILL_GAP_INDICATOR,
     FILL_GAPS_METHOD,
 } from "../config/constants/constants.js";
+import { ApiError } from "../utils/apiError.js";
+import httpStatus from "http-status";
 
 const fillGapsQuestionSchema = new mongoose.Schema({
     instruction_text: {
@@ -72,7 +74,8 @@ const fillGapsQuestionSchema = new mongoose.Schema({
                 this.fill_method === FILL_GAPS_METHOD.DRAG_DROP &&
                 value.length < this.num_gaps
             ) {
-                throw new Error(
+                throw new ApiError(
+                    httpStatus.BAD_REQUEST,
                     `Please provide at least ${this.num_gaps} words`
                 );
             }
