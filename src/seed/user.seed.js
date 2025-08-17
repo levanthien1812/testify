@@ -12,7 +12,6 @@ export const generateRandomUser = (role) => {
     return {
         name: faker.person.fullName(),
         email: faker.internet.email(),
-        username: faker.internet.userName(),
         password: "18122002abc",
         photo: faker.image.avatar(),
         role: role,

@@ -118,7 +118,7 @@ const sendVerificationEmail = async (email) => {
             process.env.VERFICATION_EXPIRES_IN_MINUTES
         );
 
-    await sendEmail(email, "Verify your email", html);
+    await sendEmail(email, "Your Testify Verification Code", html);
 
     await userService.updateUser(user.id, {
         verification_code: verificationCode,

@@ -9,20 +9,34 @@ import { ROLES } from "../config/constants/roles.js";
 import sendEmail from "../utils/sendEmail.js";
 import { resetPasswordEmailTemplate } from "../templates/resetPasswordEmail.js";
 import TOKEN_TYPE from "../config/constants/tokens.js";
+import { ApiError } from "../utils/apiError.js";
+import { ERROR_CODE, ERROR_MESSAGE } from "../config/constants/errorCode.js";
 
 const register = catchAsync(async (req, res) => {
+    const emailTaken = await userService.checkUserEmailExist(req.body.email);
+    if (emailTaken) {
+        throw new ApiError(httpStatus.BAD_REQUEST, "Email already taken");
+    }
+
     const user = await userService.createUser(req.body);
     if (user.role === ROLES.MAKER) {
         await makerService.createMaker({ user_id: user.id, name: user.name });
     }
 
-    // await authService.sendVerificationEmail(user.email);
+    await authService.sendVerificationEmail(user.email);
 
     return res.status(httpStatus.CREATED).json({ user });
 });
 
 const login = catchAsync(async (req, res, next) => {
     const user = await authService.login(req.body);
+    if (!user.is_verified) {
+        throw new ApiError(
+            httpStatus.UNAUTHORIZED,
+            ERROR_MESSAGE[ERROR_CODE.EMAIL_NOT_VERIFIED],
+            ERROR_CODE.EMAIL_NOT_VERIFIED
+        );
+    }
     const tokens = await tokenService.generateAuthToken(user);
 
     return res.status(httpStatus.OK).json({ user, tokens });
@@ -45,6 +59,16 @@ const logout = catchAsync(async (req, res, next) => {
     await authService.logout(req.body.refreshToken);
 
     return res.status(httpStatus.OK).send();
+});
+
+const sendEmailVerification = catchAsync(async (req, res, next) => {
+    const emailExist = await userService.checkUserEmailExist(req.body.email);
+    if (!emailExist) {
+        throw new Error("User with this email is not found!");
+    }
+    await authService.sendVerificationEmail(req.body.email);
+
+    return res.status(httpStatus.OK).send("Email sent successfully!");
 });
 
 const verifyEmail = catchAsync(async (req, res, next) => {
@@ -98,6 +122,7 @@ export default {
     login,
     refresh,
     logout,
+    sendEmailVerification,
     verifyEmail,
     sendResetPasswordEmail,
     resetPassword,
