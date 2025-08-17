@@ -64,7 +64,10 @@ const logout = catchAsync(async (req, res, next) => {
 const sendEmailVerification = catchAsync(async (req, res, next) => {
     const emailExist = await userService.checkUserEmailExist(req.body.email);
     if (!emailExist) {
-        throw new Error("User with this email is not found!");
+        throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            "User with this email is not found!"
+        );
     }
     await authService.sendVerificationEmail(req.body.email);
 
@@ -80,7 +83,10 @@ const verifyEmail = catchAsync(async (req, res, next) => {
 const sendResetPasswordEmail = catchAsync(async (req, res, next) => {
     const user = await userService.getUserByEmail(req.body.email);
     if (!user) {
-        throw new Error("User with this email is not found!");
+        throw new ApiError(
+            httpStatus.BAD_REQUEST,
+            "User with this email is not found!"
+        );
     }
     const token = await tokenService.generateResetPasswordToken(user.email);
     const resetPasswordUrl = `${process.env.REACT_APP_HOST}:${process.env.REACT_APP_PORT}/reset-password?token=${token}&email=${user.email}`;
@@ -102,10 +108,10 @@ const resetPassword = catchAsync(async (req, res, next) => {
         TOKEN_TYPE.RESET_PASSWORD
     );
     if (!token) {
-        throw new Error("Reset token is not found!");
+        throw new ApiError(httpStatus.BAD_REQUEST, "Reset token is not found!");
     }
     if (token.expires < new Date()) {
-        throw new Error("Reset token is expired!");
+        throw new ApiError(httpStatus.BAD_REQUEST, "Reset token is expired!");
     }
     const user = await userService.getUser(token.user);
 

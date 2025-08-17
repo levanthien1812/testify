@@ -6,6 +6,8 @@ import {
 } from "../config/constants/questionTypes.js";
 import { toJSON } from "./plugins/toJSON.js";
 import { ALLOWED_PARTIAL_SCORING_TYPES } from "../config/constants/constants.js";
+import { ApiError } from "../utils/apiError.js";
+import httpStatus from "http-status";
 
 const questionSchema = mongoose.Schema(
     {
@@ -49,7 +51,8 @@ const questionSchema = mongoose.Schema(
                     !ALLOWED_PARTIAL_SCORING_TYPES.includes(this.type) &&
                     value
                 ) {
-                    throw new Error(
+                    throw new ApiError(
+                        httpStatus.BAD_REQUEST,
                         `${
                             QUESTION_TYPE_LABEL[this.type]
                         } does not support partial scoring.`

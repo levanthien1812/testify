@@ -16,6 +16,7 @@ import {
 import { User } from "./user.model.js";
 import { ROLES } from "../config/constants/roles.js";
 import { Maker } from "./maker.model.js";
+import { ApiError } from "../utils/apiError.js";
 
 const TestOption = new mongoose.Schema({
     allow_close_time: {
@@ -157,7 +158,10 @@ const TestSchema = new mongoose.Schema(
             required: true,
             validate(value) {
                 if (new Date(value) < new Date()) {
-                    throw new Error("Test date must be after today");
+                    throw new ApiError(
+                        httpStatus.BAD_REQUEST,
+                        "Test date must be after today"
+                    );
                 }
             },
         },
@@ -192,7 +196,9 @@ const TestSchema = new mongoose.Schema(
             required: true,
             validate(value) {
                 if (value === 1) {
-                    throw new Error(
+                    throw new ApiError(
+                        httpStatus.BAD_REQUEST,
+
                         "Test must have at least 2 parts or no part"
                     );
                 }

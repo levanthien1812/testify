@@ -12,6 +12,7 @@ import {
     MESSAGE_TYPE,
     NOTIFICATION_TYPE,
 } from "../config/constants/message.js";
+import { ApiError } from "../utils/apiError.js";
 
 const getMemberNames = async (members) => {
     const memberNames = await Promise.all(
@@ -35,7 +36,7 @@ const createChat = catchAsync(async (req, res, next) => {
             allowedMembers.map((member) => member.id).includes(member)
         )
     ) {
-        return next(new Error("Invalid members"));
+        return next(new ApiError(httpStatus.BAD_REQUEST, "Invalid members"));
     }
 
     let newChats;

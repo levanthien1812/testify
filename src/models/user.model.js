@@ -3,6 +3,8 @@ import { ROLES } from "../config/constants/roles.js";
 import bcrypt from "bcryptjs";
 import validator from "validator";
 import { toJSON } from "./plugins/toJSON.js";
+import { ApiError } from "../utils/apiError.js";
+import httpStatus from "http-status";
 
 const userSchema = mongoose.Schema(
     {
@@ -19,7 +21,7 @@ const userSchema = mongoose.Schema(
             lowercase: true,
             validate(value) {
                 if (!validator.isEmail(value)) {
-                    throw new Error("Invalid email");
+                    throw new ApiError(httpStatus.BAD_REQUEST, "Invalid email");
                 }
             },
         },
