@@ -9,3 +9,8 @@ export const QUESTION_NUMBERING_METHOD = {
     CONTINUOUS: "CONTINUOUS",
     PART_RESET: "PART_RESET",
 };
+
+export const RECORDING_MODE = {
+    VIDEO: "VIDEO",
+    SCREEN_SHOTS: "SCREEN_SHOTS",
+};

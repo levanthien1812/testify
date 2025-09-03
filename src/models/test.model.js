@@ -12,6 +12,7 @@ import { PassCode } from "./passcode.model.js";
 import {
     PAGINATION_MODE,
     QUESTION_NUMBERING_METHOD,
+    RECORDING_MODE,
 } from "../config/constants/test.js";
 import { User } from "./user.model.js";
 import { ROLES } from "../config/constants/roles.js";
@@ -141,6 +142,44 @@ const TestOption = new mongoose.Schema({
                 required: false,
                 default: 10,
             },
+        },
+        required: true,
+        _id: false,
+    },
+    require_screen_recorder: {
+        type: {
+            enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
+            record_mode: {
+                type: String,
+                enum: Object.values(RECORDING_MODE),
+                required: false,
+            },
+            interval_in_seconds: {
+                type: Number,
+                required: false,
+                default: 10,
+            },
+            include_audio: { type: Boolean, required: false, default: false },
+        },
+        required: true,
+        _id: false,
+    },
+    require_camera_on: {
+        type: {
+            enable: { type: Boolean, required: true },
+            let_taker_know: { type: Boolean, required: true },
+            record_mode: {
+                type: String,
+                enum: Object.values(RECORDING_MODE),
+                required: false,
+            },
+            interval_in_seconds: {
+                type: Number,
+                required: false,
+                default: 10,
+            },
+            include_audio: { type: Boolean, required: false, default: false },
         },
         required: true,
         _id: false,
