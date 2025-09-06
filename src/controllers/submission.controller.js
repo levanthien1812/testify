@@ -143,4 +143,17 @@ const getSubmissions = catchAsync(async (req, res, next) => {
     });
 });
 
-export default { createSubmission, getSubmission, getSubmissions };
+const updateSubmission = catchAsync(async (req, res, next) => {
+    const submission = await submissionService.updateSubmission(
+        req.params.submissionId,
+        req.body
+    );
+    return res.status(httpStatus.OK).send({ submission });
+});
+
+export default {
+    createSubmission,
+    getSubmission,
+    getSubmissions,
+    updateSubmission,
+};

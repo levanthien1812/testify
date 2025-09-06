@@ -1,5 +1,6 @@
 import mongoose from "mongoose";
 import { toJSON } from "./plugins/toJSON.js";
+import { RECORDING_MODE } from "../config/constants/test.js";
 
 const SubmissionSchema = new mongoose.Schema(
     {
@@ -44,6 +45,24 @@ const SubmissionSchema = new mongoose.Schema(
                 required: true,
             },
         ],
+        recording: {
+            type: {
+                mode: {
+                    type: String,
+                    required: true,
+                    enum: RECORDING_MODE,
+                },
+                video_url: {
+                    type: String,
+                },
+                screenshot_urls: [
+                    {
+                        type: String,
+                    },
+                ],
+            },
+            required: false,
+        },
     },
     {
         timestamps: {

@@ -193,6 +193,14 @@ router
     );
 
 router
+    .route("/:testId/submissions/:submissionId")
+    .patch(
+        auth(RIGHTS.UPDATE_SUBMISSION),
+        checkAccess(),
+        submissionController.updateSubmission
+    );
+
+router
     .route("/:testId/submissions/:takerId")
     .get(auth(RIGHTS.GET_TEST), checkAccess(), testController.getTest);
 
