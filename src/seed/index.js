@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import config from "../config/config.js";
-import { seedUsers } from "./user.seed.js";
+import { addUsersToGroups, seedUsers } from "./user.seed.js";
 import { seedTests } from "./test.seed.js";
 import { logger } from "../config/logger.js";
 
@@ -12,19 +12,21 @@ const seedData = async () => {
                 console.log("Connected to MongoDB");
             });
 
-        const db = mongoose.connection;
+        // const db = mongoose.connection;
 
-        logger.info("Dropping database");
+        // logger.info("Dropping database");
 
-        await db.dropDatabase();
+        // await db.dropDatabase();
 
-        logger.info("Database dropped");
-        logger.info("Start seeding database");
+        // logger.info("Database dropped");
+        // logger.info("Start seeding database");
 
-        await seedUsers();
-        await seedTests();
+        // await seedUsers();
+        // await seedTests();
 
-        logger.info("Database seeded");
+        // logger.info("Database seeded");
+
+        await addUsersToGroups();
 
         // await db.close();
     } catch (error) {
