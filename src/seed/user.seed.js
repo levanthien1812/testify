@@ -7,6 +7,8 @@ import userService from "../services/user.service.js";
 import makerService from "../services/maker.service.js";
 import { seedTakersForMaker } from "./taker.seed.js";
 import { seedGroupsForMaker } from "./group.seed.js";
+import takerService from "../services/taker.service.js";
+import takerGroupService from "../services/takerGroup.service.js";
 
 export const generateRandomUser = (role) => {
     return {
@@ -46,4 +48,28 @@ export const seedUsers = async () => {
     );
 
     logger.info("Seed users done");
+};
+
+export const addUsersToGroups = async () => {
+    logger.info("Adding users to groups...");
+    const makerUsers = await User.find({ role: ROLES.MAKER });
+    for (const makerUser of makerUsers) {
+        logger.info("Adding users to group for maker " + makerUser.name);
+        const maker = await makerService.getMakerByUserId(makerUser.id);
+        const takers = await takerService.getTakersByMaker(maker.id);
+
+        const groups = await takerGroupService.getTakerGroups(maker.id);
+
+        if (groups.length === 0) continue;
+
+        for (const taker of takers) {
+            if (Math.random() > 0.8 || taker.group_id) continue;
+            const randomGroup = faker.helpers.arrayElement(groups);
+            await takerService.updateTaker(taker.id, {
+                group_id: randomGroup.id,
+            });
+            await takerGroupService.addTakerToGroup(randomGroup.id, taker.id);
+        }
+    }
+    logger.info("Added users to groups");
 };
