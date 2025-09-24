@@ -35,11 +35,6 @@ const getById = async (id) => {
     return taker;
 };
 
-const getByUserId = async (userId) => {
-    const taker = await Taker.find({ user_id: userId });
-    return taker;
-};
-
 const getTakersByUserId = async (userId) => {
     const takers = await Taker.find({ user_id: userId });
     return takers;
@@ -52,6 +47,5 @@ export default {
     deleteTaker,
     getTakerByUserIdAndMakerId,
     getById,
-    getByUserId,
     getTakersByUserId,
 };

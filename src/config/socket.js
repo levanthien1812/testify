@@ -145,6 +145,18 @@ const initializeSocket = (server) => {
             });
         });
 
+        socket.on(SOCKET_EVENTS.SEND_REQUEST_CHAT, async (data) => {
+            const targetSocket = onlineUsers.find(
+                (user) => user.user_id === data.receiver_id
+            );
+            if (targetSocket) {
+                io.to(targetSocket.socket_id).emit(
+                    SOCKET_EVENTS.RECEIVE_REQUEST_CHAT,
+                    data
+                );
+            }
+        });
+
         socket.on(SOCKET_EVENTS.DISCONNECT, () => {
             console.log("user disconnected");
             onlineUsers = onlineUsers.filter(

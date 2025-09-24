@@ -45,7 +45,7 @@ const getTests = async (user, reqQuery) => {
         const maker = await makerService.getMakerByUserId(user.id);
         filter = { maker_id: maker.id };
     } else {
-        const takers = await takerService.getByUserId(user.id);
+        const takers = await takerService.getTakersByUserId(user.id);
         const takerIds = takers.map((taker) => taker.id);
         filter = {
             $or: [
