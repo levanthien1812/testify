@@ -30,4 +30,6 @@ export const SOCKET_EVENTS = {
     UNBLOCK_USER: "unblock-user",
     RECEIVE_BLOCK_USER: "receive-block-user",
     RECEIVE_UNBLOCK_USER: "receive-unblock-user",
+    SEND_REQUEST_CHAT: "send-request-chat",
+    RECEIVE_REQUEST_CHAT: "receive-request-chat",
 };

@@ -85,9 +85,22 @@ const updateTaker = catchAsync(async (req, res, next) => {
 
 const getTakersByMaker = catchAsync(async (req, res, next) => {
     const maker = await makerService.getMakerByUserId(req.user.id);
+    if (!maker) {
+        return res.status(httpStatus.NOT_FOUND).send("Maker not found!");
+    }
     const takers = await takerService.getTakersByMaker(maker.id);
 
     return res.status(httpStatus.ACCEPTED).send({ takers });
+});
+
+const getMakersByTakerUser = catchAsync(async (req, res, next) => {
+    const takers = await takerService.getTakersByUserId(req.user.id);
+    if (takers.length === 0) {
+        return res.status(httpStatus.NOT_FOUND).send("Taker not found!");
+    }
+    const makers = await makerService.getMakersByTakerUserId(req.user.id);
+
+    return res.status(httpStatus.ACCEPTED).send({ makers });
 });
 
 const getTakersWithStatistics = catchAsync(async (req, res, next) => {
@@ -255,4 +268,5 @@ export default {
     getTakerUsersByEmailSearch,
     updateUser,
     addTakersToGroup,
+    getMakersByTakerUser,
 };

@@ -30,6 +30,10 @@ router
     .get(auth(RIGHTS.GET_TAKERS), userController.getTakersByMaker);
 
 router
+    .route("/makers")
+    .get(auth(RIGHTS.GET_MAKERS), userController.getMakersByTakerUser);
+
+router
     .route("/takers/groups")
     .post(
         auth(RIGHTS.CREATE_TAKER_GROUP),
