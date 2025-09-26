@@ -3,6 +3,7 @@ import userRoute from "./user.route.js";
 import testRoute from "./test.route.js";
 import chatRoute from "./chat.route.js";
 import questionBankRoute from "./questionBank.route.js";
+import notificationRoute from "./notification.route.js";
 import express from "express";
 
 const router = express.Router();
@@ -27,6 +28,10 @@ const routes = [
     {
         path: "/question-banks",
         route: questionBankRoute,
+    },
+    {
+        path: "/notifications",
+        route: notificationRoute,
     },
 ];
 

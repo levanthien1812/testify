@@ -133,6 +133,15 @@ const deleteAIChat = async (chatId) => {
     return deletedChat;
 };
 
+const getById = async (chatId) => {
+    const chat = await Chat.findById(chatId).populate(
+        "members.member",
+        "-password"
+    );
+
+    return chat;
+};
+
 export default {
     createChat,
     getChats,
@@ -144,4 +153,5 @@ export default {
     generateAIChatName,
     updateAIChat,
     deleteAIChat,
+    getById,
 };

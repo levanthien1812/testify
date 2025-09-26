@@ -1,7 +1,9 @@
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
 import config from "./config.js";
 import { SOCKET_EVENTS } from "./constants/socket.js";
-import { Chat } from "../models/chat.model.js";
+import chatService from "../services/chat.service.js";
+import notificationService from "../services/notification.service.js";
+import { NOTIFICATION_TYPES } from "./constants/notification.js";
 
 const initializeSocket = (server) => {
     const io = new Server(server, {
@@ -23,7 +25,7 @@ const initializeSocket = (server) => {
             data,
             options = { includeSender: true }
         ) => {
-            const chat = await Chat.findById(data.chat_id);
+            const chat = await chatService.getById(data.chat_id);
             if (!chat || chat.members?.length === 0) return;
             chat.members
                 .filter(
@@ -146,13 +148,28 @@ const initializeSocket = (server) => {
         });
 
         socket.on(SOCKET_EVENTS.SEND_REQUEST_CHAT, async (data) => {
+            // 1. Create the notification in the database
+            const notification = await notificationService.createNotification({
+                sender_id: data.sender_id,
+                recipient_ids: [data.receiver_id],
+                type: NOTIFICATION_TYPES.CHAT_REQUEST,
+                message: data.message,
+                link: data.link,
+                metadata: {
+                    chat_id: data.chat_id,
+                },
+            });
+
+            // 2. Find the recipient if they are online
             const targetSocket = onlineUsers.find(
                 (user) => user.user_id === data.receiver_id
             );
+
+            // 3. Emit the real-time event with the full notification object
             if (targetSocket) {
                 io.to(targetSocket.socket_id).emit(
                     SOCKET_EVENTS.RECEIVE_REQUEST_CHAT,
-                    data
+                    notification
                 );
             }
         });

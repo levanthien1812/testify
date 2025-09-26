@@ -1,16 +1,17 @@
 import mongoose, { Schema } from "mongoose";
 import { toJSON } from "./plugins/toJSON.js";
+import { NOTIFICATION_TYPES } from "../config/constants/notification.js";
 
 const NotificationSchema = new Schema(
     {
-        recipients: [
+        recipient_ids: [
             {
                 type: Schema.Types.ObjectId,
                 ref: "User",
                 required: true,
             },
         ],
-        sender: {
+        sender_id: {
             type: Schema.Types.ObjectId,
             ref: "User",
             required: false, // Can be null for system notifications
@@ -18,17 +19,7 @@ const NotificationSchema = new Schema(
         type: {
             type: String,
             required: true,
-            enum: [
-                "test_assigned",
-                "test_published",
-                "submission_graded",
-                "new_message",
-                "user_blocked",
-                "user_unblocked",
-                "group_added",
-                "group_removed",
-                "other",
-            ],
+            enum: Object.values(NOTIFICATION_TYPES),
         },
         message: {
             type: String,
@@ -57,6 +48,30 @@ const NotificationSchema = new Schema(
     }
 );
 
+NotificationSchema.virtual("sender", {
+    ref: "User",
+    localField: "sender_id",
+    foreignField: "_id",
+    justOne: true,
+});
+
+NotificationSchema.virtual("recipients", {
+    ref: "User",
+    localField: "recipient_ids",
+    foreignField: "_id",
+});
+
 NotificationSchema.plugin(toJSON);
+
+NotificationSchema.pre(/^find/, function (next) {
+    this.populate({
+        path: "sender",
+        select: "name email photo",
+    }).populate({
+        path: "recipients",
+        select: "name email photo",
+    });
+    next();
+});
 
 export const Notification = mongoose.model("Notification", NotificationSchema);
