@@ -4,6 +4,7 @@ import { SOCKET_EVENTS } from "./constants/socket.js";
 import chatService from "../services/chat.service.js";
 import notificationService from "../services/notification.service.js";
 import { NOTIFICATION_TYPES } from "./constants/notification.js";
+import userService from "../services/user.service.js";
 
 const initializeSocket = (server) => {
     const io = new Server(server, {
@@ -149,14 +150,18 @@ const initializeSocket = (server) => {
 
         socket.on(SOCKET_EVENTS.SEND_REQUEST_CHAT, async (data) => {
             // 1. Create the notification in the database
+            const sender = await userService.getUserById(data.sender_id);
+            if (!sender) return;
+
             const notification = await notificationService.createNotification({
                 sender_id: data.sender_id,
                 recipient_ids: [data.receiver_id],
                 type: NOTIFICATION_TYPES.CHAT_REQUEST,
-                message: data.message,
-                link: data.link,
+                message: `You have a new chat request from <strong>${sender.name}</strong>`,
+                link: "/chats?tab=requests",
+                type: NOTIFICATION_TYPES.CHAT_REQUEST,
                 metadata: {
-                    chat_id: data.chat_id,
+                    message: data.message,
                 },
             });
 

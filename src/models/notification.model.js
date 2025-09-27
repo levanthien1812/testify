@@ -1,6 +1,7 @@
 import mongoose, { Schema } from "mongoose";
 import { toJSON } from "./plugins/toJSON.js";
 import { NOTIFICATION_TYPES } from "../config/constants/notification.js";
+import { paginate } from "./plugins/paginate.js";
 
 const NotificationSchema = new Schema(
     {
@@ -61,7 +62,7 @@ NotificationSchema.virtual("recipients", {
     foreignField: "_id",
 });
 
-NotificationSchema.plugin(toJSON);
+NotificationSchema.plugin(toJSON, { timestamps: true });
 
 NotificationSchema.pre(/^find/, function (next) {
     this.populate({
