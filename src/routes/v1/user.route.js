@@ -20,6 +20,8 @@ router
         userController.updateUser
     );
 
+router.route("/counts").get(auth(RIGHTS.GET_COUNTS), userController.getCounts);
+
 router
     .route("/takers")
     .post(

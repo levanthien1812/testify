@@ -9,6 +9,8 @@ import makerService from "../services/maker.service.js";
 import { checkLinkImage, unlinkImages } from "../utils/linkImage.js";
 import takerGroupService from "../services/takerGroup.service.js";
 import { ApiError } from "../utils/apiError.js";
+import notificationService from "../services/notification.service.js";
+import messageService from "../services/message.service.js";
 
 const getUsers = catchAsync(async (req, res, next) => {
     const users = await User.find();
@@ -256,6 +258,19 @@ const addTakersToGroup = catchAsync(async (req, res, next) => {
         .send("Takers added to group successfully!");
 });
 
+const getCounts = catchAsync(async (req, res) => {
+    const unreadNotificationsCount =
+        await notificationService.getUnreadNotificationsCount(req.user.id);
+    const unreadMessagesCount = await messageService.getUnreadMessagesCount(
+        req.user.id
+    );
+
+    return res.status(httpStatus.OK).send({
+        unread_notifications_count: unreadNotificationsCount,
+        unread_messages_count: unreadMessagesCount,
+    });
+});
+
 export default {
     getUsers,
     getTakersByMaker,
@@ -269,4 +284,5 @@ export default {
     updateUser,
     addTakersToGroup,
     getMakersByTakerUser,
+    getCounts,
 };

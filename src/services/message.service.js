@@ -1,4 +1,5 @@
 import openai from "../config/openai.js";
+import { Chat } from "../models/chat.model.js";
 import { Message } from "../models/message.model.js";
 import { MessageAI } from "../models/messageAI.model.js";
 import { generateLinkPreviews } from "../utils/linkImage.js";
@@ -218,6 +219,21 @@ const deleteAIMessagesByChatId = async (chatId) => {
     return messages;
 };
 
+const getUnreadMessagesCount = async (userId) => {
+    const chats = await Chat.find({ "members.member": userId }).select("_id");
+    const chatIds = chats.map((chat) => chat._id);
+
+    const count = await Message.countDocuments({
+        chat_id: { $in: chatIds },
+        sender_id: { $ne: userId },
+        read_by: { $ne: userId },
+        deleted: { $ne: true },
+        removed_for: { $ne: userId },
+    });
+
+    return count;
+};
+
 export default {
     createMessage,
     updateMessage,
@@ -233,4 +249,5 @@ export default {
     updateMessageAI,
     regenerateMessageAI,
     deleteAIMessagesByChatId,
+    getUnreadMessagesCount,
 };

@@ -10,3 +10,5 @@ export const NOTIFICATION_TYPES = {
     CHAT_REQUEST_REJECTED: "chat_request_rejected",
     OTHER: "other",
 };
+
+export const MIN_NO_OF_NOTIFICATIONS = 10;
