@@ -11,6 +11,8 @@ import takerGroupService from "../services/takerGroup.service.js";
 import { ApiError } from "../utils/apiError.js";
 import notificationService from "../services/notification.service.js";
 import messageService from "../services/message.service.js";
+import chatRequestService from "../services/chatRequest.service.js";
+import { CHAT_REQUEST_TYPE } from "../config/constants/chat.js";
 
 const getUsers = catchAsync(async (req, res, next) => {
     const users = await User.find();
@@ -96,11 +98,26 @@ const getTakersByMaker = catchAsync(async (req, res, next) => {
 });
 
 const getMakersByTakerUser = catchAsync(async (req, res, next) => {
+    const { excludeRequestedMakers } = req.query;
     const takers = await takerService.getTakersByUserId(req.user.id);
     if (takers.length === 0) {
         return res.status(httpStatus.NOT_FOUND).send("Taker not found!");
     }
-    const makers = await makerService.getMakersByTakerUserId(req.user.id);
+    let makers = await makerService.getMakersByTakerUserId(req.user.id);
+    if (excludeRequestedMakers) {
+        const chatRequests = await chatRequestService.getChatRequests(
+            req.user.id,
+            { type: CHAT_REQUEST_TYPE.OUTGOING }
+        );
+
+        const requestedMakers = chatRequests.map((request) =>
+            request.receiver_id.toString()
+        );
+
+        makers = makers.filter(
+            (maker) => !requestedMakers.includes(maker.user_id.toString())
+        );
+    }
 
     return res.status(httpStatus.ACCEPTED).send({ makers });
 });

@@ -4,6 +4,7 @@ import testRoute from "./test.route.js";
 import chatRoute from "./chat.route.js";
 import questionBankRoute from "./questionBank.route.js";
 import notificationRoute from "./notification.route.js";
+import chatRequestRoute from "./chatRequest.route.js";
 import express from "express";
 
 const router = express.Router();
@@ -33,6 +34,7 @@ const routes = [
         path: "/notifications",
         route: notificationRoute,
     },
+    { path: "/chat-requests", route: chatRequestRoute },
 ];
 
 routes.forEach((route) => {
