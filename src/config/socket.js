@@ -2,12 +2,14 @@ import { Server } from "socket.io";
 import config from "./config.js";
 import { SOCKET_EVENTS } from "./constants/socket.js";
 import chatService from "../services/chat.service.js";
-import notificationService from "../services/notification.service.js";
-import { NOTIFICATION_TYPES } from "./constants/notification.js";
 import userService from "../services/user.service.js";
+import chatRequestService from "../services/chatRequest.service.js";
+import jwt from "jsonwebtoken";
+
+let io;
 
 const initializeSocket = (server) => {
-    const io = new Server(server, {
+    io = new Server(server, {
         cors: {
             origin: [config.client.url],
             methods: ["GET", "POST"],
@@ -17,9 +19,38 @@ const initializeSocket = (server) => {
 
     let onlineUsers = [];
 
+    io.use((socket, next) => {
+        const token = socket.handshake.auth.token;
+
+        if (!token) {
+            return next(new Error("Authentication error"));
+        }
+
+        try {
+            const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+            const userId = decoded.sub;
+
+            if (!userId) {
+                return next(new Error("Authentication error"));
+            }
+
+            socket.userId = userId;
+            next();
+        } catch (error) {
+            next(new Error("Authentication error"));
+        }
+    });
+
     io.on(SOCKET_EVENTS.CONNECTION, (socket) => {
         console.log("a user connected");
+        const userId = socket.userId;
 
+        if (userId) {
+            socket.join(userId);
+            console.log(`User ${userId} successfully joined room: ${userId}`);
+            // console.log("User rooms:", socket.rooms);
+        }
         // data must include chat_id
         const emitEventToOnlineUsers = async (
             event,
@@ -28,15 +59,24 @@ const initializeSocket = (server) => {
         ) => {
             const chat = await chatService.getById(data.chat_id);
             if (!chat || chat.members?.length === 0) return;
-            chat.members
-                .filter(
+
+            console.log(
+                chat.members.filter(
                     (member) =>
                         options.includeSender ||
                         member.member.toString() !== data.sender_id
                 )
+            );
+
+            chat.members
+                .filter(
+                    (member) =>
+                        options.includeSender ||
+                        member.member.id.toString() !== data.sender_id
+                )
                 .forEach((member) => {
                     const user = onlineUsers.find(
-                        (user) => user.user_id === member.member.toString()
+                        (user) => user.user_id === member.member.id.toString()
                     );
                     if (user) {
                         io.to(user.socket_id).emit(event, data);
@@ -55,6 +95,7 @@ const initializeSocket = (server) => {
                     user_id: userId,
                     socket_id: socket.id,
                 });
+
             io.emit(SOCKET_EVENTS.SEND_ONLINE_USERS, onlineUsers);
         });
 
@@ -148,37 +189,6 @@ const initializeSocket = (server) => {
             });
         });
 
-        socket.on(SOCKET_EVENTS.SEND_REQUEST_CHAT, async (data) => {
-            // 1. Create the notification in the database
-            const sender = await userService.getUserById(data.sender_id);
-            if (!sender) return;
-
-            const notification = await notificationService.createNotification({
-                sender_id: data.sender_id,
-                recipient_ids: [data.receiver_id],
-                type: NOTIFICATION_TYPES.CHAT_REQUEST,
-                message: `You have a new chat request from <strong>${sender.name}</strong>`,
-                link: "/chats?tab=requests",
-                type: NOTIFICATION_TYPES.CHAT_REQUEST,
-                metadata: {
-                    message: data.message,
-                },
-            });
-
-            // 2. Find the recipient if they are online
-            const targetSocket = onlineUsers.find(
-                (user) => user.user_id === data.receiver_id
-            );
-
-            // 3. Emit the real-time event with the full notification object
-            if (targetSocket) {
-                io.to(targetSocket.socket_id).emit(
-                    SOCKET_EVENTS.RECEIVE_REQUEST_CHAT,
-                    notification
-                );
-            }
-        });
-
         socket.on(SOCKET_EVENTS.DISCONNECT, () => {
             console.log("user disconnected");
             onlineUsers = onlineUsers.filter(
@@ -188,5 +198,14 @@ const initializeSocket = (server) => {
         });
     });
 };
+
+const getIO = () => {
+    if (!io) {
+        throw new Error("Socket.io not initialized");
+    }
+    return io;
+};
+
+export { getIO };
 
 export default initializeSocket;
