@@ -2,6 +2,7 @@ import httpStatus from "http-status";
 import messageService from "../services/message.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import chatService from "../services/chat.service.js";
+import { getIO } from "../config/socket.js";
 
 const createMessage = catchAsync(async (req, res, next) => {
     const messageBody = {
@@ -11,6 +12,8 @@ const createMessage = catchAsync(async (req, res, next) => {
     };
 
     const message = await messageService.createMessage(messageBody);
+
+    const IO = getIO();
 
     return res.status(httpStatus.CREATED).send({ message });
 });

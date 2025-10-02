@@ -1,5 +1,6 @@
 import { MIN_NO_OF_NOTIFICATIONS } from "../config/constants/notification.js";
 import { Notification } from "../models/notification.model.js";
+import { ApiError } from "../utils/apiError.js";
 
 const createNotification = async (body) => {
     let notification = await Notification.create(body);
@@ -37,8 +38,37 @@ const getUnreadNotificationsCount = async (userId) => {
     return count;
 };
 
+const markNotificationAsRead = async (userId, notificationId) => {
+    const existingNotification = await Notification.findById(notificationId);
+    if (!existingNotification) {
+        throw new ApiError(httpStatus.NOT_FOUND, "Notification not found");
+    }
+
+    if (!existingNotification.recipient_ids.includes(userId)) {
+        throw new ApiError(
+            httpStatus.FORBIDDEN,
+            "You are not authorized to perform this action"
+        );
+    }
+
+    const notification = await Notification.findByIdAndUpdate(
+        notificationId,
+        { $addToSet: { read_by: userId } },
+        { new: true }
+    );
+
+    return notification;
+};
+
+const deleteNotification = async (notificationId) => {
+    const notification = await Notification.findByIdAndDelete(notificationId);
+    return notification;
+};
+
 export default {
     createNotification,
     getNotifications,
     getUnreadNotificationsCount,
+    markNotificationAsRead,
+    deleteNotification,
 };
