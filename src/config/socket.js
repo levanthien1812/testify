@@ -60,14 +60,6 @@ const initializeSocket = (server) => {
             const chat = await chatService.getById(data.chat_id);
             if (!chat || chat.members?.length === 0) return;
 
-            console.log(
-                chat.members.filter(
-                    (member) =>
-                        options.includeSender ||
-                        member.member.toString() !== data.sender_id
-                )
-            );
-
             chat.members
                 .filter(
                     (member) =>
@@ -108,7 +100,9 @@ const initializeSocket = (server) => {
         });
 
         socket.on(SOCKET_EVENTS.SEND_MESSAGE, async (message) => {
-            await emitEventToOnlineUsers(SOCKET_EVENTS.GET_MESSAGE, message);
+            await emitEventToOnlineUsers(SOCKET_EVENTS.GET_MESSAGE, message, {
+                includeSender: false,
+            });
         });
 
         socket.on(SOCKET_EVENTS.DELETE_MESSAGE, async (message) => {

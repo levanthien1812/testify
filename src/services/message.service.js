@@ -219,11 +219,11 @@ const deleteAIMessagesByChatId = async (chatId) => {
     return messages;
 };
 
-const getUnreadMessagesCount = async (userId) => {
+const getUnreadChatsCount = async (userId) => {
     const chats = await Chat.find({ "members.member": userId }).select("_id");
     const chatIds = chats.map((chat) => chat._id);
 
-    const count = await Message.countDocuments({
+    const unreadChats = await Message.distinct("chat_id", {
         chat_id: { $in: chatIds },
         sender_id: { $ne: userId },
         read_by: { $ne: userId },
@@ -231,7 +231,7 @@ const getUnreadMessagesCount = async (userId) => {
         removed_for: { $ne: userId },
     });
 
-    return count;
+    return unreadChats.length;
 };
 
 export default {
@@ -249,5 +249,5 @@ export default {
     updateMessageAI,
     regenerateMessageAI,
     deleteAIMessagesByChatId,
-    getUnreadMessagesCount,
+    getUnreadChatsCount,
 };

@@ -10,4 +10,19 @@ const getNotifications = catchAsync(async (req, res) => {
     return res.status(httpStatus.OK).send({ notifications: notifications });
 });
 
-export default { getNotifications };
+const markNotificationAsRead = catchAsync(async (req, res) => {
+    const notifications = await notificationService.markNotificationAsRead(
+        req.user.id,
+        req.params.id
+    );
+
+    return res.status(httpStatus.OK).send({ notifications: notifications });
+});
+
+const deleteNotification = catchAsync(async (req, res) => {
+    await notificationService.deleteNotification(req.params.id);
+
+    return res.status(httpStatus.OK).send({ deleted: true });
+});
+
+export default { getNotifications, markNotificationAsRead, deleteNotification };

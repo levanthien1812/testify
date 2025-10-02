@@ -12,4 +12,18 @@ router
         notificationController.getNotifications
     );
 
+router
+    .route("/:id")
+    .delete(
+        auth(RIGHTS.DELETE_NOTIFICATION),
+        notificationController.deleteNotification
+    );
+
+router
+    .route("/:id/read")
+    .patch(
+        auth(RIGHTS.MARK_NOTIFICATION_AS_READ),
+        notificationController.markNotificationAsRead
+    );
+
 export default router;

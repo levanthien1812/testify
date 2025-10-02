@@ -278,13 +278,13 @@ const addTakersToGroup = catchAsync(async (req, res, next) => {
 const getCounts = catchAsync(async (req, res) => {
     const unreadNotificationsCount =
         await notificationService.getUnreadNotificationsCount(req.user.id);
-    const unreadMessagesCount = await messageService.getUnreadMessagesCount(
+    const unreadChatsCount = await messageService.getUnreadChatsCount(
         req.user.id
     );
 
     return res.status(httpStatus.OK).send({
         unread_notifications_count: unreadNotificationsCount,
-        unread_messages_count: unreadMessagesCount,
+        unread_chats_count: unreadChatsCount,
     });
 });
 
