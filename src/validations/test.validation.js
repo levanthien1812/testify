@@ -5,6 +5,7 @@ import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js
 import {
     PAGINATION_MODE,
     QUESTION_NUMBERING_METHOD,
+    RECORDING_MODE,
 } from "../config/constants/test.js";
 
 const createTest = {
@@ -80,6 +81,24 @@ const createTest = {
                     allow_back_navigation: Joi.boolean().optional(),
                     require_completion_before_next: Joi.boolean().optional(),
                     questions_per_page: Joi.number().min(1).optional(),
+                }),
+                require_screen_recorder: Joi.object().keys({
+                    enable: Joi.boolean().required(),
+                    let_taker_know: Joi.boolean().optional(),
+                    record_mode: Joi.string().valid(
+                        ...Object.values(RECORDING_MODE)
+                    ),
+                    interval_in_seconds: Joi.number().min(0).optional(),
+                    include_audio: Joi.boolean().optional(),
+                }),
+                require_camera_on: Joi.object().keys({
+                    enable: Joi.boolean().required(),
+                    let_taker_know: Joi.boolean().optional(),
+                    record_mode: Joi.string().valid(
+                        ...Object.values(RECORDING_MODE)
+                    ),
+                    interval_in_seconds: Joi.number().min(0).optional(),
+                    include_audio: Joi.boolean().optional(),
                 }),
             }),
     }),

@@ -7,6 +7,10 @@ import submissionService from "../services/submission.service.js";
 import answerService from "../services/answer.service.js";
 import { ROLES } from "../config/constants/roles.js";
 import takerService from "../services/taker.service.js";
+import notificationService from "../services/notification.service.js";
+import makerService from "../services/maker.service.js";
+import { NOTIFICATION_TYPES } from "../config/constants/notification.js";
+import { shorten } from "../utils/text.js";
 
 const createSubmission = catchAsync(async (req, res, next) => {
     const test = await testService.findById(req.params.testId);
@@ -51,6 +55,14 @@ const createSubmission = catchAsync(async (req, res, next) => {
         );
     }
 
+    // Mock submission
+    // let submission = {
+    //     taker_id: taker.id,
+    //     test_id: req.params.testId,
+    //     submit_time: new Date(),
+    //     start_time: new Date(req.body.startTime),
+    // };
+
     let submission = await submissionService.createSubmission({
         taker_id: taker.id,
         test_id: req.params.testId,
@@ -79,6 +91,56 @@ const createSubmission = catchAsync(async (req, res, next) => {
     ) {
         newAnswers = null;
     }
+
+    // Create and send notification
+    const maker = await makerService.getById(test.maker_id);
+    let notification;
+
+    const existingNotification = await notificationService.getNotification(
+        maker.user_id,
+        {
+            type: NOTIFICATION_TYPES.TEST_SUBMISSION,
+            "metadata.test_id": test.id.toString(),
+        }
+    );
+
+    if (existingNotification) {
+        const submissionsCount = await submissionService.getSubmissionsCount(
+            test.id
+        );
+
+        if (submissionsCount > 1) {
+            notification = await notificationService.updateNotification(
+                existingNotification.id,
+                {
+                    message: `<strong>${taker.name}</strong> and ${
+                        submissionsCount - 1
+                    } others submitted for test <strong>${shorten(
+                        test.title,
+                        30
+                    )}</strong>.`,
+                }
+            );
+        }
+    } else {
+        notification = await notificationService.createNotification({
+            sender_id: req.user.id,
+            recipient_ids: [maker.user_id],
+            type: NOTIFICATION_TYPES.TEST_SUBMISSION,
+            message: `<strong>${
+                taker.name
+            }</strong> submitted for test <strong>${shorten(
+                test.title,
+                30
+            )}</strong>`,
+            link: `/tests/${test.id}`,
+            metadata: {
+                test_id: test.id,
+            },
+        });
+    }
+
+    await notificationService.sendNotification(notification);
 
     return res
         .status(httpStatus.CREATED)

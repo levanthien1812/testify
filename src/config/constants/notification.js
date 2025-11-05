@@ -9,6 +9,7 @@ export const NOTIFICATION_TYPES = {
     CHAT_REQUEST_ACCEPTED: "chat_request_accepted",
     CHAT_REQUEST_REJECTED: "chat_request_rejected",
     OTHER: "other",
+    TEST_SUBMISSION: "test_submission",
 };
 
 export const MIN_NO_OF_NOTIFICATIONS = 10;
