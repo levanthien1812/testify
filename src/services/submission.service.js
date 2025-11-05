@@ -161,6 +161,13 @@ const calculateRates = async (testId) => {
     };
 };
 
+const getSubmissionsCount = async (testId) => {
+    const noOfSubmissions = await Submission.countDocuments({
+        test_id: testId,
+    });
+    return noOfSubmissions;
+};
+
 export default {
     createSubmission,
     updateSubmission,
@@ -173,4 +180,5 @@ export default {
     findByTestId,
     calculateScores,
     calculateRates,
+    getSubmissionsCount,
 };

@@ -1,6 +1,9 @@
 import { MIN_NO_OF_NOTIFICATIONS } from "../config/constants/notification.js";
 import { Notification } from "../models/notification.model.js";
 import { ApiError } from "../utils/apiError.js";
+import { getIO } from "../config/socket.js";
+import { SOCKET_EVENTS } from "../config/constants/socket.js";
+import httpStatus from "http-status";
 
 const createNotification = async (body) => {
     let notification = await Notification.create(body);
@@ -65,10 +68,49 @@ const deleteNotification = async (notificationId) => {
     return notification;
 };
 
+const getNotification = async (receiverId, filter) => {
+    const notification = await Notification.findOne({
+        recipient_ids: receiverId,
+        ...filter,
+    });
+    return notification;
+};
+
+const updateNotification = async (notificationId, notificationBody) => {
+    const notification = await Notification.findByIdAndUpdate(
+        notificationId,
+        notificationBody,
+        { new: true }
+    );
+    return notification;
+};
+
+const sendNotification = async (notification) => {
+    const io = getIO();
+
+    notification.recipient_ids.forEach((recipientId) => {
+        io.to(recipientId.toString()).emit(
+            SOCKET_EVENTS.RECEIVE_NOTIFICATION,
+            notification
+        );
+    });
+};
+
+const markAllNotificationsAsRead = async (userId) => {
+    await Notification.updateMany(
+        { recipient_ids: userId },
+        { $addToSet: { read_by: userId } }
+    );
+};
+
 export default {
     createNotification,
+    getNotification,
     getNotifications,
     getUnreadNotificationsCount,
     markNotificationAsRead,
     deleteNotification,
+    updateNotification,
+    sendNotification,
+    markAllNotificationsAsRead,
 };

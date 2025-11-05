@@ -18,4 +18,14 @@ const getMakersByTakerUserId = async (userId) => {
     return makers;
 };
 
-export default { getMakerByUserId, createMaker, getMakersByTakerUserId };
+const getById = async (id) => {
+    const maker = await Maker.findById(id);
+    return maker;
+};
+
+export default {
+    getMakerByUserId,
+    createMaker,
+    getMakersByTakerUserId,
+    getById,
+};

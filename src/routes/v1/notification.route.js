@@ -13,6 +13,12 @@ router
     );
 
 router
+    .route("/read-all")
+    .patch(
+        auth(RIGHTS.MARK_ALL_NOTIFICATIONS_AS_READ),
+        notificationController.markAllNotificationsAsRead
+    );
+router
     .route("/:id")
     .delete(
         auth(RIGHTS.DELETE_NOTIFICATION),

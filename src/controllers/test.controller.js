@@ -15,6 +15,10 @@ import takerService from "../services/taker.service.js";
 import makerService from "../services/maker.service.js";
 import { Test } from "../models/test.model.js";
 import { mockSubmissions } from "../seed/submission.seed.js";
+import sendEmail from "../utils/sendEmail.js";
+import { testAssignmentEmailTemplate } from "../templates/testAssignmentEmail.js";
+import notificationService from "../services/notification.service.js";
+import { NOTIFICATION_TYPES } from "../config/constants/notification.js";
 
 const createTest = catchAsync(async (req, res, next) => {
     const maker = await makerService.getMakerByUserId(req.user.id);
@@ -172,6 +176,32 @@ const assignTakers = catchAsync(async (req, res, next) => {
         req.params.testId,
         req.body.taker_ids
     );
+
+    if (req.body.notify_assignment) {
+        req.body.taker_ids.forEach(async (takerId) => {
+            const taker = await takerService.getById(takerId);
+
+            if (taker) {
+                await sendEmail(
+                    taker.email,
+                    "Test Assignment",
+                    testAssignmentEmailTemplate
+                        .replace("{{TEST_TITLE}}", updatedTest.title)
+                        .replace("{{NAME}}", taker.name)
+                );
+                const notification =
+                    await notificationService.createNotification({
+                        recipient_ids: [taker.user.id],
+                        sender_id: [req.user.id],
+                        type: NOTIFICATION_TYPES.TEST_ASSIGNED,
+                        message: `You have been assigned a new test: ${updatedTest.title}`,
+                        link: `${process.env.CLIENT_URL}/tests/${updatedTest._id}`,
+                    });
+
+                await notificationService.sendNotification(notification);
+            }
+        });
+    }
 
     return res.status(httpStatus.ACCEPTED).send({ updatedTest });
 });

@@ -34,4 +34,6 @@ export const SOCKET_EVENTS = {
     RECEIVE_REQUEST_CHAT: "receive-request-chat",
     RECEIVE_CHAT_REQUEST_ACCEPTED: "receive-chat-request-accepted",
     RECEIVE_CHAT_REQUEST_REJECTED: "receive-chat-request-rejected",
+    RECEIVE_TEST_SUBMISSION: "receive-test-submission",
+    RECEIVE_NOTIFICATION: "receive-notification",
 };

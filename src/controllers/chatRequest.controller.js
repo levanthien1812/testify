@@ -80,7 +80,7 @@ const acceptChatRequest = catchAsync(async (req, res) => {
 
     const io = getIO();
 
-    io.to(request.sender.id).emit(
+    io.to(request.sender.id.toString()).emit(
         SOCKET_EVENTS.RECEIVE_CHAT_REQUEST_ACCEPTED,
         notification
     );
@@ -104,7 +104,7 @@ const rejectChatRequest = catchAsync(async (req, res) => {
 
     const io = getIO();
 
-    io.to(request.sender.id).emit(
+    io.to(request.sender.id.toString()).emit(
         SOCKET_EVENTS.RECEIVE_CHAT_REQUEST_REJECTED,
         notification
     );

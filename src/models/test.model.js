@@ -8,15 +8,11 @@ import { toJSON } from "./plugins/toJSON.js";
 import { TEST_STATUS } from "../config/constants/testStatus.js";
 import { SHARE_OPTION } from "../config/constants/shareOptions.js";
 import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
-import { PassCode } from "./passcode.model.js";
 import {
     PAGINATION_MODE,
     QUESTION_NUMBERING_METHOD,
     RECORDING_MODE,
 } from "../config/constants/test.js";
-import { User } from "./user.model.js";
-import { ROLES } from "../config/constants/roles.js";
-import { Maker } from "./maker.model.js";
 import { ApiError } from "../utils/apiError.js";
 
 const TestOption = new mongoose.Schema({
