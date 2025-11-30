@@ -5,8 +5,9 @@ import { RECORDING_MODE } from "../config/constants/test.js";
 const SubmissionSchema = new mongoose.Schema(
     {
         taker_id: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
             required: true,
+            ref: "Taker",
         },
         test_id: {
             type: mongoose.SchemaTypes.ObjectId,
@@ -80,7 +81,14 @@ SubmissionSchema.virtual("taker", {
 });
 
 SubmissionSchema.pre(/^find/, function (next) {
-    this.populate("taker");
+    this.populate({
+        path: "taker",
+        select: "name user_id user",
+        populate: {
+            path: "user",
+            select: "photo email name",
+        },
+    });
     next();
 });
 

@@ -1,4 +1,4 @@
-import mongoose, { mongo } from "mongoose";
+import mongoose from "mongoose";
 import { toJSON } from "./plugins/toJSON.js";
 
 const TakerSchema = new mongoose.Schema({
@@ -7,7 +7,8 @@ const TakerSchema = new mongoose.Schema({
         required: true,
     },
     user_id: {
-        type: String,
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "User",
         required: true,
     },
     maker_id: {
@@ -36,11 +37,11 @@ TakerSchema.virtual("group", {
     justOne: true,
 });
 
-TakerSchema.pre(/^find/, function (next) {
-    this.populate("user");
-    this.populate("group");
-    next();
-});
+// TakerSchema.pre(/^find/, function (next) {
+//     this.populate("user");
+//     this.populate("group");
+//     next();
+// });
 
 TakerSchema.plugin(toJSON);
 

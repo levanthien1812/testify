@@ -26,17 +26,21 @@ const deleteTaker = async (takerId) => {
 };
 
 const getTakerByUserIdAndMakerId = async (userId, makerId) => {
-    const taker = await Taker.findOne({ user_id: userId, maker_id: makerId });
+    const taker = await Taker.findOne({ user_id: userId, maker_id: makerId })
+        .populate("user")
+        .populate("group");
     return taker;
 };
 
 const getById = async (id) => {
-    const taker = await Taker.findById(id);
+    const taker = await Taker.findById(id).populate("user").populate("group");
     return taker;
 };
 
 const getTakersByUserId = async (userId) => {
-    const takers = await Taker.find({ user_id: userId });
+    const takers = await Taker.find({ user_id: userId })
+        .populate("user")
+        .populate("group");
     return takers;
 };
 

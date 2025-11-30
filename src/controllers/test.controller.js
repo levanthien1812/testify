@@ -19,6 +19,7 @@ import sendEmail from "../utils/sendEmail.js";
 import { testAssignmentEmailTemplate } from "../templates/testAssignmentEmail.js";
 import notificationService from "../services/notification.service.js";
 import { NOTIFICATION_TYPES } from "../config/constants/notification.js";
+import { toBool } from "../utils/boolean.js";
 
 const createTest = catchAsync(async (req, res, next) => {
     const maker = await makerService.getMakerByUserId(req.user.id);
@@ -59,7 +60,7 @@ const getTests = catchAsync(async (req, res, next) => {
 
 const getTest = catchAsync(async (req, res, next) => {
     const { testId, takerId, code } = req.params;
-    const { started } = req.query;
+    const { started, detailed } = req.query;
 
     let test = null;
     if (code) {
@@ -71,95 +72,101 @@ const getTest = catchAsync(async (req, res, next) => {
         test = await testService.getTest(testId, req.user, takerId);
     }
 
-    let options = {};
     let parts = [];
     let questions = [];
     let submissionsCount = 0;
 
-    if (req.user.role === ROLES.TAKER) {
-        const taker = await takerService.getTakerByUserIdAndMakerId(
-            req.user.id,
-            test.maker_id
-        );
-
-        const submissions =
-            await submissionService.getSubmissionsByTakerIdAndTestId(
-                taker.id,
-                test.id
-            );
-        submissionsCount = submissions.length;
-
-        if (test.options.allow_show_maker_answers_after_test.enable) {
-            if (
-                test.options.allow_show_maker_answers_after_test
-                    .public_answers_option ===
-                PUBLIC_ANSWER_OPTION.AFTER_TAKER_SUBMISSION
-            ) {
-                options.includeCorrectAnswers = submissions.length > 0;
-            }
-
-            if (
-                (test.options.allow_show_maker_answers_after_test
-                    .public_answers_option ===
-                    PUBLIC_ANSWER_OPTION.AFTER_CLOSE_TIME &&
-                    test.options.allow_close_time.enable &&
-                    test.options.allow_close_time.close_time) ||
-                test.options.allow_show_maker_answers_after_test
-                    .public_answers_option ===
-                    PUBLIC_ANSWER_OPTION.SPECIFIC_DATE
-            ) {
-                options.includeCorrectAnswers =
-                    new Date(test.public_answers_date).getTime() < Date.now();
-            }
-        }
-
-        await testService.addAccessedBy(test.id, taker.id);
-    }
-
-    options.includeContent = true;
-
-    if (req.user.role === ROLES.MAKER) {
-        options.includeCorrectAnswers = true;
-    }
-
-    if (
-        req.user.role === ROLES.TAKER &&
-        !(test.status === TEST_STATUS.OPENED && started) &&
-        !(
-            (test.status === TEST_STATUS.OPENED ||
-                test.status === TEST_STATUS.CLOSED) &&
-            test.options.allow_view_submission_after_test.enable &&
-            submissionsCount > 0
-        )
-    ) {
-    } else {
+    if (toBool(detailed)) {
+        let options = {};
         if (req.user.role === ROLES.TAKER) {
-            if (test.options.allow_shuffle_questions.enable) {
-                options.shuffleQuestions = true;
+            const taker = await takerService.getTakerByUserIdAndMakerId(
+                req.user.id,
+                test.maker_id
+            );
+
+            const submissions =
+                await submissionService.getSubmissionsByTakerIdAndTestId(
+                    taker.id,
+                    test.id
+                );
+            submissionsCount = submissions.length;
+
+            if (test.options.allow_show_maker_answers_after_test.enable) {
+                if (
+                    test.options.allow_show_maker_answers_after_test
+                        .public_answers_option ===
+                    PUBLIC_ANSWER_OPTION.AFTER_TAKER_SUBMISSION
+                ) {
+                    options.includeCorrectAnswers = submissions.length > 0;
+                }
+
+                if (
+                    (test.options.allow_show_maker_answers_after_test
+                        .public_answers_option ===
+                        PUBLIC_ANSWER_OPTION.AFTER_CLOSE_TIME &&
+                        test.options.allow_close_time.enable &&
+                        test.options.allow_close_time.close_time) ||
+                    test.options.allow_show_maker_answers_after_test
+                        .public_answers_option ===
+                        PUBLIC_ANSWER_OPTION.SPECIFIC_DATE
+                ) {
+                    options.includeCorrectAnswers =
+                        new Date(test.public_answers_date).getTime() <
+                        Date.now();
+                }
             }
-            if (test.options.allow_shuffle_answers.enable) {
-                options.shuffleAnswers = true;
-            }
+
+            await testService.addAccessedBy(test.id, taker.id);
         }
 
-        if (test.num_parts > 1) {
-            parts = await partService.getPartsByTestId(test.id);
-            parts = await Promise.all(
-                parts.map(async (part) => {
-                    let questionsByPart =
-                        await questionService.getQuestionsByPart(
-                            part.id,
-                            options
-                        );
+        options.includeContent = true;
 
-                    return { ...part.toObject(), questions: questionsByPart };
-                })
-            );
+        if (req.user.role === ROLES.MAKER) {
+            options.includeCorrectAnswers = true;
+        }
+
+        if (
+            req.user.role === ROLES.TAKER &&
+            !(test.status === TEST_STATUS.OPENED && started) &&
+            !(
+                (test.status === TEST_STATUS.OPENED ||
+                    test.status === TEST_STATUS.CLOSED) &&
+                test.options.allow_view_submission_after_test.enable &&
+                submissionsCount > 0
+            )
+        ) {
         } else {
-            questions = await questionService.getQuestionsByTestId(
-                test.id,
-                options
-            );
+            if (req.user.role === ROLES.TAKER) {
+                if (test.options.allow_shuffle_questions.enable) {
+                    options.shuffleQuestions = true;
+                }
+                if (test.options.allow_shuffle_answers.enable) {
+                    options.shuffleAnswers = true;
+                }
+            }
+
+            if (test.num_parts > 1) {
+                parts = await partService.getPartsByTestId(test.id);
+                parts = await Promise.all(
+                    parts.map(async (part) => {
+                        let questionsByPart =
+                            await questionService.getQuestionsByPart(
+                                part.id,
+                                options
+                            );
+
+                        return {
+                            ...part.toObject(),
+                            questions: questionsByPart,
+                        };
+                    })
+                );
+            } else {
+                questions = await questionService.getQuestionsByTestId(
+                    test.id,
+                    options
+                );
+            }
         }
     }
 
