@@ -194,14 +194,18 @@ const getSubmissions = catchAsync(async (req, res, next) => {
         );
     }
 
-    const scores = await submissionService.calculateScores(req.params.testId);
-    const rates = await submissionService.calculateRates(req.params.testId);
+    const [scores, rates, averageTime] = await Promise.all([
+        submissionService.calculateScores(req.params.testId, submissions),
+        submissionService.calculateRates(req.params.testId, submissions),
+        submissionService.calculateAverageTime(req.params.testId, submissions),
+    ]);
 
     return res.status(httpStatus.OK).send({
         submissions,
         total_submissions: submissions.length,
         ...scores,
         ...rates,
+        average_time: averageTime,
     });
 });
 

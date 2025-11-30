@@ -122,11 +122,15 @@ const findByTestId = async (testId) => {
     return submisstions;
 };
 
-const calculateScores = async (testId) => {
-    let submissions = await Submission.find({ test_id: testId });
+const calculateScores = async (testId, submissionsList = null) => {
+    let submissions =
+        submissionsList ?? (await Submission.find({ test_id: testId }));
     submissions = submissions.filter(
         (submission) => submission.score !== undefined
     );
+
+    if (submissions.length === 0)
+        return { average_score: 0, lowest_score: 0, highest_score: 0 };
 
     const totalScore = submissions.reduce(
         (acc, submission) => acc + submission.score,
@@ -144,12 +148,13 @@ const calculateScores = async (testId) => {
     };
 };
 
-const calculateRates = async (testId) => {
-    const test = await testService.findById(testId);
-    const submissions = await Submission.find({ test_id: testId });
+const calculateRates = async (testId, submissionsList = null) => {
+    const submissions =
+        submissionsList ?? (await Submission.find({ test_id: testId }));
 
+    if (submissions.length === 0) return { pass_rate: 0, fail_rate: 0 };
     const passRate =
-        submissions.filter((submission) => submission.score >= 5).length /
+        submissions.filter((submission) => submission.score >= 5).length / // Assuming 5 is the passing score
         submissions.length;
     const failRate =
         submissions.filter((submission) => submission.score < 5).length /
@@ -159,6 +164,22 @@ const calculateRates = async (testId) => {
         pass_rate: passRate,
         fail_rate: failRate,
     };
+};
+
+const calculateAverageTime = async (testId, submissionsList = null) => {
+    const submissions =
+        submissionsList ?? (await Submission.find({ test_id: testId }));
+
+    if (submissions.length === 0) return 0;
+
+    const totalDuration = submissions.reduce((acc, submission) => {
+        const startTime = new Date(submission.start_time).getTime();
+        const submitTime = new Date(submission.submit_time).getTime();
+        const duration = (submitTime - startTime) / 1000; // in seconds
+        return acc + duration;
+    }, 0);
+
+    return totalDuration / submissions.length;
 };
 
 const getSubmissionsCount = async (testId) => {
@@ -180,5 +201,6 @@ export default {
     findByTestId,
     calculateScores,
     calculateRates,
+    calculateAverageTime,
     getSubmissionsCount,
 };
