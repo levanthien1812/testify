@@ -314,39 +314,31 @@ const getTakerStatistics = async (takerId) => {
 };
 
 const getQuestionsResultForTest = async (testId) => {
-    const test = await Test.findById(testId);
     const questions = await questionService.getQuestionsByTestId(testId);
-    const submissions = await submissionService.findByTestId(testId);
+    const questionIds = questions.map((q) => q._id);
+
+    const answerStats = await answerService.getAnswerStatsForQuestions(
+        questionIds
+    );
+
+    // Create a map for quick lookup of stats by question_id
+    const statsMap = new Map(
+        answerStats.map((stat) => [stat._id.toString(), stat])
+    );
 
     const questionsResult = await Promise.all(
         questions.map(async (question) => {
-            let noOfCorrectAnswers = 0;
-            let noOfWrongAnswers = 0;
-            let noOfSkippedAnswers = 0;
-
-            await Promise.all(
-                submissions.map(async (submission) => {
-                    const answer =
-                        await answerService.findByQuestionIdAndSubmissionId(
-                            question.id,
-                            submission.id,
-                            true
-                        );
-                    if (answer.skipped) {
-                        noOfSkippedAnswers++;
-                    } else if (answer && answer.is_correct) {
-                        noOfCorrectAnswers++;
-                    } else if (answer && !answer.is_correct) {
-                        noOfWrongAnswers++;
-                    }
-                })
-            );
+            const stats = statsMap.get(question._id.toString()) || {
+                correct: 0,
+                wrong: 0,
+                skipped: 0,
+            };
 
             return {
-                question: question.toObject(),
-                correct: noOfCorrectAnswers,
-                wrong: noOfWrongAnswers,
-                skipped: noOfSkippedAnswers,
+                question: question,
+                correct: stats.correct,
+                wrong: stats.wrong,
+                skipped: stats.skipped,
             };
         })
     );

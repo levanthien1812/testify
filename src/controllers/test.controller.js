@@ -76,7 +76,7 @@ const getTest = catchAsync(async (req, res, next) => {
     let questions = [];
     let submissionsCount = 0;
 
-    if (toBool(detailed)) {
+    if (detailed === undefined || toBool(detailed)) {
         let options = {};
         if (req.user.role === ROLES.TAKER) {
             const taker = await takerService.getTakerByUserIdAndMakerId(

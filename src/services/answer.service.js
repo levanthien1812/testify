@@ -261,6 +261,42 @@ const calculatePartialScore = async (question, questionContent, userAnswer) => {
     return isAllCorrect ? question.score : partialScore;
 };
 
+const getAnswerStatsForQuestions = async (questionIds) => {
+    const stats = await Answer.aggregate([
+        {
+            $match: {
+                question_id: { $in: questionIds },
+            },
+        },
+        {
+            $group: {
+                _id: "$question_id",
+                correct: {
+                    $sum: {
+                        $cond: [{ $eq: ["$is_correct", true] }, 1, 0],
+                    },
+                },
+                wrong: {
+                    $sum: {
+                        $cond: [
+                            {
+                                $and: [
+                                    { $eq: ["$is_correct", false] },
+                                    { $eq: ["$skipped", false] },
+                                ],
+                            },
+                            1,
+                            0,
+                        ],
+                    },
+                },
+                skipped: { $sum: { $cond: ["$skipped", 1, 0] } },
+            },
+        },
+    ]);
+    return stats;
+};
+
 export default {
     createAnswers,
     updateAnswer,
@@ -268,4 +304,5 @@ export default {
     getAnswerContentByAnswerId,
     scoreAnswerByAnswerId,
     getAnswersBySubmissionId,
+    getAnswerStatsForQuestions,
 };
