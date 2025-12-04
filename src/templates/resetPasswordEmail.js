@@ -1,4 +1,9 @@
-export const resetPasswordEmailTemplate = `
+export const resetPasswordEmailTemplate = (
+    name,
+    resetPasswordUrl,
+    expireTimeInMinutes
+) => {
+    return `
 <!DOCTYPE html>
 <html>
   <head>
@@ -47,12 +52,12 @@ export const resetPasswordEmailTemplate = `
   <body>
     <div class="container">
       <h1>Reset Your Password</h1>
-      <p>Hello {{NAME}},</p>
+      <p>Hello ${name},</p>
       <p>We received a request to reset your password. Click the button below to choose a new password:</p>
       <p style="text-align: center;">
-        <a class="button" href="{{RESET_PASSWORD_URL}}" target="_blank">Reset Password</a>
+        <a class="button" href="${resetPasswordUrl}" target="_blank">Reset Password</a>
       </p>
-      <p>If you didn’t request this, please ignore this email. This link will expire in 10 minutes for your security.</p>
+      <p>If you didn’t request this, please ignore this email. This link will expire in ${expireTimeInMinutes} minutes for your security.</p>
       <p>Best regards,<br />Testify Team</p>
     </div>
     <div class="footer">
@@ -61,3 +66,4 @@ export const resetPasswordEmailTemplate = `
   </body>
 </html>
 `;
+};

@@ -58,7 +58,13 @@ const getTests = async (user, reqQuery) => {
     const query = {};
 
     if (user.role === ROLES.TAKER) {
-        filter.status = { $in: [TEST_STATUS.OPENED, TEST_STATUS.CLOSED] };
+        filter.status = {
+            $in: [
+                TEST_STATUS.PUBLISHED,
+                TEST_STATUS.OPENED,
+                TEST_STATUS.CLOSED,
+            ],
+        };
     }
 
     reqQuery.date_from &&
@@ -106,7 +112,7 @@ const getTest = async (testId, user, takerId = null) => {
     return test;
 };
 
-const assignTakers = async (testId, takerIds) => {
+const assignTakers = async (testId, takerIds, notifyAssignment = false) => {
     const test = await Test.findById(testId);
     if (!test) {
         throw new ApiError(httpStatus.NOT_FOUND, "Test not found");
@@ -129,13 +135,12 @@ const assignTakers = async (testId, takerIds) => {
             `Takers with id ${notFoundTakerIds.join(", ")} not found`
         );
 
-    if (takerIds.length === 0) return test;
-
     const updateTest = await Test.findByIdAndUpdate(
         testId,
         {
             $set: {
-                taker_ids: [...test.taker_ids, ...takerIds],
+                taker_ids: takerIds,
+                notify_assignment: notifyAssignment,
             },
         },
         { new: true }
@@ -150,12 +155,14 @@ const getAvailableTakers = async (testId, makerId) => {
     const takers = await Taker.find({
         maker_id: makerId,
         _id: { $nin: addedTakerIds },
-    });
+    })
+        .populate("user", "username name email")
+        .populate("group", "-takers");
 
     return takers;
 };
 
-const updateTest = async (testId, testBody) => {
+const updateTest = async (testId, body) => {
     const test = await Test.findById(testId);
 
     if (!test) {
@@ -163,19 +170,19 @@ const updateTest = async (testId, testBody) => {
     }
 
     if (
-        testBody.share_option &&
-        (testBody.share_option === SHARE_OPTION.ANYONE ||
-            testBody.share_option === SHARE_OPTION.PASSCODE)
+        body.share_option &&
+        (body.share_option === SHARE_OPTION.ANYONE ||
+            body.share_option === SHARE_OPTION.PASSCODE)
     ) {
-        testBody = {
-            ...testBody,
+        body = {
+            ...body,
             taker_ids: [],
         };
     }
 
     const updatedTest = await Test.findByIdAndUpdate(
         testId,
-        { $set: testBody },
+        { $set: body },
         {
             new: true,
         }

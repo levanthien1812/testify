@@ -111,12 +111,10 @@ const sendVerificationEmail = async (email) => {
     }
 
     const verificationCode = generateVerificationCode(6);
-    const html = verificationEmailTemplate
-        .replace("{{VERIFICATION_CODE}}", verificationCode)
-        .replace(
-            "{{VERIFICATION_EXPIRES_IN_MINUTES}}",
-            process.env.VERFICATION_EXPIRES_IN_MINUTES
-        );
+    const html = verificationEmailTemplate(
+        verificationCode,
+        process.env.VERFICATION_EXPIRES_IN_MINUTES
+    );
 
     await sendEmail(email, "Your Testify Verification Code", html);
 

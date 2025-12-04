@@ -47,9 +47,36 @@ const updateTest = async (req, res, next) => {
 };
 
 const publishTest = async (req, res, next) => {
-    const updatedTest = await testService.publishTest(req.params.testId);
+    const test = await testService.publishTest(req.params.testId);
+    const maker = await makerService.getMakerByUserId(req.user.id);
 
-    return res.status(httpStatus.ACCEPTED).send({ test: updatedTest });
+    if (test.notify_assignment && test.taker_ids.length > 0) {
+        test.taker_ids.forEach(async (takerId) => {
+            const taker = await takerService.getById(takerId);
+
+            if (taker) {
+                await sendEmail(
+                    taker.user.email,
+                    "Test Assignment",
+                    testAssignmentEmailTemplate(
+                        taker.user.name,
+                        test.title,
+                        `${process.env.CLIENT_URL}/tests/${test._id}`,
+                        maker.user.name
+                    )
+                );
+                const notification =
+                    await notificationService.createNotification({
+                        recipient_ids: [taker.user.id],
+                        type: NOTIFICATION_TYPES.TEST_ASSIGNED,
+                        message: `You have been assigned a new test: ${test.title}`,
+                        link: `${process.env.CLIENT_URL}/tests/${test._id}`,
+                    });
+            }
+        });
+    }
+
+    return res.status(httpStatus.ACCEPTED).send({ test });
 };
 
 const getTests = catchAsync(async (req, res, next) => {
@@ -179,36 +206,12 @@ const getTest = catchAsync(async (req, res, next) => {
 });
 
 const assignTakers = catchAsync(async (req, res, next) => {
+    console.log(req.body);
     const updatedTest = await testService.assignTakers(
         req.params.testId,
-        req.body.taker_ids
+        req.body.taker_ids,
+        req.body.notify_assignment
     );
-
-    if (req.body.notify_assignment) {
-        req.body.taker_ids.forEach(async (takerId) => {
-            const taker = await takerService.getById(takerId);
-
-            if (taker) {
-                await sendEmail(
-                    taker.email,
-                    "Test Assignment",
-                    testAssignmentEmailTemplate
-                        .replace("{{TEST_TITLE}}", updatedTest.title)
-                        .replace("{{NAME}}", taker.name)
-                );
-                const notification =
-                    await notificationService.createNotification({
-                        recipient_ids: [taker.user.id],
-                        sender_id: [req.user.id],
-                        type: NOTIFICATION_TYPES.TEST_ASSIGNED,
-                        message: `You have been assigned a new test: ${updatedTest.title}`,
-                        link: `${process.env.CLIENT_URL}/tests/${updatedTest._id}`,
-                    });
-
-                await notificationService.sendNotification(notification);
-            }
-        });
-    }
 
     return res.status(httpStatus.ACCEPTED).send({ updatedTest });
 });
