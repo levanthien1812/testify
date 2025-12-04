@@ -8,7 +8,9 @@ const createTaker = async (body) => {
 const getTakersByMaker = async (makerId) => {
     const takers = await Taker.find({
         maker_id: makerId,
-    });
+    })
+        .populate("user")
+        .populate("group");
 
     return takers;
 };

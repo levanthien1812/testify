@@ -1,4 +1,8 @@
-export const verificationEmailTemplate = `<!DOCTYPE html>
+export const verificationEmailTemplate = (
+    verificationCode,
+    expiresInMinutes
+) => {
+    return `<!DOCTYPE html>
 <html>
   <head>
     <meta charset="UTF-8" />
@@ -48,8 +52,8 @@ export const verificationEmailTemplate = `<!DOCTYPE html>
       <h1>Email Verification</h1>
       <p>Hi there,</p>
       <p>Thank you for signing up. Please use the following verification code to complete your registration:</p>
-      <div class="code">{{VERIFICATION_CODE}}</div>
-      <p>This code will expire in {{VERIFICATION_EXPIRES_IN_MINUTES}} minutes. If you did not request this, you can safely ignore this email.</p>
+      <div class="code">${verificationCode}</div>
+      <p>This code will expire in ${expiresInMinutes} minutes. If you did not request this, you can safely ignore this email.</p>
       <p>Best regards,<br />Testify Team</p>
     </div>
     <div class="footer">
@@ -57,3 +61,4 @@ export const verificationEmailTemplate = `<!DOCTYPE html>
     </div>
   </body>
 </html>`;
+};

@@ -279,6 +279,10 @@ const TestSchema = new mongoose.Schema(
             type: TestOption,
             required: true,
         },
+        notify_assignment: {
+            type: Boolean,
+            default: false,
+        },
         __v: { type: Number, select: false },
         accessed_by: [{ type: mongoose.SchemaTypes.ObjectId, ref: "Taker" }],
     },
@@ -305,8 +309,14 @@ TestSchema.virtual("passcode", {
 });
 
 TestSchema.pre(/^find/, async function (next) {
-    this.populate("takers");
-    this.populate("passcode");
+    this.populate({
+        path: "takers",
+        select: "name user_id user",
+        populate: {
+            path: "user",
+            select: "name email photo",
+        },
+    }).populate("passcode");
 
     next();
 });

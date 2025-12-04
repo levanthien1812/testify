@@ -94,9 +94,11 @@ const sendResetPasswordEmail = catchAsync(async (req, res, next) => {
     await sendEmail(
         user.email,
         "Reset your password",
-        resetPasswordEmailTemplate
-            .replace("{{RESET_PASSWORD_URL}}", resetPasswordUrl)
-            .replace("{{NAME}}", user.name)
+        resetPasswordEmailTemplate(
+            user.name,
+            resetPasswordUrl,
+            process.env.RESET_PASSWORD_EXPIRES_IN_MINUTES
+        )
     );
 
     return res.status(httpStatus.OK).send("Email sent successfully!");
