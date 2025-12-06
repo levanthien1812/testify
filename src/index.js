@@ -2,7 +2,7 @@ import app from "./app.js";
 import config from "./config/config.js";
 import mongoose from "mongoose";
 import { logger } from "./config/logger.js";
-import { job } from "./jobs/cron.js";
+import { remindProvideAnswersJob, updateTestsStatusJob } from "./jobs/cron.js";
 import initializeSocket from "./config/socket.js";
 import { createServer } from "http";
 
@@ -16,5 +16,6 @@ mongoose.connect(config.mongo.url, config.mongo.options).then(() => {
 
     initializeSocket(server);
 
-    job.start();
+    updateTestsStatusJob.start();
+    remindProvideAnswersJob.start();
 });

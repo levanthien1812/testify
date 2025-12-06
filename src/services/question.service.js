@@ -6,7 +6,10 @@ import { QUESTION_TYPE } from "../config/constants/questionTypes.js";
 import partService from "./part.service.js";
 import { questionTypeToQuestionModel } from "../utils/mapping.js";
 import testService from "./test.service.js";
-import { AUTO_SCORE_TYPE } from "../config/constants/constants.js";
+import {
+    AUTO_SCORE_TYPE,
+    MANUAL_SCORE_TYPE,
+} from "../config/constants/constants.js";
 import { Part } from "../models/part.model.js";
 import mongoose from "mongoose";
 import { shuffleQuestions } from "../utils/shuffleQuestions.js";
@@ -506,6 +509,20 @@ export const cloneQuestion = async (questionId) => {
     };
 };
 
+export const areAllQuestionsAutoScore = async (testId) => {
+    const questions = await Question.find({ test_id: testId }).select("type");
+    return questions.every((question) =>
+        AUTO_SCORE_TYPE.includes(question.type)
+    );
+};
+
+export const areAllQuestionsManualScore = async (testId) => {
+    const questions = await Question.find({ test_id: testId }).select("type");
+    return questions.every((question) =>
+        MANUAL_SCORE_TYPE.includes(question.type)
+    );
+};
+
 export default {
     createQuestion,
     updateQuestion,
@@ -518,4 +535,6 @@ export default {
     reorderQuestions,
     deleteQuestionById,
     cloneQuestion,
+    areAllQuestionsAutoScore,
+    areAllQuestionsManualScore,
 };

@@ -3,8 +3,6 @@ import testService from "../services/test.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import { TEST_STATUS } from "../config/constants/testStatus.js";
 import { ROLES } from "../config/constants/roles.js";
-import { SHARE_OPTION } from "../config/constants/shareOptions.js";
-import { ERROR_CODE, ERROR_MESSAGE } from "../config/constants/errorCode.js";
 import questionService from "../services/question.service.js";
 import partService from "../services/part.service.js";
 import submissionService from "../services/submission.service.js";
@@ -70,7 +68,11 @@ const publishTest = async (req, res, next) => {
                         recipient_ids: [taker.user.id],
                         type: NOTIFICATION_TYPES.TEST_ASSIGNED,
                         message: `You have been assigned a new test: ${test.title}`,
-                        link: `${process.env.CLIENT_URL}/tests/${test._id}`,
+                        link: `/tests/${test._id}`,
+                        image: `${process.env.SERVER_URL}/images/added_to_test.png`,
+                        metadata: {
+                            testId: test._id,
+                        },
                     });
             }
         });

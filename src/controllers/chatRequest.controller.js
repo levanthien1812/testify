@@ -32,6 +32,7 @@ const createChatRequest = catchAsync(async (req, res) => {
         message: `You have a new chat request from <strong>${request.sender.name}</strong>`,
         link: "/chats?tab=requests",
         type: NOTIFICATION_TYPES.CHAT_REQUEST,
+        image: request.sender.photo,
         metadata: {
             message: request.message,
         },
@@ -76,6 +77,7 @@ const acceptChatRequest = catchAsync(async (req, res) => {
         type: NOTIFICATION_TYPES.CHAT_REQUEST_ACCEPTED,
         message: `<strong>${request.receiver.name}</strong> accepted your chat request.`,
         link: `/chats/${chat.id}`,
+        image: request.sender.photo,
     });
 
     const io = getIO();
@@ -100,6 +102,8 @@ const rejectChatRequest = catchAsync(async (req, res) => {
         recipient_ids: [request.sender.id],
         type: NOTIFICATION_TYPES.CHAT_REQUEST_REJECTED,
         message: `<strong>${request.receiver.name}</strong> rejected your chat request.`,
+        link: "/chats?tab=requests",
+        image: request.sender.photo,
     });
 
     const io = getIO();
