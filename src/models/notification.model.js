@@ -36,6 +36,10 @@ const NotificationSchema = new Schema(
                 ref: "User",
             },
         ],
+        image: {
+            type: String,
+            required: false,
+        },
         metadata: {
             type: Schema.Types.Mixed, // For storing additional flexible data
             required: false,

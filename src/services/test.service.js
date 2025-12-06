@@ -1,6 +1,7 @@
 import httpStatus from "http-status";
 import { Test } from "../models/test.model.js";
 import { ApiError } from "../utils/apiError.js";
+import { logger } from "../config/logger.js";
 import { Question } from "../models/question.model.js";
 import { SHARE_OPTION } from "../config/constants/shareOptions.js";
 import { TEST_STATUS } from "../config/constants/testStatus.js";
@@ -13,6 +14,10 @@ import takerService from "./taker.service.js";
 import makerService from "./maker.service.js";
 import questionService from "./question.service.js";
 import answerService from "./answer.service.js";
+import notificationService from "./notification.service.js";
+import { shorten } from "../utils/text.js";
+import { NOTIFICATION_TYPES } from "../config/constants/notification.js";
+import { PUBLIC_ANSWER_OPTION } from "../config/constants/publicAnswerOptions.js";
 
 const createTest = async (testBody) => {
     const { datetime, enable_close_time, close_time } = testBody;
@@ -206,32 +211,53 @@ const publishTest = async (testId) => {
 };
 
 const updateTestsStatus = async () => {
-    const now = new Date();
+    // logger.info("Running cron job: updateTestsStatus");
+    try {
+        const now = new Date();
 
-    const tests = await Test.find({});
+        // Transition: DRAFT -> PUBLISHABLE
+        // Condition: Status is DRAFT and a share_option has been set.
+        const toPublishablePromise = Test.updateMany(
+            {
+                status: TEST_STATUS.DRAFT,
+                share_option: { $exists: true, $ne: null },
+            },
+            { $set: { status: TEST_STATUS.PUBLISHABLE } }
+        );
 
-    tests.forEach(async (test) => {
-        let status;
-        if (test.status === TEST_STATUS.DRAFT && test.share_option) {
-            status = TEST_STATUS.PUBLISHABLE;
-        }
+        // Transition: PUBLISHED -> OPENED
+        // Condition: Status is PUBLISHED and the start datetime is in the past.
+        const toOpenedPromise = Test.updateMany(
+            { status: TEST_STATUS.PUBLISHED, datetime: { $lt: now } },
+            { $set: { status: TEST_STATUS.OPENED } }
+        );
 
-        if (
-            test.status === TEST_STATUS.PUBLISHED &&
-            new Date(test.datetime).getTime() - now.getTime() < 0
-        ) {
-            status = TEST_STATUS.OPENED;
-        }
+        // Transition: OPENED -> CLOSED
+        // Condition: Status is OPENED and the close_time is in the past.
+        const toClosedPromise = Test.updateMany(
+            {
+                status: TEST_STATUS.OPENED,
+                "options.allow_close_time.close_time": { $lt: now },
+            },
+            { $set: { status: TEST_STATUS.CLOSED } }
+        );
 
-        if (
-            test.status === TEST_STATUS.OPENED &&
-            new Date(test.close_time).getTime() - now.getTime() < 0
-        ) {
-            status = TEST_STATUS.CLOSED;
-        }
+        const [publishable, opened, closed] = await Promise.all([
+            toPublishablePromise,
+            toOpenedPromise,
+            toClosedPromise,
+        ]);
 
-        await Test.findByIdAndUpdate(test.id, { $set: { status: status } });
-    });
+        // logger.info(
+        //     `updateTestsStatus finished. Updated: ${
+        //         publishable.modifiedCount +
+        //         opened.modifiedCount +
+        //         closed.modifiedCount
+        //     } tests.`
+        // );
+    } catch (error) {
+        logger.error("Error in updateTestsStatus cron job:", error);
+    }
 };
 
 const findById = async (testId) => {
@@ -410,6 +436,100 @@ const getTestByPasscode = async (passcodeId) => {
     return test;
 };
 
+const remindProvideAnswers = async () => {
+    logger.info("Running cron job: remindProvideAnswers");
+    // Fetch only relevant tests
+    const testsToRemind = await Test.find({
+        status: { $ne: TEST_STATUS.DRAFT },
+        are_answers_provided: false,
+    }).populate("maker_id"); // Populate maker to get user_id
+
+    for (const test of testsToRemind) {
+        try {
+            const areAllQuestionsManualScore =
+                await questionService.areAllQuestionsManualScore(test.id);
+            if (areAllQuestionsManualScore) continue;
+
+            // This check is already in the query, but good for safety.
+            if (test.are_answers_provided) {
+                continue;
+            }
+
+            const maker = test.maker_id;
+            if (!maker || !maker.user_id) continue;
+
+            const startOfToday = new Date();
+            startOfToday.setHours(0, 0, 0, 0);
+
+            const existingNotification =
+                await notificationService.getNotification(maker.user_id, {
+                    type: NOTIFICATION_TYPES.REMIND_PROVIDE_ANSWERS,
+                    "metadata.testId": test.id,
+                    created_at: { $gte: startOfToday },
+                });
+
+            // Only send 1 notification per day for this test
+            if (existingNotification) {
+                continue;
+            }
+
+            let lastDateToSendNotification = null;
+            const publicAnswersOption =
+                test.options.allow_show_maker_answers_after_test
+                    .public_answers_option;
+
+            switch (publicAnswersOption) {
+                case PUBLIC_ANSWER_OPTION.SPECIFIC_DATE:
+                    lastDateToSendNotification = new Date(
+                        test.options.allow_show_maker_answers_after_test.public_answers_date
+                    );
+                    break;
+                case PUBLIC_ANSWER_OPTION.AFTER_TAKER_SUBMISSION:
+                    lastDateToSendNotification = new Date(test.datetime);
+                    break;
+                case PUBLIC_ANSWER_OPTION.AFTER_CLOSE_TIME:
+                    lastDateToSendNotification = new Date(test.close_time);
+                    break;
+                default:
+                    break;
+            }
+
+            if (
+                !lastDateToSendNotification ||
+                lastDateToSendNotification.getTime() > Date.now()
+            ) {
+                continue;
+            }
+
+            // The deadline for providing answers has passed. Send a reminder.
+            // The check for an existing notification today already prevents spamming.
+            if (lastDateToSendNotification.getTime() <= Date.now()) {
+                const notification =
+                    await notificationService.createNotification({
+                        recipient_ids: [maker.user_id],
+                        type: NOTIFICATION_TYPES.REMIND_PROVIDE_ANSWERS,
+                        message: `Answers for test "${shorten(
+                            test.title,
+                            30
+                        )}" are not fully provided.`,
+                        link: `/tests/${test._id}/edit`,
+                        image: `${process.env.SERVER_URL}/images/remind_provide_answers.png`,
+                        metadata: {
+                            testId: test.id,
+                        },
+                    });
+
+                await notificationService.sendNotification(notification);
+            }
+        } catch (error) {
+            console.error(
+                `Failed to process reminder for test ${test._id}:`,
+                error
+            );
+        }
+    }
+};
+
 export default {
     createTest,
     getTests,
@@ -428,4 +548,5 @@ export default {
     filterFieldsByRole,
     getTestsToImportQuestionToBank,
     getTestByPasscode,
+    remindProvideAnswers,
 };
