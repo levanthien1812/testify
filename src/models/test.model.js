@@ -191,14 +191,6 @@ const TestSchema = new mongoose.Schema(
         datetime: {
             type: Date,
             required: true,
-            validate(value) {
-                if (new Date(value) < new Date()) {
-                    throw new ApiError(
-                        httpStatus.BAD_REQUEST,
-                        "Test date must be after today"
-                    );
-                }
-            },
         },
         max_score: {
             type: Number,

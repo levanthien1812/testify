@@ -5,7 +5,7 @@ export const updateTestsStatusJob = new CronJob("*/5 * * * * *", () => {
     testService.updateTestsStatus();
 });
 
-// Run once every minute for testing
-export const remindProvideAnswersJob = new CronJob("* * * * *", () => {
+// Run once every hour at the beginning of the hour
+export const remindProvideAnswersJob = new CronJob("0 * * * *", () => {
     testService.remindProvideAnswers();
 });
