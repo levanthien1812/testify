@@ -80,6 +80,10 @@ const userSchema = mongoose.Schema(
         verification_code_expires: {
             type: Date,
         },
+        onboarded: {
+            type: Boolean,
+            default: false,
+        },
     },
     {
         timestamp: true,

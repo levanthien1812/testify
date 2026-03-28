@@ -22,7 +22,7 @@ const updateMessage = async (messageId, messageBody) => {
         },
         {
             new: true,
-        }
+        },
     );
     return (await generateLinkPreviews([message]))[0];
 };
@@ -56,7 +56,7 @@ const updateMessagesReadByByChatId = async (chatId, readBy) => {
     const messages = await Message.updateMany(
         { chat_id: chatId },
         { $addToSet: { read_by: readBy } },
-        { new: true }
+        { new: true },
     );
     return messages;
 };
@@ -69,7 +69,7 @@ const deleteMessage = async (id) => {
         },
         {
             new: true,
-        }
+        },
     );
     return message;
 };
@@ -89,7 +89,7 @@ const pushRemoveFor = async (messageId, valueToPush) => {
         },
         {
             new: true,
-        }
+        },
     );
     return message;
 };
@@ -97,6 +97,37 @@ const pushRemoveFor = async (messageId, valueToPush) => {
 const getMessagesAIByChatId = async (chatId) => {
     const messages = await MessageAI.find({ chat_id: chatId });
     return messages;
+};
+
+const generateMessageAIStream = async (model, prevMessages) => {
+    console.log("entered");
+
+    const stream = await openai.chat.completions.create({
+        model: model,
+        messages: prevMessages,
+        stream: true,
+    });
+
+    return stream;
+};
+
+const saveMessageAI = async (messageBody) => {
+    const message = await MessageAI.create(messageBody);
+    return message;
+};
+
+const generateMockMessageAIStream = async function* () {
+    const mockText =
+        "This is a mock AI response. It simulates a stream so you can test your frontend implementation without using OpenAI credits. It handles punctuation, like commas, and periods correctly. This is a mock AI response. It simulates a stream so you can test your frontend implementation without using OpenAI credits. It handles punctuation, like commas, and periods correctly.";
+    const words = mockText.split(" ");
+
+    for (const word of words) {
+        // Simulate network latency/processing time
+        await new Promise((resolve) => setTimeout(resolve, 100));
+        yield {
+            choices: [{ delta: { content: word + " " } }],
+        };
+    }
 };
 
 const generateMessageAI = async (model, prevMessages) => {
@@ -170,7 +201,7 @@ const updateMessageAI = async (chatId, model, messageId, messageContent) => {
         },
         {
             new: true,
-        }
+        },
     );
 
     const prevMessages = await getMessagesAIByChatId(chatId);
@@ -185,7 +216,7 @@ const updateMessageAI = async (chatId, model, messageId, messageContent) => {
         },
         {
             new: true,
-        }
+        },
     );
 
     return {
@@ -250,4 +281,7 @@ export default {
     regenerateMessageAI,
     deleteAIMessagesByChatId,
     getUnreadChatsCount,
+    generateMessageAIStream,
+    generateMockMessageAIStream,
+    saveMessageAI,
 };
