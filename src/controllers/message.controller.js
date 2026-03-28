@@ -21,7 +21,7 @@ const createMessage = catchAsync(async (req, res, next) => {
 const updateMessage = catchAsync(async (req, res, next) => {
     const message = await messageService.updateMessage(
         req.params.messageId,
-        req.body
+        req.body,
     );
 
     return res.status(httpStatus.CREATED).send({ message });
@@ -36,7 +36,7 @@ const getMessages = catchAsync(async (req, res, next) => {
 const updateMessagesReadByByChatId = catchAsync(async (req, res, next) => {
     const messages = await messageService.updateMessagesReadByByChatId(
         req.params.id,
-        req.user.id
+        req.user.id,
     );
 
     return res.status(httpStatus.OK).send({ messages });
@@ -48,7 +48,7 @@ const deleteMessage = catchAsync(async (req, res, next) => {
     if (message.sender_id.toString() !== req.user.id) {
         const updatedMessage = await messageService.pushRemoveFor(
             message.id,
-            req.user.id
+            req.user.id,
         );
         return res.status(httpStatus.OK).send({ message: updatedMessage });
     }
@@ -64,13 +64,72 @@ const createMessageAI = catchAsync(async (req, res, next) => {
     const messages = await messageService.createMessageAI(
         req.params.id,
         model,
-        content
+        content,
     );
 
     await chatService.updateAIChat(req.params.id, { updated_at: new Date() });
 
     return res.status(httpStatus.CREATED).send({ messages });
 });
+
+const createMessageAIStream = async (req, res, next) => {
+    const { model, content } = req.body;
+
+    res.setHeader("Content-Type", "text/plain; charset=utf-8");
+    res.setHeader("Transfer-Encoding", "chunked");
+    res.setHeader("Cache-Control", "no-cache");
+    res.setHeader("Connection", "keep-alive");
+
+    try {
+        const userMessage = await messageService.saveMessageAI({
+            chat_id: req.params.id,
+            content: content.text,
+            role: "user",
+        });
+
+        const prevMessages = await messageService.getMessagesAIByChatId(
+            req.params.id,
+        );
+
+        let stream;
+        if (process.env.MOCK_AI === "true") {
+            stream = messageService.generateMockMessageAIStream();
+        } else {
+            stream = await messageService.generateMessageAIStream(model, [
+                ...prevMessages,
+                { role: "user", content: content.text },
+            ]);
+        }
+
+        let fullContent = "";
+        for await (const chunk of stream) {
+            const content = chunk.choices[0].delta.content;
+            if (content) {
+                fullContent += content;
+                // SSE format requires "data: " prefix and double newlines
+                res.write(`data: ${JSON.stringify({ content })}\n\n`);
+            }
+        }
+
+        await messageService.saveMessageAI({
+            chat_id: req.params.id,
+            content: fullContent,
+            role: "assistant",
+            reply_to: userMessage.id,
+        });
+
+        await chatService.updateAIChat(req.params.id, {
+            updated_at: new Date(),
+        });
+
+        res.write("data: [DONE]\n\n");
+        res.end();
+    } catch (error) {
+        console.error("Error in createMessageAIStream:", error);
+        res.write(`data: [ERROR] ${error.message}\n\n`);
+        res.end();
+    }
+};
 
 const getMessagesAI = catchAsync(async (req, res, next) => {
     const messages = await messageService.getMessagesAIByChatId(req.params.id);
@@ -84,7 +143,7 @@ const createMockMessageAI = catchAsync(async (req, res, next) => {
     const messages = await messageService.createMockMessageAI(
         req.params.id,
         content,
-        delay
+        delay,
     );
 
     return res.status(httpStatus.CREATED).send({ messages });
@@ -96,7 +155,7 @@ const updateMessageAI = catchAsync(async (req, res, next) => {
         req.params.id,
         model,
         req.params.messageId,
-        content
+        content,
     );
 
     return res.status(httpStatus.CREATED).send({ messages });
@@ -106,7 +165,7 @@ const regenerateMessageAI = catchAsync(async (req, res, next) => {
     const messages = await messageService.regenerateMessageAI(
         req.params.id,
         req.body.model,
-        req.params.messageId
+        req.params.messageId,
     );
 
     await chatService.updateAIChat(req.params.id, { updated_at: new Date() });
@@ -125,4 +184,5 @@ export default {
     createMockMessageAI,
     updateMessageAI,
     regenerateMessageAI,
+    createMessageAIStream,
 };

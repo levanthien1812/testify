@@ -14,7 +14,7 @@ route
     .post(
         auth(RIGHTS.CREATE_CHAT),
         validate(chatValidation.createChat),
-        chatController.createChat
+        chatController.createChat,
     )
     .get(auth(RIGHTS.GET_CHATS), chatController.getChats);
 
@@ -28,19 +28,19 @@ route
     .post(
         auth(RIGHTS.CREATE_MESSAGE),
         upload.array("files[]", 10),
-        messageController.createMessage
+        messageController.createMessage,
     )
     .get(
         auth(RIGHTS.GET_MESSAGES),
         validate(chatValidation.getMessages),
-        messageController.getMessages
+        messageController.getMessages,
     );
 
 route
     .route("/:id/messages/update-readby")
     .patch(
         auth(RIGHTS.UPDATE_MESSAGE),
-        messageController.updateMessagesReadByByChatId
+        messageController.updateMessagesReadByByChatId,
     );
 
 route
@@ -54,7 +54,7 @@ route
     .post(
         auth(RIGHTS.CREATE_CHAT_AI),
         validate(chatValidation.createChatAI),
-        chatController.createChatAI
+        chatController.createChatAI,
     );
 
 route
@@ -62,7 +62,7 @@ route
     .patch(
         auth(RIGHTS.UPDATE_CHAT_AI),
         validate(chatValidation.updateChatAI),
-        chatController.updateChatAI
+        chatController.updateChatAI,
     )
     .delete(auth(RIGHTS.DELETE_CHAT_AI), chatController.deleteChatAI);
 
@@ -76,7 +76,15 @@ route
     .post(
         auth(RIGHTS.CREATE_MESSAGE_AI),
         validate(chatValidation.createMessageAI),
-        messageController.createMessageAI
+        messageController.createMessageAI,
+    );
+
+route
+    .route("/ai/:id/messages/stream")
+    .post(
+        auth(RIGHTS.CREATE_MESSAGE_AI),
+        validate(chatValidation.createMessageAI),
+        messageController.createMessageAIStream,
     );
 
 route
@@ -84,14 +92,14 @@ route
     .patch(
         auth(RIGHTS.UPDATE_MESSAGE_AI),
         validate(chatValidation.updateMessageAI),
-        messageController.updateMessageAI
+        messageController.updateMessageAI,
     );
 
 route
     .route("/ai/:id/messages/:messageId/regenerate")
     .patch(
         auth(RIGHTS.REGENERATE_MESSAGE_AI),
-        messageController.regenerateMessageAI
+        messageController.regenerateMessageAI,
     );
 
 route
@@ -99,7 +107,7 @@ route
     .post(
         auth(RIGHTS.CREATE_MESSAGE_AI),
         validate(chatValidation.createMockMessageAI),
-        messageController.createMockMessageAI
+        messageController.createMockMessageAI,
     );
 
 export default route;
