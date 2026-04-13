@@ -16,7 +16,7 @@ const createChat = async (chatBody) => {
 
     return await Chat.findById(newChat.id).populate(
         "members.member",
-        "-password"
+        "-password",
     );
 };
 
@@ -49,7 +49,7 @@ const getChats = async (userId) => {
 
             const unreadMessages = await messageService.getUnreadMessages(
                 userId,
-                chat._id
+                chat._id,
             );
 
             return {
@@ -57,7 +57,7 @@ const getChats = async (userId) => {
                 unread_messages: unreadMessages,
                 last_message: lastMessage,
             };
-        })
+        }),
     );
 
     return chatsWithUnreadMessages;
@@ -67,7 +67,7 @@ const updateNickname = async (chatId, { memberId, nickname }) => {
     const updatedChat = await Chat.findOneAndUpdate(
         { _id: chatId, "members.member": memberId },
         { $set: { "members.$.nick_name": nickname } },
-        { new: true }
+        { new: true },
     );
 
     return updatedChat;
@@ -84,10 +84,11 @@ const getModelsAI = async (userId = null) => {
     const models = response.data;
 
     const allowedModels = models.filter((model) => {
-        if (model.owned_by === "openai") {
-            return true;
-        }
-        return false;
+        // Filter for official OpenAI models and only those intended for Chat/GPT usage
+        return (
+            model.owned_by === "openai" &&
+            (model.id.startsWith("gpt-") || model.id.startsWith("o1-"))
+        );
     });
     return allowedModels;
 };
@@ -121,7 +122,7 @@ const updateAIChat = async (chatId, chatBody) => {
         chatBody,
         {
             new: true,
-        }
+        },
     );
 
     return updatedChat;
@@ -136,7 +137,7 @@ const deleteAIChat = async (chatId) => {
 const getById = async (chatId) => {
     const chat = await Chat.findById(chatId).populate(
         "members.member",
-        "-password"
+        "-password",
     );
 
     return chat;

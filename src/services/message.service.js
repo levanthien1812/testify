@@ -100,8 +100,6 @@ const getMessagesAIByChatId = async (chatId) => {
 };
 
 const generateMessageAIStream = async (model, prevMessages) => {
-    console.log("entered");
-
     const stream = await openai.chat.completions.create({
         model: model,
         messages: prevMessages,
