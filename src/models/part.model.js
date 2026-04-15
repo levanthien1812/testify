@@ -20,7 +20,16 @@ const PartSchema = mongoose.Schema(
         test_id: {
             type: mongoose.SchemaTypes.ObjectId,
             ref: "Test",
-            required: true,
+            required: function () {
+                return !this.template_id;
+            },
+        },
+        template_id: {
+            type: mongoose.SchemaTypes.ObjectId,
+            ref: "Template",
+            required: function () {
+                return !this.test_id;
+            },
         },
         order: {
             type: Number,
@@ -33,7 +42,7 @@ const PartSchema = mongoose.Schema(
             createdAt: "created_at",
             updatedAt: "updated_at",
         },
-    }
+    },
 );
 
 PartSchema.plugin(toJSON);
