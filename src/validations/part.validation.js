@@ -23,6 +23,7 @@ const updatePart = {
     }),
     params: Joi.object().keys({
         testId: Joi.string().optional(),
+        templateId: Joi.string().optional(),
         partId: Joi.string().required(),
     }),
 };
@@ -31,6 +32,7 @@ const movePart = {
     direction: Joi.string().required().valid("up", "down"),
     params: Joi.object().keys({
         testId: Joi.string().optional(),
+        templateId: Joi.string().optional(),
         partId: Joi.string().required(),
     }),
 };

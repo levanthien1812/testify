@@ -1,6 +1,7 @@
 import authRoute from "./auth.route.js";
 import userRoute from "./user.route.js";
 import testRoute from "./test.route.js";
+import testTemplateRoute from "./testTemplate.route.js";
 import chatRoute from "./chat.route.js";
 import questionBankRoute from "./questionBank.route.js";
 import notificationRoute from "./notification.route.js";
@@ -21,6 +22,10 @@ const routes = [
     {
         path: "/tests",
         route: testRoute,
+    },
+    {
+        path: "/test-templates",
+        route: testTemplateRoute,
     },
     {
         path: "/chats",

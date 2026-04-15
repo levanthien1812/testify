@@ -15,7 +15,7 @@ import {
 } from "../config/constants/test.js";
 import { ApiError } from "../utils/apiError.js";
 
-const TestOption = new mongoose.Schema({
+export const TestOption = new mongoose.Schema({
     allow_close_time: {
         type: {
             enable: { type: Boolean, required: true },
@@ -226,7 +226,7 @@ const TestSchema = new mongoose.Schema(
                     throw new ApiError(
                         httpStatus.BAD_REQUEST,
 
-                        "Test must have at least 2 parts or no part"
+                        "Test must have at least 2 parts or no part",
                     );
                 }
             },
@@ -283,7 +283,7 @@ const TestSchema = new mongoose.Schema(
             createdAt: "created_at",
             updatedAt: "updated_at",
         },
-    }
+    },
 );
 
 TestSchema.virtual("takers", {
