@@ -1,6 +1,7 @@
 import httpStatus from "http-status";
 import TestTemplate from "../models/testTemplate.model.js";
 import { ApiError } from "../utils/apiError.js";
+import { Test } from "../models/test.model.js";
 
 const createTestTemplate = async (templateBody) => {
     const newTemplate = await TestTemplate.create(templateBody);

@@ -15,172 +15,183 @@ import {
 } from "../config/constants/test.js";
 import { ApiError } from "../utils/apiError.js";
 
-export const TestOption = new mongoose.Schema({
-    allow_close_time: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
-            close_time: { type: Date, required: false },
-        },
-        required: true,
-        _id: false,
-    },
-    allow_view_submission_after_test: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
-        },
-        required: true,
-        _id: false,
-    },
-    allow_multiple_submissions: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
-            maximum_submissions: { type: Number, required: false },
-        },
-        required: true,
-        _id: false,
-    },
-    allow_save_progress: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
-        },
-        required: true,
-        _id: false,
-    },
-    allow_show_taker_answers_after_test: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
-            delay_time: { type: Number, required: false },
-        },
-        required: true,
-        _id: false,
-    },
-    allow_show_maker_answers_after_test: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
-            visibility_level: {
-                type: String,
-                enum: Object.values(PUBLIC_ANSWER_VISIBILITY_LEVEL),
-                required: false,
+export const TestOption = new mongoose.Schema(
+    {
+        allow_close_time: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
+                close_time: { type: Date, required: false },
             },
-            public_answers_option: {
-                type: String,
-                enum: Object.values(PUBLIC_ANSWER_OPTION),
-                required: true,
-            },
-            public_answers_date: {
-                type: Date,
-                required: false,
-            },
+            required: true,
+            _id: false,
         },
-        required: true,
-        _id: false,
-    },
-    allow_shuffle_questions: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
+        allow_view_submission_after_test: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
+            },
+            required: true,
+            _id: false,
         },
-        required: true,
-        _id: false,
-    },
-    allow_shuffle_answers: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
+        allow_multiple_submissions: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
+                maximum_submissions: { type: Number, required: false },
+            },
+            required: true,
+            _id: false,
         },
-        required: true,
-        _id: false,
-    },
-    allow_review_before_submission: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
+        allow_save_progress: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
+            },
+            required: true,
+            _id: false,
         },
-        required: true,
-        _id: false,
-    },
-    disallow_time_limit: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
-            duration: { type: Number, required: false }, // Time limit in minutes
+        allow_show_taker_answers_after_test: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
+                delay_time: { type: Number, required: false },
+            },
+            required: true,
+            _id: false,
         },
-        required: true,
-        _id: false,
-    },
-    pagination_mode: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
-            mode: {
-                type: String,
-                enum: Object.values(PAGINATION_MODE),
-                default: PAGINATION_MODE.ALL,
+        allow_show_maker_answers_after_test: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
+                visibility_level: {
+                    type: String,
+                    enum: Object.values(PUBLIC_ANSWER_VISIBILITY_LEVEL),
+                    required: false,
+                },
+                public_answers_option: {
+                    type: String,
+                    enum: Object.values(PUBLIC_ANSWER_OPTION),
+                    required: true,
+                },
+                public_answers_date: {
+                    type: Date,
+                    required: false,
+                },
             },
-            allow_back_navigation: {
-                type: Boolean,
-                required: false,
-                default: false,
-            },
-            require_completion_before_next: {
-                type: Boolean,
-                required: false,
-                default: false,
-            },
-            questions_per_page: {
-                type: Number,
-                required: false,
-                default: 10,
-            },
+            required: true,
+            _id: false,
         },
-        required: true,
-        _id: false,
-    },
-    require_screen_recorder: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
-            record_mode: {
-                type: String,
-                enum: Object.values(RECORDING_MODE),
-                required: false,
+        allow_shuffle_questions: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
             },
-            interval_in_seconds: {
-                type: Number,
-                required: false,
-                default: 10,
-            },
-            include_audio: { type: Boolean, required: false, default: false },
+            required: true,
+            _id: false,
         },
-        required: true,
-        _id: false,
-    },
-    require_camera_on: {
-        type: {
-            enable: { type: Boolean, required: true },
-            let_taker_know: { type: Boolean, required: true },
-            record_mode: {
-                type: String,
-                enum: Object.values(RECORDING_MODE),
-                required: false,
+        allow_shuffle_answers: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
             },
-            interval_in_seconds: {
-                type: Number,
-                required: false,
-                default: 10,
-            },
-            include_audio: { type: Boolean, required: false, default: false },
+            required: true,
+            _id: false,
         },
-        required: true,
-        _id: false,
+        allow_review_before_submission: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
+            },
+            required: true,
+            _id: false,
+        },
+        disallow_time_limit: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
+                duration: { type: Number, required: false }, // Time limit in minutes
+            },
+            required: true,
+            _id: false,
+        },
+        pagination_mode: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
+                mode: {
+                    type: String,
+                    enum: Object.values(PAGINATION_MODE),
+                    default: PAGINATION_MODE.ALL,
+                },
+                allow_back_navigation: {
+                    type: Boolean,
+                    required: false,
+                    default: false,
+                },
+                require_completion_before_next: {
+                    type: Boolean,
+                    required: false,
+                    default: false,
+                },
+                questions_per_page: {
+                    type: Number,
+                    required: false,
+                    default: 10,
+                },
+            },
+            required: true,
+            _id: false,
+        },
+        require_screen_recorder: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
+                record_mode: {
+                    type: String,
+                    enum: Object.values(RECORDING_MODE),
+                    required: false,
+                },
+                interval_in_seconds: {
+                    type: Number,
+                    required: false,
+                    default: 10,
+                },
+                include_audio: {
+                    type: Boolean,
+                    required: false,
+                    default: false,
+                },
+            },
+            required: true,
+            _id: false,
+        },
+        require_camera_on: {
+            type: {
+                enable: { type: Boolean, required: true },
+                let_taker_know: { type: Boolean, required: true },
+                record_mode: {
+                    type: String,
+                    enum: Object.values(RECORDING_MODE),
+                    required: false,
+                },
+                interval_in_seconds: {
+                    type: Number,
+                    required: false,
+                    default: 10,
+                },
+                include_audio: {
+                    type: Boolean,
+                    required: false,
+                    default: false,
+                },
+            },
+            required: true,
+            _id: false,
+        },
     },
-});
+    { _id: false },
+);
 
 const TestSchema = new mongoose.Schema(
     {

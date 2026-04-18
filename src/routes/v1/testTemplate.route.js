@@ -48,4 +48,12 @@ router
         partController.addPart,
     );
 
+router
+    .route("/:templateId/parts/:partId")
+    .patch(
+        auth(RIGHTS.UPDATE_PART),
+        validate(partValidation.updatePart),
+        partController.updatePart,
+    );
+
 export default router;
