@@ -38,7 +38,7 @@ const updateTest = async (req, res, next) => {
     const updatedTest = await testService.updateTest(
         req.params.testId,
         req.body,
-        { new: true }
+        { new: true },
     );
 
     return res.status(httpStatus.ACCEPTED).send({ test: updatedTest });
@@ -60,8 +60,8 @@ const publishTest = async (req, res, next) => {
                         taker.user.name,
                         test.title,
                         `${process.env.CLIENT_URL}/tests/${test._id}`,
-                        maker.user.name
-                    )
+                        maker.user.name,
+                    ),
                 );
                 const notification =
                     await notificationService.createNotification({
@@ -110,13 +110,13 @@ const getTest = catchAsync(async (req, res, next) => {
         if (req.user.role === ROLES.TAKER) {
             const taker = await takerService.getTakerByUserIdAndMakerId(
                 req.user.id,
-                test.maker_id
+                test.maker_id,
             );
 
             const submissions =
                 await submissionService.getSubmissionsByTakerIdAndTestId(
                     taker.id,
-                    test.id
+                    test.id,
                 );
             submissionsCount = submissions.length;
 
@@ -175,25 +175,25 @@ const getTest = catchAsync(async (req, res, next) => {
             }
 
             if (test.num_parts > 1) {
-                parts = await partService.getPartsByTestId(test.id);
+                parts = await partService.getPartsByParent(test.id, "test");
                 parts = await Promise.all(
                     parts.map(async (part) => {
                         let questionsByPart =
                             await questionService.getQuestionsByPart(
                                 part.id,
-                                options
+                                options,
                             );
 
                         return {
                             ...part.toObject(),
                             questions: questionsByPart,
                         };
-                    })
+                    }),
                 );
             } else {
                 questions = await questionService.getQuestionsByTestId(
                     test.id,
-                    options
+                    options,
                 );
             }
         }
@@ -212,7 +212,7 @@ const assignTakers = catchAsync(async (req, res, next) => {
     const updatedTest = await testService.assignTakers(
         req.params.testId,
         req.body.taker_ids,
-        req.body.notify_assignment
+        req.body.notify_assignment,
     );
 
     return res.status(httpStatus.ACCEPTED).send({ updatedTest });
@@ -231,12 +231,12 @@ const createTakers = catchAsync(async (req, res, next) => {
             });
 
             return newTaker;
-        })
+        }),
     );
 
     const updatedTest = await testService.assignTakers(
         testId,
-        newTakers.map((taker) => taker._id)
+        newTakers.map((taker) => taker._id),
     );
 
     return res.status(httpStatus.ACCEPTED).send({ test: updatedTest });
@@ -248,7 +248,7 @@ const getTakersDetails = catchAsync(async (req, res, next) => {
         taker_ids.map(async (id) => {
             const taker = await takerService.getById(id);
             return taker;
-        })
+        }),
     );
 
     return res.status(httpStatus.OK).send({ takers });
@@ -258,7 +258,7 @@ const getAvailableTakers = catchAsync(async (req, res, next) => {
     const maker = await makerService.getMakerByUserId(req.user.id);
     const takers = await testService.getAvailableTakers(
         req.params.testId,
-        maker.id
+        maker.id,
     );
 
     return res.status(httpStatus.OK).send({ takers: takers });
@@ -278,7 +278,7 @@ const mockTest = catchAsync(async (req, res, next) => {
 
 const getQuestionsResultForTest = catchAsync(async (req, res, next) => {
     const questionsResult = await testService.getQuestionsResultForTest(
-        req.params.testId
+        req.params.testId,
     );
 
     return res

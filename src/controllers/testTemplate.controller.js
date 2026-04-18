@@ -2,6 +2,8 @@ import httpStatus from "http-status";
 import testTemplateService from "../services/testTemplate.service.js";
 import catchAsync from "../utils/catchAsync.js";
 import makerService from "../services/maker.service.js";
+import partService from "../services/part.service.js";
+import questionService from "../services/question.service.js";
 
 const createTestTemplate = catchAsync(async (req, res, next) => {
     const maker = await makerService.getMakerByUserId(req.user.id);
@@ -31,7 +33,13 @@ const getTestTemplate = catchAsync(async (req, res, next) => {
         req.params.templateId,
     );
 
-    return res.status(httpStatus.OK).send({ template });
+    let parts = [];
+
+    if (template.num_parts > 1) {
+        parts = await partService.getPartsByParent(template.id, "template");
+    }
+
+    return res.status(httpStatus.OK).send({ template, parts });
 });
 
 const updateTestTemplate = catchAsync(async (req, res, next) => {

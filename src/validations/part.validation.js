@@ -8,9 +8,12 @@ const addPart = {
         description: Joi.string().allow(null).allow(""),
         num_questions: Joi.number().required().min(0),
     }),
-    params: Joi.object().keys({
-        testId: Joi.string().required(),
-    }),
+    params: Joi.object()
+        .keys({
+            testId: Joi.string().optional(),
+            templateId: Joi.string().optional(),
+        })
+        .xor("testId", "templateId"),
 };
 
 const updatePart = {
@@ -21,20 +24,24 @@ const updatePart = {
         description: Joi.string().allow(null).allow(""),
         num_questions: Joi.number().optional().min(0),
     }),
-    params: Joi.object().keys({
-        testId: Joi.string().optional(),
-        templateId: Joi.string().optional(),
-        partId: Joi.string().required(),
-    }),
+    params: Joi.object()
+        .keys({
+            testId: Joi.string().optional(),
+            templateId: Joi.string().optional(),
+            partId: Joi.string().required(),
+        })
+        .xor("testId", "templateId"),
 };
 
 const movePart = {
     direction: Joi.string().required().valid("up", "down"),
-    params: Joi.object().keys({
-        testId: Joi.string().optional(),
-        templateId: Joi.string().optional(),
-        partId: Joi.string().required(),
-    }),
+    params: Joi.object()
+        .keys({
+            testId: Joi.string().optional(),
+            templateId: Joi.string().optional(),
+            partId: Joi.string().required(),
+        })
+        .xor("testId", "templateId"),
 };
 
 export default { addPart, updatePart, movePart };

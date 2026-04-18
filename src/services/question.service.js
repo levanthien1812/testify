@@ -29,7 +29,7 @@ const createQuestionContent = async (questionType, questionContent) => {
         if (leftItems.length !== rightItems.length) {
             throw new ApiError(
                 httpStatus.BAD_REQUEST,
-                "Number of left items and right items must be the same "
+                "Number of left items and right items must be the same ",
             );
         }
     }
@@ -41,7 +41,7 @@ const createQuestionContent = async (questionType, questionContent) => {
 const updateQuestionContent = async (
     questionId,
     questionType,
-    questionContent
+    questionContent,
 ) => {
     let model = questionTypeToQuestionModel.get(questionType);
 
@@ -51,7 +51,7 @@ const updateQuestionContent = async (
         if (leftItems.length !== rightItems.length) {
             throw new ApiError(
                 httpStatus.BAD_REQUEST,
-                "Number of left items and right items must be the same "
+                "Number of left items and right items must be the same ",
             );
         }
     }
@@ -71,7 +71,7 @@ const updateQuestionContent = async (
         updatedQuestionContentDoc = await model.findOneAndUpdate(
             { question_id: questionId },
             questionContent,
-            { new: true }
+            { new: true },
         );
     }
 
@@ -98,7 +98,7 @@ const createQuestion = async (questionBody) => {
 
     const questionContentDoc = await createQuestionContent(
         questionBody.type,
-        questionContent
+        questionContent,
     );
 
     if (questionContentDoc) {
@@ -119,7 +119,7 @@ const updateQuestion = async (questionId, questionBody) => {
     const updatedQuestion = await Question.findByIdAndUpdate(
         questionId,
         questionBody,
-        { new: true }
+        { new: true },
     );
 
     updatedQuestion.is_content_provided = false;
@@ -138,13 +138,13 @@ const updateQuestion = async (questionId, questionBody) => {
 
         updatedQuestionContentDoc = await createQuestionContent(
             questionBody.type,
-            questionContent
+            questionContent,
         );
     } else {
         updatedQuestionContentDoc = await updateQuestionContent(
             questionId,
             question.type,
-            questionBody.content
+            questionBody.content,
         );
     }
 
@@ -164,7 +164,7 @@ const checkAnswersProvided = async (testId) => {
 
     const areAnswersProvided = questions.every(async (question) => {
         const questionContentModel = questionTypeToQuestionModel.get(
-            question.type
+            question.type,
         );
         const questionContent = await questionContentModel
             .find({
@@ -192,7 +192,7 @@ const addAnswer = async (questionId, answerBody) => {
 
     let updated = await model.findOneAndUpdate(
         { question_id: questionId },
-        { $set: { answer: answerBody } }
+        { $set: { answer: answerBody } },
     );
 
     if (await checkAnswersProvided(question.test_id)) {
@@ -242,7 +242,7 @@ const getQuestionsContent = async (questions, options = {}) => {
             const content = await getQuestionContent(question.id, options);
 
             return { ...question.toObject(), content };
-        })
+        }),
     );
 
     return questionsWithContent;
@@ -257,32 +257,32 @@ const validateQuestions = async (testId) => {
 
         const totalQuestionsScores = questions.reduce(
             (acc, question) => acc + question.score,
-            0
+            0,
         );
 
         if (totalQuestionsScores !== test.max_score) {
             throw new ApiError(
                 httpStatus.BAD_REQUEST,
-                "Total questions score must be equal to test score"
+                "Total questions score must be equal to test score",
             );
         } else {
             validated = true;
         }
     } else {
-        const parts = await partService.getPartsByTestId(testId);
+        const parts = await partService.getPartsByParent(testId, "test");
 
         for (let i = 0; i < parts.length; i++) {
             const questions = await Question.find({ part_id: parts[i].id });
 
             const totalQuestionsScores = questions.reduce(
                 (scores, question) => scores + question.score,
-                0
+                0,
             );
 
             if (totalQuestionsScores !== parts[i].score) {
                 throw new ApiError(
                     httpStatus.BAD_REQUEST,
-                    `Total questions score of part ${parts[i].name} is not equal to part score`
+                    `Total questions score of part ${parts[i].name} is not equal to part score`,
                 );
             }
         }
@@ -309,7 +309,7 @@ const getQuestionsByPart = async (partId, options = {}) => {
 const deleteQuestion = async (
     questionId,
     testId = null,
-    questionBody = null
+    questionBody = null,
 ) => {
     if (mongoose.Types.ObjectId.isValid(questionId)) {
         const question = await Question.findById(questionId);
@@ -330,7 +330,7 @@ const deleteQuestion = async (
         // Reorder subsequent questions
         await Question.updateMany(
             { test_id: testId, order: { $gt: questionBody.order } },
-            { $inc: { order: -1 } }
+            { $inc: { order: -1 } },
         );
     } else {
         const part = await Part.findById(questionBody.part_id);
@@ -346,7 +346,7 @@ const deleteQuestion = async (
                 part_id: questionBody.part_id,
                 order: { $gt: questionBody.order },
             },
-            { $inc: { order: -1 } }
+            { $inc: { order: -1 } },
         );
     }
 
@@ -374,7 +374,7 @@ const reorderQuestions = async (testId, questionBody) => {
                     },
                     {
                         $inc: { order: -1 },
-                    }
+                    },
                 );
             }
         } else {
@@ -387,7 +387,7 @@ const reorderQuestions = async (testId, questionBody) => {
                     },
                     {
                         $inc: { order: 1 },
-                    }
+                    },
                 );
             }
         }
@@ -408,7 +408,7 @@ const reorderQuestions = async (testId, questionBody) => {
                 order: isSpecialCase ? { $lte: endOrder } : { $gte: endOrder },
                 ...(partToId ? { part_id: partToId } : {}),
             },
-            { $inc: { order: isSpecialCase ? -1 : 1 } }
+            { $inc: { order: isSpecialCase ? -1 : 1 } },
         );
 
         await Question.findByIdAndUpdate(questionAtStartOrder._id, {
@@ -424,7 +424,7 @@ const reorderQuestions = async (testId, questionBody) => {
                     : { $gte: startOrder },
                 ...(partFromId ? { part_id: partFromId } : {}),
             },
-            { $inc: { order: isSpecialCase ? 1 : -1 } }
+            { $inc: { order: isSpecialCase ? 1 : -1 } },
         );
 
         const partFrom = await Part.findByIdAndUpdate(partFromId, {
@@ -448,7 +448,7 @@ const reorderQuestions = async (testId, questionBody) => {
                         },
                         {
                             $inc: { order: -1 },
-                        }
+                        },
                     );
                 }
             } else {
@@ -463,7 +463,7 @@ const reorderQuestions = async (testId, questionBody) => {
                         },
                         {
                             $inc: { order: 1 },
-                        }
+                        },
                     );
                 }
             }
@@ -512,14 +512,14 @@ export const cloneQuestion = async (questionId) => {
 export const areAllQuestionsAutoScore = async (testId) => {
     const questions = await Question.find({ test_id: testId }).select("type");
     return questions.every((question) =>
-        AUTO_SCORE_TYPE.includes(question.type)
+        AUTO_SCORE_TYPE.includes(question.type),
     );
 };
 
 export const areAllQuestionsManualScore = async (testId) => {
     const questions = await Question.find({ test_id: testId }).select("type");
     return questions.every((question) =>
-        MANUAL_SCORE_TYPE.includes(question.type)
+        MANUAL_SCORE_TYPE.includes(question.type),
     );
 };
 

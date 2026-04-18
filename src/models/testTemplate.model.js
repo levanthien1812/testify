@@ -85,7 +85,6 @@ const TestTemplateSchema = new mongoose.Schema(
             enum: Object.values(QUESTION_NUMBERING_METHOD),
             required: false,
         },
-        parts: [TestTemplatePart],
         maker_id: {
             type: mongoose.SchemaTypes.ObjectId,
             required: true,
